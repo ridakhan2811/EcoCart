@@ -1,14 +1,14 @@
-# 🧩 Django + Web Frameworks
+# Django + Web Frameworks
 Django==5.2.2
 httpx==0.27.2
 sqlparse==0.5.3
 
-# 🗣️ Text-to-Speech + Speech
+# Text-to-Speech + Speech
 gTTS==2.5.3
 pyttsx3==2.97
 SpeechRecognition==3.10.4
 
-# 📊 Data & ML Basics
+#  Data & ML Basics
 numpy==2.1.1
 pandas==2.2.2
 matplotlib==3.9.2
@@ -16,25 +16,25 @@ seaborn==0.13.2
 scikit-learn==1.5.2
 scipy==1.14.1
 
-# 💵 Payment Gateway
+# Payment Gateway
 razorpay==1.4.2
 
-# 🖼️ Image and Media
+#  Image and Media
 pillow==10.4.0
 
-# 🌍 Web Utilities
+# Web Utilities
 requests==2.32.3
 idna==3.10
 charset-normalizer==3.3.2
 urllib3==2.2.3
 
-# ⏳ Progress and Utilities
+#  Progress and Utilities
 tqdm==4.66.5
 typing_extensions==4.12.2
 
-# 🔒────────────────────────────────────────────
-# ❗ OPTIONAL PACKAGES TO ADD LATER (Need Rust/MSVC)
-# 🔒────────────────────────────────────────────
+# ────────────────────────────────────────────
+#  OPTIONAL PACKAGES TO ADD LATER (Need Rust/MSVC)
+# ────────────────────────────────────────────
 
 # WebSocket/Desktop UI/Real-Time Features
 # bottle==0.13.2
