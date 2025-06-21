@@ -1,6 +1,6 @@
 # EcoCart 🛒🌱
 
-**EcoCart** is an e-commerce platform focused on eco-friendly and sustainable products. This project is being collaboratively developed by a team of diploma students passionate about environmental impact and modern technology.
+**EcoCart** is an e-commerce platform focused on eco-friendly and sustainable products as a contribution to sustainable development
 
 ---
 
@@ -11,6 +11,7 @@
 - Add to cart and checkout
 - Order tracking
 - Admin panel for managing products & orders
+- Payment Gateway
 
 ---
 
