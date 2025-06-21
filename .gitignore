@@ -1,0 +1,16 @@
+# 🐍 Python virtual environment
+env/
+
+# 🚫 Windows reserved filenames
+nul
+
+# ⚙️ Compiled files
+__pycache__/
+*.pyc
+*.pyo
+
+# 📜 Logs
+*.log
+
+# VSCode settings (if using VSCode)
+.vscode/
