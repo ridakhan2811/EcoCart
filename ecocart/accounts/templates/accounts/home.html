@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EcoCart | Home</title>
+  <link rel="stylesheet" href="{% static 'accounts/css/home.css' %}">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="brand">EcoCart</div>
+    <div class="nav-links">
+      {% if user.is_authenticated %}
+        <a href="{% url 'profile' %}">Profile</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      {% else %}
+        <a href="{% url 'login' %}">Login</a>
+        <a href="{% url 'register' %}">Register</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>Welcome to EcoCart 🌱</h1>
+    <p>Make sustainable shopping choices every day.</p>
+  </header>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EcoCart - Products</title>
+  <link rel="stylesheet" href="{% static 'accounts/css/products.css' %}">
+  <script defer src="{% static 'accounts/js/products.js' %}"></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="brand">EcoCart</div>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/products/">Products</a>
+      <a href="/cart/">Cart</a>
+    </div>
+  </nav>
+  <section class="product-gallery">
+    <div class="product-card">
+      <img src="{% static 'accounts/images/bamboo-toothbrush.jpg' %}" alt="Bamboo Toothbrush">
+      <h3>Bamboo Toothbrush</h3>
+      <p>₹99</p>
+      <button>Add to Cart</button>
+    </div>
+    <div class="product-card">
+      <img src="{% static 'accounts/images/reusable-bag.jpg' %}" alt="Reusable Bag">
+      <h3>Reusable Grocery Bag</h3>
+      <p>₹149</p>
+      <button>Add to Cart</button>
+    </div>
+  </section>
+</body>
+</html>
