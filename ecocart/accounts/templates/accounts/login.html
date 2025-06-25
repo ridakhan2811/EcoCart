@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoCart | Home</title>
+
+    <!-- Link to CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/home.css' %}" />
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="brand">EcoCart</div>
+        <div class="nav-links">
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'register' %}">Register</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="overlay">
+            <h1>Welcome to EcoCart 🌱</h1>
+            <p>Empowering sustainable shopping for a greener future.</p>
+            <a href="{% url 'register' %}" class="cta-btn">Get Started</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <!-- <p>© 2025 EcoCart. All rights reserved.</p> -->
+    </footer>
+
+</body>
+
+</html>
