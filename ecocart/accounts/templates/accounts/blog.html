@@ -1,0 +1,401 @@
+{% load static %} {# IMPORTANT: Keep this load static tag #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoCart | Our Eco-Blog</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Outfit for Headings, Inter for Body -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1A4A37; /* Lighter Dark Green for body background! */
+            color: #FFFFFF; /* Changed body text color to white for readability on dark background */
+            line-height: 1.6;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Navbar styling - COPIED for this standalone page */
+        .navbar {
+            background-color: #0F3F2D; /* Deep Forest Green for navbar (kept darker) */
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000; /* High z-index to ensure it's always on top */
+        }
+        .navbar .logo {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #A7F3D0; /* Lighter green for logo */
+            display: flex;
+            align-items: center;
+            letter-spacing: -0.025em;
+        }
+        .navbar .logo span {
+            margin-right: 0.75rem;
+            font-size: 1.5em;
+        }
+        .navbar .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        .navbar .nav-links a {
+            color: #D1FAE5; /* Pale Mint Green for links */
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.3s ease-in-out, transform 0.2s ease-in-out;
+            white-space: nowrap;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .navbar .nav-links a:hover {
+            color: #34D399; /* EcoCart Green on hover */
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Blog Page Specific Styles */
+        .blog-container {
+            background-color: #FFFFFF; /* White background for the content area */
+            padding: 3.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -3px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 1000px; /* Max width for blog content */
+            margin-top: 7rem; /* Space from fixed navbar */
+            margin-bottom: 3rem;
+            box-sizing: border-box;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .blog-heading {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #34D399; /* EcoCart Green */
+            text-align: center;
+            margin-bottom: 2.5rem;
+            letter-spacing: -0.03em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .blog-intro {
+            font-size: 1.15rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #36454F; /* Keeping this as charcoal as it's within white container */
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .blog-post-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid for posts */
+            gap: 2.5rem; /* Space between blog posts */
+            justify-content: center;
+        }
+
+        .blog-post-card {
+            background: #F8FDF9; /* Very light green tint for cards */
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Subtle shadow */
+            padding: 1.5rem;
+            border: 1px solid #E0F2E5; /* Pale Mint Green border */
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            overflow: hidden; /* Ensure content stays within card during animation */
+            cursor: pointer;
+
+            /* Initial hidden state for scroll animation */
+            opacity: 0;
+            transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 1.2s ease-out, box-shadow 0.3s ease, background-color 0.3s ease;
+            will-change: transform, opacity;
+        }
+
+        /* Specific animation directions */
+        .blog-post-card.from-bottom { transform: translateY(50px); }
+        .blog-post-card.from-left { transform: translateX(-50px); }
+        .blog-post-card.from-right { transform: translateX(50px); }
+
+        .blog-post-card.fade-in-visible {
+            opacity: 1;
+            transform: translate(0, 0); /* Move to original position */
+        }
+
+        .blog-post-card:hover {
+            background-color: #EBFEEA; /* Lighter, slightly greener tint on hover */
+            transform: translateY(-8px); /* Lift on hover */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Stronger shadow on hover */
+        }
+
+        .blog-post-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .blog-post-card .category {
+            font-size: 0.9rem;
+            color: #34D399; /* EcoCart Green for category */
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .blog-post-card h3 {
+            font-size: 1.75rem;
+            color: #0F3F2D; /* Deep Forest Green */
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+            min-height: 4.5rem; /* Ensure consistent height for titles */
+        }
+
+        .blog-post-card p.summary {
+            font-size: 1rem;
+            color: #555; /* Keeping this as slightly darker gray for readability on light card */
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* Limit summary to 3 lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 4.5rem; /* Consistent height for summaries */
+        }
+
+        .blog-post-card .read-more {
+            display: inline-block;
+            margin-top: auto; /* Push to bottom */
+            background-color: #34D399;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .blog-post-card .read-more:hover {
+            background-color: #059669;
+        }
+
+        /* Footer - COPIED for this standalone page */
+        footer {
+            background-color: #0F3F2D;
+            color: #A7F3D0;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+            width: 100%;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .navbar .nav-links {
+                gap: 1rem;
+            }
+            .navbar .nav-links a {
+                font-size: 0.9rem;
+            }
+            .blog-container {
+                padding: 2rem;
+                margin-top: 6rem;
+            }
+            .blog-heading {
+                font-size: 2.25rem;
+            }
+            .blog-intro {
+                font-size: 1rem;
+            }
+            .blog-post-grid {
+                grid-template-columns: 1fr; /* Single column on tablets/mobiles */
+                gap: 1.5rem;
+            }
+            .blog-post-card h3 {
+                min-height: auto;
+            }
+            .blog-post-card p.summary {
+                min-height: auto;
+            }
+        }
+        @media (max-width: 640px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.75rem 1rem;
+            }
+            .navbar .logo {
+                margin-bottom: 0.5rem;
+            }
+            .navbar .nav-links {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+                width: 100%;
+            }
+            .navbar .nav-links a {
+                padding: 0.25rem 0;
+                width: 100%;
+                text-align: left;
+            }
+            .blog-container {
+                padding: 1.5rem;
+                margin-top: 5.5rem;
+                margin-left: 0.75rem;
+                margin-right: 0.75rem;
+            }
+            .blog-heading {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+    <!-- Navbar - Copied here for now -->
+    <nav class="navbar">
+        <div class="logo">
+            <span class="icon">🌱</span> EcoCart
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Shop Eco</a>
+            <a href="{% url 'blog' %}">Blog</a> {# This link points to this page #}
+            <a href="{% url 'about_us' %}">About Us</a>
+            <a href="{% url 'contact' %}">Contact</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}">Profile</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'register' %}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="blog-container">
+        <h1 class="blog-heading"><span class="icon">📰</span> Our Eco-Blog: Insights & Inspiration</h1>
+        <p class="blog-intro">
+            Dive into our articles on sustainable living, eco-friendly tips, environmental news, and more.
+            Let's learn and grow together towards a greener future!
+        </p>
+
+        <div class="blog-post-grid">
+            {% for post in posts %}
+            <div class="blog-post-card {{ post.animation_class }}" data-delay="{{ forloop.counter0 }}">
+                {# IMPORTANT: Using {% static %} tag here now #}
+                <img src="{% static post.image_url %}" alt="{{ post.title }}" onerror="this.onerror=null; this.src='https://placehold.co/300x200/A7F3D0/0F3F2D?text=Image+Not+Found';" class="blog-post-img">
+                <div class="category">{{ post.category }}</div>
+                <h3>{{ post.title }}</h3>
+                <p class="summary">{{ post.summary }}</p>
+                <a href="#" class="read-more">Read More &rarr;</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <p class="closing-statement text-center mt-8">
+            Stay tuned for more updates and eco-friendly content! 💚
+        </p>
+    </div>
+
+    <!-- Firebase SDK Imports (for consistency, not directly used by this static page) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // IMPORTANT: These global variables are provided by the Canvas environment.
+        // DO NOT remove or modify these lines.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? initialAuthToken : null;
+
+        let app;
+        let auth;
+        let db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            async function authenticateFirebase() {
+                try {
+                    if (auth && initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else if (auth) {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    } else {
+                        console.error("Auth object not initialized.");
+                    }
+                } catch (error) {
+                    console.error("Firebase authentication failed:", error);
+                }
+            }
+            authenticateFirebase();
+
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+        }
+
+        // --- Scroll Reveal Animation Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const blogPostCards = document.querySelectorAll('.blog-post-card');
+
+            const observerOptions = {
+                root: null, // viewport as the root
+                rootMargin: '0px',
+                threshold: 0.1 // Trigger when 10% of the item is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Apply animation and a slight delay based on card index
+                        const delay = parseInt(entry.target.dataset.delay) * 100; // 100ms delay per card
+                        setTimeout(() => {
+                            entry.target.classList.add('fade-in-visible');
+                        }, delay);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Observe each blog post card
+            blogPostCards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -13,4 +13,5 @@ urlpatterns = [
     path('blog/', views.blog_view, name='blog'),
     path('about-us/', views.about_us_view, name='about_us'), 
     path('contact/', views.contact_view, name='contact'),
+    path('forgot_password/', views.forgot_password_view, name='forgot_password'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

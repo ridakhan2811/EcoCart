@@ -1,0 +1,479 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - EcoCart</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Outfit for Headings, Inter for Body -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons (e.g., phone, envelope) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDF8EB; /* Consistent warmer cream background */
+            color: #36454F; /* Charcoal Gray */
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Navbar styling - consistent with other pages */
+        .navbar {
+            background-color: #0F3F2D; /* Deep Forest Green for navbar */
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+        }
+        .navbar .logo {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #A7F3D0; /* Lighter green for logo */
+            display: flex;
+            align-items: center;
+            letter-spacing: -0.025em;
+        }
+        .navbar .logo span {
+            margin-right: 0.75rem;
+            font-size: 1.5em;
+        }
+        .navbar .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        .navbar .nav-links a {
+            color: #D1FAE5; /* Pale Mint Green for links */
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.3s ease-in-out, transform 0.2s ease-in-out;
+            white-space: nowrap;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .navbar .nav-links a:hover {
+            color: #34D399; /* EcoCart Green on hover */
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Main Contact Container */
+        .contact-container {
+            background-color: #FFFFFF; /* Pure White background */
+            padding: 3.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -3px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 85rem; /* Increased max-width for overall container */
+            margin-top: 7rem;
+            margin-bottom: 3rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .contact-container h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #34D399; /* EcoCart Green */
+            text-align: center;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+        }
+        .contact-container .intro-text {
+            font-size: 1.15rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #36454F;
+            max-width: 800px;
+        }
+
+        /* Section Styling (reusing pattern from About Us) */
+        .section-card {
+            background-color: #F8FDF9; /* Very light, almost white green tint */
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem; /* Space between cards */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Subtle card shadow */
+            border: 1px solid #E0F2E5; /* Pale Mint Green border */
+            width: 100%; /* Ensure cards take full width of container */
+            box-sizing: border-box;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease; /* Added background-color transition */
+        }
+        .section-card:hover {
+            background-color: #EBFEEA; /* Lighter, slightly greener tint on hover */
+            transform: translateY(-5px); /* Lift on hover */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow on hover */
+        }
+
+        .section-card h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #0F3F2D; /* Deep Forest Green */
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+        .section-card h2 span.icon {
+            color: #34D399; /* EcoCart Green for icons */
+            font-size: 1.2em;
+            line-height: 1;
+        }
+        .section-card p {
+            color: #36454F;
+            margin-bottom: 0.75rem;
+        }
+        .section-card p strong {
+            color: #0F3F2D;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+        .section-card a {
+            color: #34D399; /* EcoCart Green for links */
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .section-card a:hover {
+            color: #059669; /* Darker green on hover */
+            text-decoration: underline;
+        }
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Increased minmax for wider cards */
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .team-card {
+            background-color: #FFFFFF; /* White background for individual team cards */
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #E0F2E5;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        .team-card h3 {
+            font-size: 1.75rem;
+            color: #0F3F2D;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .team-card h3 .emoji {
+            font-size: 1.2em;
+        }
+        .team-card p.role {
+            font-size: 1rem;
+            color: #777;
+            margin-bottom: 1.5rem;
+            min-height: 24px; /* Ensure consistent height for role text to prevent layout shifts */
+        }
+        .team-card .contact-detail {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            color: #36454F;
+            flex-wrap: wrap; /* Allow content to wrap if necessary */
+        }
+        .team-card .contact-detail i {
+            color: #34D399; /* EcoCart Green for icons */
+            font-size: 1.1em;
+        }
+
+        /* Contact Form Styling */
+        .contact-form {
+            max-width: 600px; /* Limit form width */
+            margin: 0 auto;
+            text-align: left;
+            margin-top: 2rem;
+            padding: 2.5rem;
+            background-color: #F8FDF9; /* Light green tint for form */
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E0F2E5;
+        }
+        .contact-form label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #0F3F2D;
+        }
+        .contact-form input[type="text"],
+        .contact-form input[type="email"],
+        .contact-form textarea {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #A7F3D0; /* Lighter green border */
+            border-radius: 0.5rem;
+            background-color: #FFFFFF;
+            color: #36454F;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .contact-form input[type="text"]:focus,
+        .contact-form input[type="email"]:focus,
+        .contact-form textarea:focus {
+            outline: none;
+            border-color: #34D399; /* EcoCart Green on focus */
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2);
+        }
+        .contact-form textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .contact-form button[type="submit"] {
+            background-color: #34D399; /* EcoCart Green button */
+            color: white;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        .contact-form button[type="submit"]:hover {
+            background-color: #059669; /* Darker green on hover */
+            transform: translateY(-2px);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .contact-container {
+                max-width: 90%;
+                padding: 2.5rem;
+            }
+        }
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .navbar .nav-links {
+                gap: 1rem;
+            }
+            .navbar .nav-links a {
+                font-size: 0.9rem;
+            }
+            .contact-container {
+                padding: 2rem;
+                margin-top: 6rem;
+                margin-bottom: 2rem;
+            }
+            .contact-container h1 {
+                font-size: 2.25rem;
+            }
+            .contact-container .intro-text {
+                font-size: 1rem;
+            }
+            .team-grid {
+                grid-template-columns: 1fr; /* Stack team cards on smaller screens */
+            }
+            .team-card h3 {
+                font-size: 1.5rem;
+            }
+            .contact-form {
+                padding: 1.5rem;
+            }
+        }
+        @media (max-width: 640px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.75rem 1rem;
+            }
+            .navbar .logo {
+                margin-bottom: 0.5rem;
+            }
+            .navbar .nav-links {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+                width: 100%;
+            }
+            .navbar .nav-links a {
+                padding: 0.25rem 0;
+                width: 100%;
+                text-align: left;
+            }
+            .contact-container {
+                padding: 1.5rem;
+                margin-top: 5.5rem;
+                margin-left: 0.75rem;
+                margin-right: 0.75rem;
+            }
+            .contact-container h1 {
+                font-size: 1.75rem;
+            }
+            .contact-form button[type="submit"] {
+                padding: 0.8rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+    <!-- Navbar - Consistent across pages -->
+    <nav class="navbar">
+        <div class="logo">
+            <span class="icon">🌱</span> EcoCart
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Shop Eco</a>
+            <a href="{% url 'blog' %}">Blog</a>
+            <a href="{% url 'about_us' %}">About Us</a>
+            <a href="{% url 'contact' %}">Contact</a> {# This link will now point to this page! #}
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}">Profile</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'register' %}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="contact-container">
+        <h1>Get in Touch with EcoCart 💚</h1>
+        <p class="intro-text">
+            We'd love to hear from you! Whether you have a question, feedback, or just want to chat about sustainable living,
+            our team is here to help. Reach out to us through the form below or directly contact our EcoCartists.
+        </p>
+
+        <div class="section-card">
+            <h2><span class="icon">✨</span> Our EcoCartists</h2>
+            <p class="mb-4">Meet the passionate individuals dedicated to bringing you the best in eco-friendly products and support sustainable living.</p>
+            <div class="team-grid">
+                <div class="team-card">
+                    <h3>Rida Khan <span class="emoji">🌸</span></h3>
+                    <p class="role">Lead Eco-Innovator</p>
+                    <p class="contact-detail"><i class="fas fa-phone"></i> <strong>Phone:</strong> <a href="tel:+9189993233342">+91 89993233342</a></p>
+                    <p class="contact-detail"><i class="fas fa-envelope"></i> <strong>Email:</strong> <a href="mailto:ridakhan109156@gmail.com">ridakhan109156@gmail.com</a></p>
+                </div>
+                <div class="team-card">
+                    <h3>Rutuja Deshmukh <span class="emoji">🌍</span></h3>
+                    <p class="role">Sustainable Eco-Strategist</p> {# Changed Rutuja's role #}
+                    <p class="contact-detail"><i class="fas fa-phone"></i> <strong>Phone:</strong> <a href="tel:+919960310522">+91 9960310522</a></p>
+                    <p class="contact-detail"><i class="fas fa-envelope"></i> <strong>Email:</strong> <a href="mailto:rutujadeshmukh634@gmail.com">rutujadeshmukh634@gmail.com</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2><span class="icon">✉️</span> Send Us a Message</h2>
+            <p class="mb-6">Fill out the form below and we'll get back to you as soon as possible.</p>
+            <form class="contact-form">
+                <div class="mb-4">
+                    <label for="name">Your Name:</label>
+                    <input type="text" id="name" name="name" required placeholder="John Doe">
+                </div>
+                <div class="mb-4">
+                    <label for="email">Your Email:</label>
+                    <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                </div>
+                <div class="mb-4">
+                    <label for="message">Your Message:</label>
+                    <textarea id="message" name="message" required placeholder="Type your message here..."></textarea>
+                </div>
+                <button type="submit">Send Message</button>
+            </form>
+        </div>
+
+        <p class="closing-statement text-center mt-8">
+            Thank you for being part of the EcoCart journey!
+        </p>
+    </div>
+
+    <!-- Firebase SDK Imports (for consistency, not directly used by this static page's contact form) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // IMPORTANT: These global variables are provided by the Canvas environment.
+        // DO NOT remove or modify these lines.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? initialAuthToken : null;
+
+        let app;
+        let auth;
+        let db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            async function authenticateFirebase() {
+                try {
+                    if (auth && initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else if (auth) {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    } else {
+                        console.error("Auth object not initialized.");
+                    }
+                } catch (error) {
+                    console.error("Firebase authentication failed:", error);
+                }
+            }
+            authenticateFirebase();
+
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+        }
+
+        // --- Basic Form Submission Logic (Placeholder) ---
+        const contactForm = document.querySelector('.contact-form');
+        if (contactForm) {
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent actual form submission
+
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const message = document.getElementById('message').value;
+
+                // In a real Django application, you would send this data to a backend view.
+                // For now, let's just log it and show an alert.
+                alert(`Message Sent!\nName: ${name}\nEmail: ${email}\nMessage: ${message}\n\n(This is a placeholder, actual submission requires backend integration.)`);
+                console.log({ name, email, message });
+
+                // Optionally clear the form
+                contactForm.reset();
+            });
+        }
+    </script>
+</body>
+</html>
