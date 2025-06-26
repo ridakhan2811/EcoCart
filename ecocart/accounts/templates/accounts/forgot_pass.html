@@ -1,0 +1,345 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password - EcoCart</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the Inter font and general body aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f3f2d; /* Darker green background - similar to login page */
+            color: #e0e0e0; /* Light gray text for general content */
+        }
+        /* Navbar styling */
+        .navbar {
+            background-color: #0d3224; /* Even darker green for navbar */
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: fixed; /* Keep navbar fixed at the top */
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10; /* Ensure navbar is on top */
+        }
+        .navbar .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #34d399; /* EcoCart Green for logo */
+            display: flex;
+            align-items: center;
+        }
+        .navbar .logo span {
+            /* Styling for the emoji */
+            margin-right: 0.5rem;
+            line-height: 1; /* Align emoji properly with text */
+        }
+        .navbar .nav-links {
+            display: flex; /* Make nav links display in a row */
+            align-items: center;
+            gap: 1.5rem; /* Space between nav items */
+        }
+        .navbar .nav-links a {
+            color: #a7f3d0; /* Lighter green for links */
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+            white-space: nowrap; /* Prevent links from wrapping */
+        }
+        .navbar .nav-links a:hover {
+            color: #34d399; /* EcoCart Green on hover */
+        }
+
+        /* Specific styling for the card-like form container */
+        .form-container {
+            background-color: #1a4a37; /* Dark green for form background, slightly lighter than body */
+            padding: 2.5rem; /* Increased padding */
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1); /* Stronger shadow */
+            width: 100%;
+            max-width: 32rem; /* INCREASED max-width for a larger box */
+            margin-top: 6rem; /* Space for fixed navbar */
+            box-sizing: border-box; /* Ensures padding is included in width */
+        }
+        /* Styling for headings inside the form */
+        .form-container h2 {
+            color: #34d399; /* EcoCart Green for headings */
+            margin-bottom: 0.75rem; /* Adjusted margin */
+            cursor: pointer; /* Indicate interactivity */
+            transition: color 0.3s ease-in-out, transform 0.3s ease-in-out; /* Smooth transition for animation */
+        }
+        .form-container h2:hover {
+            color: #6ee7b7; /* Lighter green on hover */
+            transform: scale(1.02); /* Slightly zoom in on hover */
+        }
+
+        .form-container p {
+            color: #c0c0c0; /* Lighter gray for descriptive text */
+        }
+        /* Styling for the input labels */
+        .form-container label {
+            color: #a7f3d0; /* Lighter green for labels */
+        }
+        /* Styling for the input fields */
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #275d49; /* Darker background for input fields */
+            border: 1px solid #34d399; /* EcoCart Green border */
+            border-radius: 0.375rem; /* Slightly rounded corners for inputs */
+            outline: none; /* Remove default outline */
+            color: #ffffff; /* White text inside input */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .input-field::placeholder {
+            color: #888; /* Lighter placeholder text */
+        }
+        .input-field:focus {
+            border-color: #6ee7b7; /* Lighter green border on focus */
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.5); /* Green focus ring */
+            background-color: #2e6b54; /* Slightly lighter on focus */
+        }
+        /* Styling for the primary button */
+        .primary-button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #10B981; /* EcoCart Green */
+            color: white;
+            font-weight: 600; /* Semi-bold */
+            border-radius: 0.5rem; /* Rounded corners */
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Button shadow */
+        }
+        .primary-button:hover:not(:disabled) {
+            background-color: #059669; /* Darker green on hover */
+            transform: translateY(-1px); /* Slight lift effect */
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+        }
+        .primary-button:disabled {
+            background-color: #275d49; /* Darker green when disabled */
+            color: #888;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        /* Styling for the link button/text */
+        .link-button {
+            display: block;
+            text-align: center;
+            color: #a7f3d0; /* Lighter green for links */
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+        }
+        .link-button:hover {
+            color: #34d399; /* EcoCart Green on hover */
+            text-decoration: underline;
+        }
+        /* Message area for success/error */
+        .message-area {
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.875rem; /* Smaller font size */
+        }
+        .message-success {
+            background-color: #d1fae5; /* Light green background */
+            color: #065f46; /* Dark green text */
+            border: 1px solid #34d399;
+        }
+        .message-error {
+            background-color: #fee2e2; /* Light red background */
+            color: #991b1b; /* Dark red text */
+            border: 1px solid #ef4444;
+        }
+        /* Ensure responsive padding/margins on small screens */
+        @media (max-width: 640px) {
+            .navbar {
+                padding: 1rem;
+                flex-direction: column; /* Stack navbar items on very small screens */
+                gap: 0.5rem;
+            }
+            .navbar .nav-links {
+                flex-direction: column; /* Stack nav links on very small screens */
+                gap: 0.5rem;
+                margin-top: 0.5rem;
+            }
+            .navbar .nav-links a {
+                margin: 0; /* Reset margin for stacked links */
+                font-size: 0.9rem;
+            }
+            .form-container {
+                padding: 1.5rem;
+                margin: 5rem 1rem 1rem 1rem; /* Adjust margin for small screens */
+                max-width: 95%; /* Adjust max width for mobile */
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center bg-dark-green p-4">
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <span class="inline-block mr-2">🌱</span> EcoCart
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'home' %}" id="shopEcoLink">Shop Eco</a>
+            <a href="{% url 'login' %}" id="loginLink">Login</a> {# Corrected: Link to Django's login URL #}
+            <a href="{% url 'register' %}" id="joinEcoCartLink">Join EcoCart</a>
+        </div>
+    </nav>
+
+    <div class="form-container">
+        <h2 class="text-3xl font-extrabold text-center mb-4">Forgot Password?</h2>
+        <p class="text-center mb-6">
+            Enter your email address below to receive a password reset link.
+        </p>
+
+        <form id="forgotPasswordForm" class="space-y-6">
+            <div>
+                <label for="email" class="block text-sm font-medium mb-1">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    class="input-field"
+                    placeholder="you@example.com"
+                >
+            </div>
+
+            <button
+                type="submit"
+                id="resetPasswordButton"
+                class="primary-button"
+            >
+                Send Reset Link
+            </button>
+
+            <div id="messageArea" class="message-area hidden"></div>
+        </form>
+
+        <div class="mt-6 text-center">
+            {# Corrected: Link to Django's login URL #}
+            <a href="{% url 'login' %}" id="backToLoginLink" class="link-button">Back to Login</a>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // IMPORTANT: These global variables are provided by the Canvas environment.
+        // DO NOT remove or modify these lines.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app;
+        let auth;
+        let db;
+
+        // Initialize Firebase
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            async function authenticateFirebase() {
+                try {
+                    if (auth && initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else if (auth) {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    } else {
+                        console.error("Auth object not initialized.");
+                    }
+                } catch (error) {
+                    console.error("Firebase authentication failed:", error);
+                }
+            }
+            authenticateFirebase();
+
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+            displayMessage("Failed to initialize Firebase. Please try again later.", "error");
+        }
+
+
+        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+        const emailInput = document.getElementById('email');
+        const resetPasswordButton = document.getElementById('resetPasswordButton');
+        const messageArea = document.getElementById('messageArea');
+
+        {# Django template comment for clarity in the file itself, not Javascript #}
+        {# Removed specific JavaScript event listeners for navigation links as Django's {% url %} handles them directly. #}
+
+        forgotPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = emailInput.value;
+            displayMessage("", "");
+            resetPasswordButton.disabled = true;
+            resetPasswordButton.textContent = 'Sending...';
+
+            try {
+                if (!auth) {
+                    throw new Error("Firebase Auth is not initialized.");
+                }
+                await sendPasswordResetEmail(auth, email);
+                displayMessage(`A password reset link has been sent to ${email}. Please check your inbox.`, "success");
+            } catch (error) {
+                console.error("Error sending password reset email:", error);
+                let errorMessage = "Failed to send password reset email. Please try again.";
+                switch (error.code) {
+                    case 'auth/invalid-email':
+                        errorMessage = "The email address is not valid.";
+                        break;
+                    case 'auth/user-not-found':
+                        errorMessage = "No user found with that email address.";
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = "Network error. Please check your internet connection.";
+                        break;
+                    default:
+                        errorMessage = `Error: ${error.message}`;
+                        break;
+                }
+                displayMessage(errorMessage, "error");
+            } finally {
+                resetPasswordButton.disabled = false;
+                resetPasswordButton.textContent = 'Send Reset Link';
+            }
+        });
+
+        /**
+         * Displays a message in the message area.
+         * @param {string} message - The message to display.
+         * @param {string} type - The type of message ('success' or 'error').
+         */
+        function displayMessage(message, type) {
+            messageArea.textContent = message;
+            messageArea.classList.remove('hidden', 'message-success', 'message-error');
+            if (message) {
+                messageArea.classList.add(type === 'success' ? 'message-success' : 'message-error');
+            } else {
+                messageArea.classList.add('hidden');
+            }
+        } {# Closing brace for displayMessage function was missing/misplaced #}
+
+    </script>
+</body>
+</html>

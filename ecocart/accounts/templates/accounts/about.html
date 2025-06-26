@@ -1,0 +1,407 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - EcoCart</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Outfit for Headings, Inter for Body -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif; /* Default body font */
+            background-color: #FDF8EB; /* Warmer, more yellowish cream background */
+            color: #36454F; /* Charcoal Gray for default text */
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif; /* Headings font */
+        }
+
+        /* Navbar styling (Deep Green on Creamy background) */
+        .navbar {
+            background-color: #0F3F2D; /* Deep Forest Green for navbar */
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Stronger shadow */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+        }
+        .navbar .logo {
+            font-size: 1.75rem; /* Slightly larger logo */
+            font-weight: 700; /* Bolder */
+            color: #A7F3D0; /* Lighter green for logo on deep green */
+            display: flex;
+            align-items: center;
+            letter-spacing: -0.025em; /* Tighten letter spacing */
+        }
+        .navbar .logo span {
+            margin-right: 0.75rem; /* More space for emoji */
+            font-size: 1.5em; /* Larger emoji */
+        }
+        .navbar .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem; /* Increased space between links */
+        }
+        .navbar .nav-links a {
+            color: #D1FAE5; /* Pale Mint Green for links */
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.3s ease-in-out, transform 0.2s ease-in-out;
+            white-space: nowrap;
+            padding: 0.25rem 0.5rem; /* Add some padding for hover effect */
+            border-radius: 0.25rem;
+        }
+        .navbar .nav-links a:hover {
+            color: #34D399; /* EcoCart Green on hover */
+            background-color: rgba(255, 255, 255, 0.1); /* Subtle background on hover */
+            transform: translateY(-2px); /* Slight lift */
+        }
+
+        /* Main content container (White on Creamy background) */
+        .about-container {
+            background-color: #FFFFFF; /* Pure White background */
+            padding: 3.5rem; /* More generous padding */
+            border-radius: 1rem; /* More rounded corners */
+            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -3px rgba(0, 0, 0, 0.08); /* More pronounced shadow */
+            width: 100%;
+            max-width: 65rem; /* Slightly wider */
+            margin-top: 7rem; /* Space for fixed navbar */
+            margin-bottom: 3rem; /* More margin at bottom */
+            box-sizing: border-box;
+        }
+        .about-container h1 {
+            font-size: 3rem; /* Larger main heading */
+            font-weight: 700;
+            color: #34D399; /* EcoCart Green for main heading */
+            text-align: center;
+            margin-bottom: 2.5rem;
+            letter-spacing: -0.03em;
+        }
+        .about-container .intro-paragraph {
+            font-size: 1.15rem; /* Larger intro text */
+            text-align: center;
+            margin-bottom: 2.5rem;
+            color: #36454F;
+        }
+
+        /* Section cards */
+        .section-card {
+            background-color: #F8FDF9; /* Very light, almost white green tint */
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem; /* Space between cards */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Subtle card shadow */
+            border: 1px solid #E0F2E5; /* Pale Mint Green border */
+            /* Adjusted transition duration for a slower effect */
+            transition: transform 1.2s ease-out, opacity 1.2s ease-out, background-color 0.3s ease-in-out, box-shadow 0.3s ease;
+
+            /* Initial hidden state for scroll animation */
+            opacity: 0;
+            transform: translateY(40px); /* Increased initial translateY for a more noticeable slide */
+            will-change: transform, opacity; /* Optimize for animation */
+        }
+        .section-card.fade-in-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Hover effect for section cards */
+        .section-card:hover {
+            background-color: #EBFEEA; /* Lighter, slightly greener tint on hover */
+            transform: translateY(-5px); /* Lift on hover */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow on hover */
+        }
+
+
+        .section-card h2 {
+            font-size: 2rem; /* Section headings */
+            font-weight: 600;
+            color: #0F3F2D; /* Deep Forest Green for subheadings */
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+        .section-card h2 span.icon {
+            color: #34D399; /* EcoCart Green for icons */
+            font-size: 1.2em;
+            line-height: 1;
+        }
+        .section-card p {
+            color: #36454F; /* Charcoal Gray for section text */
+            margin-bottom: 1rem;
+        }
+        .section-card ul {
+            list-style: none; /* Remove default bullet */
+            padding: 0;
+            margin-top: 1rem;
+        }
+        .section-card ul li {
+            position: relative;
+            padding-left: 1.75rem; /* Space for custom bullet */
+            margin-bottom: 0.75rem;
+            color: #36454F;
+        }
+        .section-card ul li::before {
+            content: '🌿'; /* Custom leaf bullet */
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #34D399; /* EcoCart Green bullet */
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        .section-card strong {
+            color: #0F3F2D; /* Deep Green for strong text within sections */
+            font-weight: 600;
+        }
+
+        .closing-statement {
+            font-size: 1.15rem;
+            text-align: center;
+            margin-top: 3rem;
+            color: #0F3F2D; /* Deep Green for strong closing */
+            font-weight: 500;
+        }
+        .closing-statement span {
+            font-size: 1.5em; /* Larger emoji */
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .navbar .nav-links {
+                gap: 1rem;
+            }
+            .navbar .nav-links a {
+                font-size: 0.9rem;
+            }
+            .about-container {
+                padding: 2.5rem;
+                margin-top: 6rem;
+                margin-bottom: 2rem;
+                max-width: 95%;
+            }
+            .about-container h1 {
+                font-size: 2.25rem;
+                margin-bottom: 2rem;
+            }
+            .about-container .intro-paragraph {
+                font-size: 1rem;
+            }
+            .section-card {
+                padding: 1.75rem;
+                margin-bottom: 1.5rem;
+            }
+            .section-card h2 {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+        }
+        @media (max-width: 640px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.75rem 1rem;
+            }
+            .navbar .logo {
+                margin-bottom: 0.5rem;
+            }
+            .navbar .nav-links {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+                width: 100%;
+            }
+            .navbar .nav-links a {
+                padding: 0.25rem 0;
+                width: 100%;
+                text-align: left;
+            }
+            .about-container {
+                padding: 1.5rem;
+                margin-top: 5.5rem;
+                margin-left: 0.75rem;
+                margin-right: 0.75rem;
+            }
+            .about-container h1 {
+                font-size: 1.75rem;
+                margin-bottom: 1.5rem;
+            }
+            .section-card h2 {
+                font-size: 1.5rem;
+            }
+            .section-card ul li {
+                padding-left: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <span class="icon">🌱</span> EcoCart
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'home' %}" id="shopEcoLink">Shop Eco</a>
+            <a href="{% url 'login' %}" id="loginLink">Login</a>
+            <a href="{% url 'register' %}" id="joinEcoCartLink">Join EcoCart</a>
+            <a href="{% url 'about_us' %}" id="aboutUsLink">About Us</a> {# Added About Us link #}
+        </div>
+    </nav>
+
+    <div class="about-container">
+        <h1>About EcoCart: Your Partner for Sustainable Living</h1>
+
+        <p class="intro-paragraph">
+            Welcome to EcoCart, where conscious consumerism meets convenience. We believe that
+            making eco-friendly choices shouldn't be difficult, and that every purchase has the power to
+            create a positive impact on our planet. Our mission is to empower individuals to live more
+            sustainably by providing easy access to ethically sourced, environmentally friendly products.
+        </p>
+
+        <div class="section-card">
+            <h2><span class="icon">✨</span> Our Vision</h2>
+            <p>
+                To foster a global community where sustainable living is not just an option, but a way of life.
+                We envision a future where every household has the tools and products necessary to reduce their
+                environmental footprint, contributing to a healthier planet for generations to come.
+            </p>
+        </div>
+
+        <div class="section-card">
+            <h2><span class="icon">🌿</span> Our Commitment to Sustainability</h2>
+            <p>
+                At EcoCart, sustainability isn't just a buzzword; it's at the core of everything we do. We
+                meticulously vet our products and partners based on stringent criteria:
+            </p>
+            <ul>
+                <li><strong>Ethical Sourcing:</strong> Ensuring fair labor practices and responsible supply chains.</li>
+                <li><strong>Reduced Waste:</strong> Prioritizing products with minimal packaging, reusable, or compostable options.</li>
+                <li><strong>Energy Efficiency:</strong> Supporting brands that utilize renewable energy in their production.</li>
+                <li><strong>Non-Toxic Ingredients:</strong> Offering products free from harmful chemicals and artificial additives.</li>
+                <li><strong>Carbon Footprint:</strong> Striving to minimize emissions throughout the product lifecycle.</li>
+            </ul>
+        </div>
+
+        <div class="section-card">
+            <h2><span class="icon">🛍️</span> Our Product Categories</h2>
+            <p>
+                From sustainable home essentials and organic beauty products to ethical fashion and zero-waste
+                alternatives, EcoCart offers a diverse range of categories to help you transition to a greener
+                lifestyle seamlessly. We continually expand our inventory to bring you the best in eco-innovation.
+            </p>
+        </div>
+
+        <div class="section-card">
+            <h2><span class="icon">🤝</span> Join the EcoCart Community</h2>
+            <p>
+                More than just a marketplace, EcoCart is a movement. We invite you to join our growing community of
+                eco-conscious individuals. Explore our blog for sustainable living tips, connect with like-minded
+                people, and discover new ways to make a difference, one conscious choice at a time.
+            </p>
+        </div>
+
+        <div class="section-card">
+            <h2><span class="icon">📞</span> Contact Us</h2>
+            <p>Have questions, feedback, or just want to say hello? We'd love to hear from you!</p>
+            <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+            <p><strong>Email:</strong> support@ecocart.com</p>
+            <p class="mt-4">
+                You can also visit our dedicated <a href="{% url 'contact' %}" class="text-green-600 hover:underline font-semibold">Contact Page</a> for more options.
+            </p>
+        </div>
+
+        <p class="closing-statement">
+            Thank you for choosing EcoCart. Together, we can cultivate a greener, healthier future. <span class="icon">💚</span>
+        </p>
+    </div>
+
+    <!-- Firebase SDK Imports (included for consistency, not directly used by this static page) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // IMPORTANT: These global variables are provided by the Canvas environment.
+        // DO NOT remove or modify these lines.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? initialAuthToken : null;
+
+        let app;
+        let auth;
+        let db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            async function authenticateFirebase() {
+                try {
+                    if (auth && initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else if (auth) {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    } else {
+                        console.error("Auth object not initialized.");
+                    }
+                } catch (error) {
+                    console.error("Firebase authentication failed:", error);
+                }
+            }
+            authenticateFirebase();
+
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+        }
+
+        // --- Scroll Reveal Animation Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const sectionCards = document.querySelectorAll('.section-card');
+
+            const observerOptions = {
+                root: null, // viewport as the root
+                rootMargin: '0px',
+                threshold: 0.1 // Trigger when 10% of the item is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // If element is in view, add the visible class
+                        entry.target.classList.add('fade-in-visible');
+                        // Stop observing once it's visible (optional, but good for performance)
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Observe each section card
+            sectionCards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+
+    </script>
+</body>
+</html>
