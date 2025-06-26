@@ -2,44 +2,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Register | EcoCart</title>
-  <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
-  <script defer src="{% static 'accounts/js/auth.js' %}"></script>
+    <meta charset="UTF-8" />
+    <title>EcoCart | Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <nav class="navbar">
-    <div class="brand">EcoCart</div>
-    <div class="nav-links">
-      <a href="{% url 'home' %}">Home</a>
-      <a href="{% url 'login' %}">Login</a>
+
+    <nav class="navbar">
+        <div class="brand">EcoCart 🌿</div>
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Shop Eco</a>
+            <a href="{% url 'blog' %}">Blog</a> 
+            <a href="{% url 'about_us' %}">About Us</a> 
+            <a href="{% url 'contact' %}">Contact</a> 
+            <a href="{% url 'login' %}">Log In</a>
+        </div>
+    </nav>
+
+    <div class="outer-box">
+        <div class="form-box">
+            <h1>Join EcoCart Today!</h1>
+            <p class="tagline">Create your account and start your sustainable shopping 🌱</p>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <label for="username">Choose a Username</label>
+                <input type="text" name="username" placeholder="Your EcoCart username" required />
+
+                <label for="email">Your Email Address</label>
+                <input type="email" name="email" placeholder="email@example.com" required />
+
+                <label for="password">Create Password</label>
+                <div class="password-wrap">
+                    <input type="password" name="password" id="password" placeholder="Your secret password" required />
+                    <i class="fas fa-eye" id="togglePassword1"></i>
+                </div>
+
+                <label for="confirm_password">Confirm Password</label>
+                <div class="password-wrap">
+                    <input type="password" name="confirm_password" id="confirm_password" placeholder="Repeat your password" required />
+                    <i class="fas fa-eye" id="togglePassword2"></i>
+                </div>
+
+                <button type="submit" class="login-btn">Register Account</button>
+                <a href="{% url 'login' %}" class="forgot-btn">Already have an account? Log In</a>
+            </form>
+
+        </div>
     </div>
-  </nav>
 
-  <div class="container">
-    <form method="POST" enctype="multipart/form-data" class="form animate-slide">
-      {% csrf_token %}
-      <h2>Create Account</h2>
+    <script>
+        const toggle1 = document.getElementById('togglePassword1');
+        const passwordField1 = document.getElementById('password');
 
-      {% if messages %}
-        {% for message in messages %}
-          <p class="msg">{{ message }}</p>
-        {% endfor %}
-      {% endif %}
+        if (toggle1 && passwordField1) {
+            toggle1.addEventListener('click', function () {
+                const type = passwordField1.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField1.setAttribute('type', type);
+                this.classList.toggle('fa-eye-slash');
+            });
+        }
 
-      {{ form.non_field_errors }}
+        const toggle2 = document.getElementById('togglePassword2');
+        const passwordField2 = document.getElementById('confirm_password');
 
-      <div class="input-group">{{ form.username.label_tag }}{{ form.username }}</div>
-      <div class="input-group">{{ form.email.label_tag }}{{ form.email }}</div>
-      <div class="input-group">{{ form.phone.label_tag }}{{ form.phone }}</div>
-      <div class="input-group">{{ form.gender.label_tag }}{{ form.gender }}</div>
-      <div class="input-group">{{ form.profile_picture.label_tag }}{{ form.profile_picture }}</div>
-      <div class="input-group">{{ form.password1.label_tag }}{{ form.password1 }}</div>
-      <div class="input-group">{{ form.password2.label_tag }}{{ form.password2 }}</div>
+        if (toggle2 && passwordField2) {
+            toggle2.addEventListener('click', function () {
+                const type = passwordField2.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField2.setAttribute('type', type);
+                this.classList.toggle('fa-eye-slash');
+            });
+        }
+    </script>
 
-      <button type="submit" class="btn">Register</button>
-      <p class="switch">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
-    </form>
-  </div>
 </body>
 </html>

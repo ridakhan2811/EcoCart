@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>EcoCart | Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="brand">EcoCart 🌿</div>
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Shop Eco</a>
+            <a href="{% url 'register' %}">Join EcoCart</a>
+        </div>
+    </nav>
+
+    <div class="outer-box">
+        <div class="form-box">
+            <h1>Welcome Back to EcoCart</h1>
+            <p class="tagline">Log in to continue your sustainable journey 🌱</p>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <label for="username">Your EcoCart Username</label>
+                <input type="text" name="username" placeholder="Enter your EcoCart username" required />
+
+                <label for="password">Your Password</label>
+                <div class="password-wrap">
+                    <input type="password" name="password" id="password" placeholder="Enter your secret password" required />
+                    <i class="fas fa-eye" id="togglePassword"></i>
+                </div>
+
+                <button type="submit" class="login-btn">Secure Login</button>
+                <a href="#" class="forgot-btn">Forgot Password?</a>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        const toggle = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
+
+        if (toggle && password) { // Added a check to ensure elements exist before adding listener
+            toggle.addEventListener('click', function () {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                this.classList.toggle('fa-eye-slash'); // Toggles the eye icon
+            });
+        }
+    </script>
+
+</body>
+</html>
