@@ -1,104 +1,266 @@
-/* login.css */
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f2f6f3;
-  color: #333;
+/* === RESET & GLOBAL === */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #0c2e25; /* Dark background */
+    font-family: 'Montserrat', 'Open Sans', sans-serif; /* Modern font choices */
+    color: #e8f5e9; /* Light text color for contrast */
 }
 
+/* === NAVBAR === */
 .navbar {
-  background-color: #4CAF50;
-  color: white;
-  padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    background-color: #00332B; /* Even darker green for navbar */
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3); /* Subtle shadow for depth */
 }
 
-.navbar .brand {
-  font-size: 24px;
-  font-weight: bold;
+.brand {
+    font-size: 2.5rem; /* Larger brand name */
+    font-weight: bold;
+    color: #b7e4c7; /* EcoCart green accent */
+    letter-spacing: 1px; /* A little spacing for style */
 }
 
-.navbar .nav-links a {
-  color: white;
-  margin-left: 20px;
-  text-decoration: none;
-  font-weight: 500;
+.nav-links a {
+    font-size: 1.2rem; /* Slightly larger navigation links */
+    color: #e8f5e9; /* Light green-white */
+    text-decoration: none;
+    margin-left: 35px; /* More spacing between links */
+    transition: color 0.3s ease; /* Smooth transition on hover */
 }
 
-.container {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 30px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+.nav-links a:hover {
+    color: #81c784; /* Soft green on hover */
+    text-decoration: underline;
 }
 
-h2 {
-  text-align: center;
-  color: #2e7d32;
-  margin-bottom: 25px;
+/* === CENTER DARK GREEN BOX === */
+.outer-box {
+    height: calc(100vh - 80px); /* Ensure it takes full viewport height minus navbar */
+    display: flex; /* Enable flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    background: #0e3f32; /* Main section background */
+    padding: 20px; /* Add some padding for smaller screens */
+    box-sizing: border-box; /* Ensures padding is included in height calculation */
 }
 
-.input-group {
-  margin-bottom: 20px;
+.form-box {
+    background-color: #003320; /* Darkest green for the form box */
+    border-radius: 20px;
+    padding: 60px 50px;
+    width: 90%;
+    max-width: 550px; /* Slightly wider form box */
+    box-shadow: 0 15px 40px rgba(0,0,0,0.6); /* More prominent shadow */
+    color: #f5f5dc; /* Beige color for text inside form */
+    text-align: center;
+    box-sizing: border-box; /* Include padding in width calculation */
+    min-width: 300px; /* Ensure a minimum width for legibility */
 }
 
-.input-group label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 600;
+/* === HEADINGS === */
+.form-box h1 {
+    font-family: 'Montserrat', sans-serif; /* Use Montserrat for headings */
+    font-size: 2.8rem; /* Significantly larger heading */
+    margin-bottom: 15px;
+    font-weight: 700; /* Bolder heading */
+    color: #b7e4c7; /* EcoCart green accent for heading */
+    line-height: 1.2;
 }
 
-.input-group input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  transition: border-color 0.2s;
+.tagline {
+    font-family: 'Open Sans', sans-serif; /* Open Sans for tagline */
+    font-size: 1.3rem; /* Larger tagline */
+    margin-bottom: 40px; /* More space below tagline */
+    color: #e2dfd0;
 }
 
-.input-group input:focus {
-  border-color: #4CAF50;
-  outline: none;
+/* === FORM === */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* Increased gap between form elements */
 }
 
-.btn {
-  width: 100%;
-  padding: 12px;
-  background-color: #4CAF50;
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+label {
+    text-align: left;
+    font-size: 1.2rem; /* Larger label font size */
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #f5f5dc;
 }
 
-.btn:hover {
-  background-color: #388E3C;
+/* === INPUT FIELDS === */
+input[type="text"],
+input[type="password"] {
+    padding: 18px; /* Increased padding for input fields */
+    border: none;
+    border-radius: 12px; /* Slightly larger border-radius */
+    background-color: #e8f5e9; /* Light green background for inputs */
+    font-size: 1.15rem; /* Larger font size in inputs */
+    box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.15); /* Improved inner shadow */
+    transition: all 0.3s ease; /* Smooth transition for focus and hover */
+    color: #333; /* Darker text color in inputs */
 }
 
-.switch {
-  text-align: center;
-  margin-top: 15px;
+input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px #81c784, inset 0 3px 6px rgba(0, 0, 0, 0.15); /* Green outline on focus */
 }
 
-.msg {
-  color: crimson;
-  background: #ffecec;
-  padding: 10px;
-  border: 1px solid #ffaaaa;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  text-align: center;
-  animation: fadeIn 0.6s ease-in-out;
+/* === PASSWORD EYE === */
+.password-wrap {
+    position: relative;
+    /* This margin-bottom was removed in previous iteration to let 'gap' handle spacing, keep it that way for consistency */
 }
 
-/* Optional animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+.password-wrap i {
+    position: absolute;
+    right: 20px; /* Adjusted position */
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666; /* Slightly darker icon color */
+    cursor: pointer;
+    font-size: 1.2rem; /* Larger icon */
+    transition: color 0.3s ease;
+}
+
+.password-wrap i:hover {
+    color: #000;
+}
+
+/* === LOGIN BUTTON === */
+.login-btn {
+    background-color: #81c784; /* Soft green */
+    color: #003320; /* Dark green text */
+    padding: 18px; /* Increased padding for button */
+    font-size: 1.3rem; /* Larger font size for button */
+    font-weight: bold;
+    border: none;
+    border-radius: 15px; /* More rounded button */
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+    margin-top: 20px; /* More space above button */
+    letter-spacing: 0.5px;
+}
+
+.login-btn:hover {
+    background-color: #66bb6a; /* Darker green on hover */
+    transform: translateY(-2px); /* Slight lift on hover */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2); /* Subtle shadow on hover */
+}
+
+/* === FORGOT BUTTON === */
+.forgot-btn {
+    display: block;
+    margin-top: 25px; /* More space above forgot password link */
+    font-size: 1.05rem;
+    color: #b2dfdb;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.forgot-btn:hover {
+    text-decoration: underline;
+    color: #80cbc4;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 15px 20px;
+    }
+
+    .brand {
+        font-size: 2rem;
+    }
+
+    .nav-links a {
+        font-size: 1rem;
+        margin-left: 20px;
+    }
+
+    .form-box {
+        padding: 40px 30px;
+        width: 95%; /* Adjust width for smaller screens */
+    }
+
+    .form-box h1 {
+        font-size: 2.2rem;
+    }
+
+    .tagline {
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+
+    label {
+        font-size: 1.1rem;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+        padding: 15px;
+        font-size: 1rem;
+    }
+
+    .password-wrap i {
+        right: 15px;
+        font-size: 1.1rem;
+    }
+
+    .login-btn {
+        padding: 15px;
+        font-size: 1.15rem;
+    }
+
+    .forgot-btn {
+        font-size: 0.95rem;
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+    }
+    .nav-links {
+        margin-top: 10px;
+        width: 100%;
+        text-align: center;
+    }
+    .nav-links a {
+        display: block;
+        margin: 5px 0;
+    }
+    .form-box {
+        padding: 30px 20px;
+    }
+    .form-box h1 {
+        font-size: 1.8rem;
+    }
+    .tagline {
+        font-size: 1rem;
+        margin-bottom: 25px;
+    }
+    label {
+        font-size: 1rem;
+    }
+    input[type="text"],
+    input[type="password"] {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+    .login-btn {
+        padding: 12px;
+        font-size: 1rem;
+    }
 }

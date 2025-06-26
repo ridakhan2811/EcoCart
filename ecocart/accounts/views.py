@@ -43,3 +43,12 @@ def profile_view(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+# --- ADD THESE NEW DUMMY VIEW FUNCTIONS ---
+def blog_view(request):
+    return render(request, 'placeholder.html', {'page_title': 'Our Eco Blog'})
+
+def about_us_view(request):
+    return render(request, 'placeholder.html', {'page_title': 'About EcoCart'})
+
+def contact_view(request):
+    return render(request, 'placeholder.html', {'page_title': 'Contact EcoCart'})
