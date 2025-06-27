@@ -1,6 +1,47 @@
+# products/views.py
 from django.shortcuts import render
-from .models import Product
+from django.db.models import F # Used for F() expressions if querying real data
 
-def product_list(request):
-    products = Product.objects.all()
-    return render(request, 'products/product_list.html', {'products': products})
+# Import Product model (if you uncomment real database interaction later)
+# from .models import Product
+
+def product_list_view(request):
+    """
+    Renders the product listing page.
+    For now, uses mock data to ensure the UI renders correctly without database setup.
+    """
+    # Mock Product Data - This is the data that will be displayed on your page.
+    # We will simulate the fields your product.html template expects.
+    products_data_mock = [
+        {'id': 1, 'name': 'Bamboo Toothbrush', 'price': 5.99, 'category': 'Oral Care', 'brand': 'EcoSmile', 'is_eco_friendly': True, 'eco_impact_statement': 'Made from sustainable bamboo, reduces plastic waste.', 'rating': 4.8, 'short_description': 'A sustainable alternative for your daily oral hygiene, made from Moso bamboo. Bristles are BPA-free.', 'stock': 150, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/bamboo_toothbrush.jpeg'},
+        {'id': 2, 'name': 'Reusable Shopping Bag - Jute', 'price': 12.50, 'category': 'Household', 'brand': 'GreenCarry', 'is_eco_friendly': True, 'eco_impact_statement': 'Durable, biodegradable jute fiber. Replaces hundreds of plastic bags, supporting a cleaner environment.', 'rating': 4.5, 'short_description': 'Strong and stylish jute bag for all your shopping needs. Foldable, reusable, and comes with a convenient pouch.', 'stock': 200, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/reusable_bag.jpeg'},
+        {'id': 3, 'name': 'Organic Cotton T-Shirt', 'price': 25.00, 'category': 'Apparel', 'brand': 'PureWear', 'is_eco_friendly': True, 'eco_impact_statement': '100% organic cotton, GOTS certified. No harmful pesticides used in cultivation, promoting biodiversity.', 'rating': 4.7, 'short_description': 'Soft and breathable unisex tee made from certified organic cotton. Classic fit, pre-shrunk for lasting comfort.', 'stock': 80, 'is_discounted': True, 'original_price': 30.00, 'discount_percentage': 16.7, 'image_url': '/static/products/images/organic_tshirt.jpeg'},
+        {'id': 4, 'name': 'Solid Shampoo Bar - Lavender', 'price': 9.99, 'category': 'Personal Care', 'brand': 'SolidSudz', 'is_eco_friendly': True, 'eco_impact_statement': 'Plastic-free alternative to bottled shampoo. Long-lasting and concentrated, minimizing packaging waste.', 'rating': 4.9, 'short_description': 'Nourish your hair with this natural lavender shampoo bar. Zero waste packaging, suitable for all hair types.', 'stock': 120, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/shampoo_bar.jpeg'},
+        {'id': 5, 'name': 'Stainless Steel Water Bottle', 'price': 18.00, 'category': 'Hydration', 'brand': 'AquaFlow', 'is_eco_friendly': True, 'eco_impact_statement': 'Reusable, durable stainless steel. Reduces single-use plastic bottle consumption significantly over time.', 'rating': 4.6, 'short_description': 'Keep your drinks cold for 24h or hot for 12h. Perfect for on-the-go, gym, or office use. Leak-proof design.', 'stock': 90, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/steel_bottle.jpeg'},
+        {'id': 6, 'name': 'Compostable Phone Case', 'price': 19.95, 'category': 'Accessories', 'brand': 'EcoGuard', 'is_eco_friendly': True, 'eco_impact_statement': '100% compostable and biodegradable. Returns to earth after use, leaving no harmful residue.', 'rating': 4.4, 'short_description': 'Protect your phone and the planet with this durable and earth-friendly case. Slim profile with full access to ports.', 'stock': 70, 'is_discounted': True, 'original_price': 24.95, 'discount_percentage': 20.0, 'image_url': '/static/products/images/phone_case.jpeg'},
+        {'id': 7, 'name': 'Beeswax Food Wraps (Set of 3)', 'price': 14.99, 'category': 'Kitchen', 'brand': 'WrapGreen', 'is_eco_friendly': True, 'eco_impact_statement': 'Natural, reusable alternative to plastic cling film. Lasts up to one year, reducing food waste and plastic pollution.', 'rating': 4.7, 'short_description': 'Store food naturally with these breathable beeswax wraps. Various sizes for different food items. Easy to clean.', 'stock': 110, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/beeswax_wraps.jpeg'},
+        {'id': 8, 'name': 'Biodegradable Laundry Pods (50 count)', 'price': 22.00, 'category': 'Home Cleaning', 'brand': 'CleanFuture', 'is_eco_friendly': True, 'eco_impact_statement': 'Plant-derived formula, dissolves completely, no microplastics entering waterways.', 'rating': 4.8, 'short_description': 'Powerful and eco-conscious laundry cleaning in convenient pre-measured pods. Works in all washing machines.', 'stock': 65, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/laundry_pods.jpeg'},
+        {'id': 9, 'name': 'Recycled Paper Notebook', 'price': 7.50, 'category': 'Stationery', 'brand': 'ReWrite', 'is_eco_friendly': True, 'eco_impact_statement': 'Made from 100% post-consumer recycled paper. Saves trees and energy, reducing environmental impact.', 'rating': 4.3, 'short_description': 'Sustainable notebook for your notes and ideas. Smooth recycled paper for an enjoyable writing experience.', 'stock': 180, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/recycled_notebook.jpeg'},
+        {'id': 10, 'name': 'Solar-Powered Phone Charger', 'price': 45.00, 'category': 'Electronics', 'brand': 'SunCharge', 'is_eco_friendly': True, 'eco_impact_statement': 'Harnesses solar energy, reducing reliance on grid electricity and promoting clean energy.', 'rating': 4.2, 'short_description': 'Portable solar charger for your devices. Ideal for outdoor adventures and emergency power.', 'stock': 40, 'is_discounted': True, 'original_price': 50.00, 'discount_percentage': 10.0, 'image_url': '/static/products/images/solar_charger.jpeg'},
+        {'id': 11, 'name': 'Upcycled Denim Tote Bag', 'price': 35.00, 'category': 'Apparel', 'brand': 'ReFashion', 'is_eco_friendly': True, 'eco_impact_statement': 'Handcrafted from discarded denim, giving materials a new life and reducing textile waste.', 'rating': 4.6, 'short_description': 'Unique and sturdy tote bag made from upcycled jeans. Each piece is unique and stylish.', 'stock': 30, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/denim_bag.jpeg'},
+        {'id': 12, 'name': 'Plant-Based Dish Soap', 'price': 8.75, 'category': 'Home Cleaning', 'brand': 'EcoClean', 'is_eco_friendly': True, 'eco_impact_statement': 'Biodegradable formula, free from harsh chemicals and phosphates, safe for aquatic life.', 'rating': 4.7, 'short_description': 'Gentle yet effective dish soap that\'s kind to your hands and the environment. Concentrated formula.', 'stock': 100, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/dish_soap.jpeg'},
+        {'id': 13, 'name': 'Wooden Blocks Set (50 pcs)', 'price': 30.00, 'category': 'Kids & Baby', 'brand': 'NaturalPlay', 'is_eco_friendly': True, 'eco_impact_statement': 'Made from responsibly sourced wood, non-toxic paints. Durable and timeless toy for developing minds.', 'rating': 4.9, 'short_description': 'Classic wooden building blocks for endless creative play. Safe for all ages, promotes imaginative learning.', 'stock': 75, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/wooden_blocks.jpeg'},
+        {'id': 14, 'name': 'Natural Rubber Yoga Mat', 'price': 55.00, 'category': 'Fitness', 'brand': 'ZenFlow', 'is_eco_friendly': True, 'eco_impact_statement': 'Made from sustainable natural rubber, free from PVC, TPE, and harmful chemicals. Eco-friendly production.', 'rating': 4.5, 'short_description': 'Provides excellent grip and cushioning for your yoga practice. Biodegradable and non-slip.', 'stock': 50, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/yoga_mat.jpeg'},
+        {'id': 15, 'name': 'Soy Wax Candle - Forest Pine', 'price': 16.00, 'category': 'Home Decor', 'brand': 'AuraLights', 'is_eco_friendly': True, 'eco_impact_statement': 'Made with natural soy wax and essential oils, cleaner burn than paraffin, less soot.', 'rating': 4.7, 'short_description': 'Infuse your home with the refreshing scent of pine. Eco-friendly and long-lasting for hours of ambiance.', 'stock': 60, 'is_discounted': False, 'original_price': None, 'discount_percentage': None, 'image_url': '/static/products/images/soy_candle.jpeg'}
+    ]
+
+    # For displaying unique categories in filters (derived from mock data)
+    all_categories = sorted(list(set(p['category'].lower().replace(' ', '_') for p in products_data_mock)))
+
+    context = {
+        'products': products_data_mock, # Pass all mock data for now
+        'pick_up_line': "Shop Sustainably. Live Responsibly. Save Our Planet.",
+        'categories': all_categories,
+        # Default filter/sort values (not actively used by UI without JS, but good to pass)
+        'current_category': 'all',
+        'current_search': '',
+        'eco_friendly_checked': False,
+        'current_sort_by': 'default',
+        'page_title': 'Our Eco-Friendly Products'
+    }
+    return render(request, 'products/product.html', context)
