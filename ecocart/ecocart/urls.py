@@ -8,7 +8,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('accounts.urls')),  # Includes all our accounts routes
     path('wishlist/', include('wishlist.urls')),
-    path('products/', include('products.urls')),
+    path('products/', include('products.urls', namespace='products')), # NEW: Products app URLs
 
 
 ]
