@@ -1,0 +1,91 @@
+/* static/products/css/product.css */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #E8F5E9;
+    margin: 0;
+    padding: 0;
+}
+
+.product-section {
+    padding: 40px;
+    text-align: center;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.product-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(102, 187, 106, 0.2);
+    padding: 20px;
+    transition: 0.3s ease;
+    position: relative;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(102, 187, 106, 0.3);
+}
+
+.product-card img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.eco-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #A5D6A7;
+    color: #2e7d32;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 5px;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 14px;
+    color: #4caf50;
+    font-weight: 600;
+}
+
+.strike {
+    text-decoration: line-through;
+    color: #888;
+    margin-left: 5px;
+}
+
+.rating {
+    font-size: 14px;
+    color: #ffb400;
+}
+
+.add-cart {
+    background-color: #66BB6A;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 10px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+.add-cart:hover {
+    background-color: #4caf50;
+}
+
+.wishlist {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 18px;
+    cursor: pointer;
+}
