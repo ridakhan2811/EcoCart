@@ -2,30 +2,473 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Your Profile | EcoCart</title>
-  <link rel="stylesheet" href="{% static 'accounts/css/profile.css' %}">
-  <script defer src="{% static 'accounts/js/profile.js' %}"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - EcoCart</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Outfit for Headings, Inter for Body -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDF8EB; /* Consistent warmer cream background */
+            color: #36454F; /* Charcoal Gray */
+            line-height: 1.6;
+            padding-top: 5rem; /* Space for fixed navbar */
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Navbar styling - consistent with other pages (copied from your previous product_list.html navbar) */
+        .navbar {
+            background-color: #0F3F2D; /* Deep Forest Green for navbar */
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+        }
+        .navbar .logo {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #A7F3D0; /* Lighter green for logo */
+            display: flex;
+            align-items: center;
+            letter-spacing: -0.025em;
+        }
+        .navbar .logo span {
+            margin-right: 0.75rem;
+            font-size: 1.5em;
+        }
+        .navbar .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        .navbar .nav-links a {
+            color: #D1FAE5; /* Pale Mint Green for links */
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.3s ease-in-out, transform 0.2s ease-in-out;
+            white-space: nowrap;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .navbar .nav-links a:hover {
+            color: #34D399; /* EcoCart Green on hover */
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Main Profile Container */
+        .profile-container {
+            background-color: #FFFFFF; /* Pure White background */
+            padding: 3.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -3px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 800px;
+            margin: 7rem auto 3rem auto; /* Adjusted margin to center and add space below */
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .profile-container h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #34D399; /* EcoCart Green */
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+        }
+
+        .profile-image-container {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 2rem auto;
+            border: 4px solid #34D399; /* EcoCart Green border */
+            box-shadow: 0 0 0 6px rgba(52, 211, 153, 0.3); /* Soft glow */
+        }
+        .profile-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-info {
+            margin-top: 2rem;
+            text-align: left;
+            border-top: 1px solid #E0F2E5;
+            padding-top: 2rem;
+        }
+
+        .profile-info p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: #36454F;
+        }
+
+        .profile-info p strong {
+            color: #0F3F2D;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #0F3F2D; /* Deep Green for labels */
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #E0F2E5;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: #36454F;
+            background-color: #F8FDF9;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #E0F2E5;
+            border-radius: 0.5rem;
+            background-color: #F8FDF9;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #34D399;
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2);
+        }
+
+        .profile-actions {
+            margin-top: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .profile-actions button,
+        .profile-actions .btn-link {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .profile-actions .btn-primary {
+            background-color: #34D399; /* EcoCart Green */
+            color: white;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .profile-actions .btn-primary:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        }
+
+        .profile-actions .btn-secondary {
+            background-color: #F0FDF4; /* Very light green */
+            color: #0F3F2D; /* Deep Forest Green */
+            border: 1px solid #34D399;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .profile-actions .btn-secondary:hover {
+            background-color: #EBFEEA;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .profile-actions .btn-link {
+            background: none;
+            border: none;
+            color: #0F3F2D;
+            font-weight: 500;
+            padding: 0.5rem;
+            text-decoration: underline;
+        }
+        .profile-actions .btn-link:hover {
+            color: #34D399;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Message area for Django messages */
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+        .messages li {
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        .messages .success {
+            background-color: #D1FAE5; /* light green */
+            color: #065F46; /* dark green */
+            border: 1px solid #34D399;
+        }
+        .messages .error {
+            background-color: #FEE2E2; /* light red */
+            color: #991B1B; /* dark red */
+            border: 1px solid #EF4444;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .navbar .nav-links {
+                gap: 1rem;
+            }
+            .navbar .nav-links a {
+                font-size: 0.9rem;
+            }
+            .profile-container {
+                padding: 2.5rem;
+                margin-top: 6rem;
+                margin-bottom: 2rem;
+                max-width: 95%;
+            }
+            .profile-container h1 {
+                font-size: 2.25rem;
+            }
+            .profile-info p {
+                font-size: 1rem;
+            }
+            .profile-actions {
+                gap: 0.75rem;
+            }
+        }
+        @media (max-width: 640px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.75rem 1rem;
+            }
+            .navbar .logo {
+                margin-bottom: 0.5rem;
+            }
+            .navbar .nav-links {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+                width: 100%;
+            }
+            .navbar .nav-links a {
+                padding: 0.25rem 0;
+                width: 100%;
+                text-align: left;
+            }
+            .profile-container {
+                padding: 1.5rem;
+                margin-top: 5.5rem;
+                margin-left: 0.75rem;
+                margin-right: 0.75rem;
+            }
+            .profile-container h1 {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
 </head>
-<body>
-  <nav class="navbar">
-    <div class="brand">EcoCart</div>
-    <div class="nav-links">
-      <a href="{% url 'home' %}">Home</a>
-      <a href="{% url 'logout' %}">Logout</a>
-    </div>
-  </nav>
+<body class="min-h-screen flex flex-col items-center">
 
-  <section class="profile-card animate-fade">
-    <img class="avatar" src="{% if user.customuser.profile_picture %}{{ user.customuser.profile_picture.url }}{% else %}{% static 'accounts/images/default-profile.png' %}{% endif %}" alt="Profile Pic">
-    <h2>{{ user.username }}</h2>
-    <p><strong>Email:</strong> {{ user.email }}</p>
-    <p><strong>Phone:</strong> {{ user.customuser.phone }}</p>
-    <p><strong>Gender:</strong> {{ user.customuser.gender }}</p>
+    <!-- Navbar - Consistent with your existing product_list.html navbar structure -->
+    <header id="main-navbar" class="navbar">
+        <div class="container mx-auto flex items-center justify-between flex-wrap">
+            <a href="{% url 'accounts:home' %}" class="logo">
+                <span>🌱</span> EcoCart
+            </a>
 
-    <div class="actions">
-      <button onclick="window.location.href='/'">Back to Home</button>
+            <div class="block lg:hidden">
+                <button id="nav-toggle" class="flex items-center px-3 py-2 border rounded text-green-200 border-green-400 hover:text-white hover:border-white focus:outline-none focus:ring-2 focus:ring-white">
+                    <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Menu</title><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>
+                </button>
+            </div>
+
+            <div id="nav-content" class="w-full block flex-grow lg:flex lg:items-center lg:w-auto hidden">
+                <div class="text-lg lg:flex-grow">
+                    <a href="{% url 'products:list' %}" class="nav-links-item">
+                        Shop Eco
+                    </a>
+                    <a href="{% url 'accounts:blog' %}" class="nav-links-item">
+                        Blog
+                    </a>
+                    <a href="{% url 'accounts:about_us' %}" class="nav-links-item">
+                        About Us
+                    </a>
+                    <a href="{% url 'accounts:contact' %}" class="nav-links-item">
+                        Contact
+                    </a>
+                </div>
+                <div>
+                    {% if user.is_authenticated %}
+                        {# Profile link for authenticated users #}
+                        <a href="{% url 'accounts:profile' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out mr-2">
+                            Profile
+                        </a>
+                        <a href="{% url 'accounts:logout' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out mr-2">
+                            Login
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                            Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- END OF HEADER/NAV BAR CONTENT -->
+
+    <div class="profile-container">
+        <h1>Welcome, {% if user.is_authenticated %}{{ user.username }}{% else %}Guest{% endif %}!</h1>
+        <p class="intro-paragraph">Manage your EcoCart account and preferences here.</p>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="profile-info">
+                <div class="profile-image-container">
+                    <img src="{% if user.is_authenticated and user.profile.image %}{{ user.profile.image.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}" alt="Profile Picture">
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ user_form.username.id_for_label }}">Username:</label>
+                    {{ user_form.username }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ user_form.email.id_for_label }}">Email:</label>
+                    {{ user_form.email }}
+                </div>
+                
+                {# Profile specific fields #}
+                <div class="form-group">
+                    <label for="{{ profile_form.image.id_for_label }}">Update Profile Image:</label>
+                    {{ profile_form.image }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ profile_form.bio.id_for_label }}">Bio:</label>
+                    {{ profile_form.bio }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ profile_form.phone_number.id_for_label }}">Phone Number:</label>
+                    {{ profile_form.phone_number }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ profile_form.address.id_for_label }}">Address:</label>
+                    {{ profile_form.address }}
+                </div>
+                
+                <button type="submit" class="btn-primary">Update Profile</button>
+            </div>
+        </form>
+
+        <div class="profile-actions">
+            {# Placeholder links for common profile actions (can be removed/modified if forms cover them) #}
+            <a href="#" class="btn-secondary">View Order History</a>
+            <a href="#" class="btn-secondary">Manage Addresses</a>
+            <a href="{% url 'accounts:logout' %}" class="btn-secondary">Log Out</a>
+        </div>
     </div>
-  </section>
+
+    <!-- Common Footer -->
+    <footer class="bg-emerald-800 text-green-100 py-8 text-center shadow-inner mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="text-sm">
+                &copy; {{ "now"|date:"Y" }} EcoCart <span class="ml-1">🌱</span> — Built with sustainability in mind.
+            </div>
+        </div>
+    </footer>
+    <!-- END OF FOOTER CONTENT -->
+
+    <!-- Firebase SDK Imports (included for consistency, not directly used by this static page) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // IMPORTANT: These global variables are provided by the Canvas environment.
+        // DO NOT remove or modify these lines.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? initialAuthToken : null;
+
+        let app;
+        let auth;
+        let db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            async function authenticateFirebase() {
+                try {
+                    if (auth && initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else if (auth) {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    } else {
+                        console.error("Auth object not initialized.");
+                    }
+                } catch (error) {
+                    console.error("Firebase authentication failed:", error);
+                }
+            }
+            authenticateFirebase();
+
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+        }
+    </script>
 </body>
 </html>

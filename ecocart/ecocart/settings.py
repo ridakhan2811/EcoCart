@@ -141,3 +141,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.CustomUser'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+# ecocart/ecocart/settings.py
+
+# ... other settings ...
+
+LOGIN_URL = '/accounts/login/' # Ensure this is correctly set if you haven't
+LOGOUT_REDIRECT_URL = '/accounts/login/' # Add or modify this line
+
+# ... rest of your settings ...

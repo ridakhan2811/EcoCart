@@ -16,16 +16,18 @@
             <h2 style="color: #fff;">EcoCart 🌿</h2>
         </div>
         <div class="nav-links">
-            <a href="{% url 'home' %}">Shop Eco</a> {# Changed from Shop to Shop Eco for consistency #}
-            <a href="{% url 'blog' %}">Blog</a>
-            <a href="{% url 'about_us' %}">About Us</a>
-            <a href="{% url 'contact' %}">Contact</a>
+            {# CORRECTED: Link to products list page, as 'Shop Eco' typically implies products #}
+            <a href="{% url 'products:list' %}">Shop Eco</a>
+            {# CORRECTED: Added 'accounts:' namespace to all accounts app URLs #}
+            <a href="{% url 'accounts:blog' %}">Blog</a>
+            <a href="{% url 'accounts:about_us' %}">About Us</a>
+            <a href="{% url 'accounts:contact' %}">Contact</a>
             {% if user.is_authenticated %}
-                <a href="{% url 'profile' %}">Profile</a>
-                <a href="{% url 'logout' %}">Logout</a>
+                <a href="{% url 'accounts:profile' %}">Profile</a>
+                <a href="{% url 'accounts:logout' %}">Logout</a>
             {% else %}
-                <a href="{% url 'login' %}">Login</a>
-                <a href="{% url 'register' %}">Register</a>
+                <a href="{% url 'accounts:login' %}">Login</a>
+                <a href="{% url 'accounts:register' %}">Register</a>
             {% endif %}
         </div>
     </nav>
@@ -33,7 +35,8 @@
     <section class="hero">
         <h1>Protect Nature with Every Purchase</h1>
         <p>EcoCart brings sustainable alternatives to your doorstep. Buy better. Live greener.</p>
-        <a href="#">Shop Now</a>
+        {# CORRECTED: Link to products list page when clicking 'Shop Now' #}
+        <a href="{% url 'products:list' %}">Shop Now</a>
     </section>
 
     <section class="why-ecocart">
@@ -54,7 +57,7 @@
                     <img src="{% static 'accounts/images/landing/gives_back.jpeg' %}" alt="Gives Back">
                     <h3>Gives Back</h3>
                     <p>Every purchase helps support grassroots environmental efforts worldwide.</p>
-                棟 </div>
+                </div>
             </div>
         </div>
     </section>
@@ -63,27 +66,31 @@
         <div class="category-card">
             <img src="{% static 'accounts/images/landing/reusable_essentials.jpeg' %}" alt="Reusable Essentials">
             <h3>Reusable Essentials</h3>
-            <a href="#">Shop</a>
+            {# CORRECTED: Link to products list with category filter #}
+            <a href="{% url 'products:list' %}?category=personal_care">Shop</a> {# Assuming 'Personal Care' category #}
         </div>
         <div class="category-card">
             <img src="{% static 'accounts/images/landing/eco_clothing.jpeg' %}" alt="Eco Clothing">
             <h3>Eco Clothing</h3>
-            <a href="#">Explore</a>
+            {# CORRECTED: Link to products list with category filter #}
+            <a href="{% url 'products:list' %}?category=fashion">Explore</a> {# Assuming 'Fashion' category #}
         </div>
         <div class="category-card">
             <img src="{% static 'accounts/images/landing/kids_&_baby.jpeg' %}" alt="Kids & Baby">
             <h3>Kids & Baby</h3>
-            <a href="#">Browse</a>
+            {# CORRECTED: Link to products list with category filter (using a placeholder slug) #}
+            <a href="{% url 'products:list' %}?category=kids_baby">Browse</a>
         </div>
         <div class="category-card">
             <img src="{% static 'accounts/images/landing/outdoor_gear.jpeg' %}" alt="Outdoor Gear">
             <h3>Outdoor Gear</h3>
-            <a href="#">Discover</a>
+            {# CORRECTED: Link to products list with category filter (using a placeholder slug) #}
+            <a href="{% url 'products:list' %}?category=outdoor_gear">Discover</a>
         </div>
     </section>
 
     <footer>
-        &copy; 2025 EcoCart � — Built with sustainability in mind.
+        &copy; 2025 EcoCart &mdash; Built with sustainability in mind.
     </footer>
 
 </body>

@@ -14,8 +14,10 @@
     <nav class="navbar">
         <div class="brand">EcoCart 🌿</div>
         <div class="nav-links">
-            <a href="{% url 'home' %}">Shop Eco</a>
-            <a href="{% url 'register' %}">Join EcoCart</a>
+            {# CORRECTED: Link to products list page for 'Shop Eco' #}
+            <a href="{% url 'products:list' %}">Shop Eco</a>
+            {# CORRECTED: Added 'accounts:' namespace to register link #}
+            <a href="{% url 'accounts:register' %}">Join EcoCart</a>
         </div>
     </nav>
 
@@ -37,7 +39,8 @@
                 </div>
 
                 <button type="submit" class="login-btn">Secure Login</button>
-                <a href="{% url 'forgot_password' %}" class="forgot-btn">Forgot Password?</a>
+                {# CORRECTED: Added 'accounts:' namespace to forgot_password link #}
+                <a href="{% url 'accounts:forgot_password' %}" class="forgot-btn">Forgot Password?</a>
             </form>
 
         </div>

@@ -155,7 +155,7 @@
             color: #36454F;
         }
         .section-card ul li::before {
-            content: '🌿'; /* Custom leaf bullet */
+            content: '�'; /* Custom leaf bullet */
             position: absolute;
             left: 0;
             top: 0;
@@ -260,10 +260,15 @@
             <span class="icon">🌱</span> EcoCart
         </div>
         <div class="nav-links">
-            <a href="{% url 'home' %}" id="shopEcoLink">Shop Eco</a>
-            <a href="{% url 'login' %}" id="loginLink">Login</a>
-            <a href="{% url 'register' %}" id="joinEcoCartLink">Join EcoCart</a>
-            <a href="{% url 'about_us' %}" id="aboutUsLink">About Us</a> {# Added About Us link #}
+            {# CORRECTED: Link to products list page for 'Shop Eco' #}
+            <a href="{% url 'products:list' %}" id="shopEcoLink">Shop Eco</a>
+            {# CORRECTED: Added 'accounts:' namespace to login, register, blog, contact, and about_us links #}
+            <a href="{% url 'accounts:login' %}" id="loginLink">Login</a>
+            <a href="{% url 'accounts:register' %}" id="joinEcoCartLink">Join EcoCart</a>
+            <a href="{% url 'accounts:blog' %}" id="blogLink">Blog</a>
+            <a href="{% url 'accounts:contact' %}" id="contactLink">Contact</a>
+            {# This link points to this page, already correct with accounts:about_us #}
+            <a href="{% url 'accounts:about_us' %}" id="aboutUsLink">About Us</a>
         </div>
     </nav>
 
@@ -325,7 +330,8 @@
             <p><strong>Phone:</strong> +1 (555) 123-4567</p>
             <p><strong>Email:</strong> support@ecocart.com</p>
             <p class="mt-4">
-                You can also visit our dedicated <a href="{% url 'contact' %}" class="text-green-600 hover:underline font-semibold">Contact Page</a> for more options.
+                {# CORRECTED: Added 'accounts:' namespace to contact link #}
+                You can also visit our dedicated <a href="{% url 'accounts:contact' %}" class="text-green-600 hover:underline font-semibold">Contact Page</a> for more options.
             </p>
         </div>
 
@@ -405,3 +411,4 @@
     </script>
 </body>
 </html>
+�

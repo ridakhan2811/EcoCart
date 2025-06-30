@@ -192,9 +192,11 @@
             <span class="inline-block mr-2">🌱</span> EcoCart
         </div>
         <div class="nav-links">
-            <a href="{% url 'home' %}" id="shopEcoLink">Shop Eco</a>
-            <a href="{% url 'login' %}" id="loginLink">Login</a> {# Corrected: Link to Django's login URL #}
-            <a href="{% url 'register' %}" id="joinEcoCartLink">Join EcoCart</a>
+            {# CORRECTED: Link to products list page for 'Shop Eco' #}
+            <a href="{% url 'products:list' %}" id="shopEcoLink">Shop Eco</a>
+            {# CORRECTED: Added 'accounts:' namespace to login and register links #}
+            <a href="{% url 'accounts:login' %}" id="loginLink">Login</a>
+            <a href="{% url 'accounts:register' %}" id="joinEcoCartLink">Join EcoCart</a>
         </div>
     </nav>
 
@@ -229,8 +231,8 @@
         </form>
 
         <div class="mt-6 text-center">
-            {# Corrected: Link to Django's login URL #}
-            <a href="{% url 'login' %}" id="backToLoginLink" class="link-button">Back to Login</a>
+            {# CORRECTED: Added 'accounts:' namespace to login link #}
+            <a href="{% url 'accounts:login' %}" id="backToLoginLink" class="link-button">Back to Login</a>
         </div>
     </div>
 

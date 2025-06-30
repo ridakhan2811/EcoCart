@@ -1,0 +1,194 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EcoCart{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Outfit for Headings, Inter for Body -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    {# You can define common styles here or link a global CSS file #}
+    <style>
+        /* Common Navbar styles moved from individual pages */
+        .navbar {
+            background-color: #0F3F2D; /* Deep Forest Green for navbar */
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+        }
+        .navbar .logo {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #A7F3D0; /* Lighter green for logo */
+            display: flex;
+            align-items: center;
+            letter-spacing: -0.025em;
+        }
+        .navbar .logo span {
+            margin-right: 0.75rem;
+            font-size: 1.5em;
+        }
+        .navbar .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        .navbar .nav-links a {
+            color: #D1FAE5; /* Pale Mint Green for links */
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.3s ease-in-out, transform 0.2s ease-in-out;
+            white-space: nowrap;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .navbar .nav-links a:hover {
+            color: #34D399; /* EcoCart Green on hover */
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Navbar adjustments */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .navbar .nav-links {
+                gap: 1rem;
+            }
+            .navbar .nav-links a {
+                font-size: 0.9rem;
+            }
+        }
+        @media (max-width: 640px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.75rem 1rem;
+            }
+            .navbar .logo {
+                margin-bottom: 0.5rem;
+            }
+            .navbar .nav-links {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+                width: 100%;
+            }
+            .navbar .nav-links a {
+                padding: 0.25rem 0;
+                width: 100%;
+                text-align: left;
+            }
+        }
+
+        /* Basic body padding to avoid content hiding behind fixed navbar */
+        body {
+            padding-top: 5rem; /* Adjust based on your navbar height */
+        }
+        /* Specific page background for consistent body if not set by main container */
+        .page-bg {
+            background-color: #FDF8EB; /* Default background for pages using base.html */
+        }
+    </style>
+
+    {# Placeholder for page-specific head content #}
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col items-center page-bg">
+
+    <!-- Navbar - Common across all pages -->
+    <nav class="navbar">
+        <div class="logo">
+            <span class="icon">🌱</span> EcoCart
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'products:list' %}">Shop Eco</a>
+            <a href="{% url 'accounts:blog' %}">Blog</a>
+            <a href="{% url 'accounts:about_us' %}">About Us</a>
+            <a href="{% url 'accounts:contact' %}">Contact</a>
+            {# Conditional rendering for profile/logout or login/register #}
+            {% if user.is_authenticated %}
+                <a href="{% url 'accounts:profile' %}" class="font-bold text-emerald-400">Profile</a>
+                <a href="{% url 'accounts:logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}">Login</a>
+                <a href="{% url 'accounts:register' %}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    {# Main content block - individual pages will fill this #}
+    <main class="flex-grow w-full flex justify-center items-start">
+        {% block content %}
+            {# Default content if no specific block is provided by extending template #}
+        {% endblock %}
+    </main>
+
+
+    <!-- Common Footer -->
+    <footer class="bg-emerald-800 text-white py-6 mt-auto w-full shadow-inner">
+        <div class="container mx-auto text-center text-sm">
+            &copy; {% now "Y" %} EcoCart &mdash; Built with sustainability in mind.
+        </div>
+    </footer>
+
+    <!-- Firebase SDK Imports (placed here for global availability if needed) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // IMPORTANT: These global variables are provided by the Canvas environment.
+        // DO NOT remove or modify these lines.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? initialAuthToken : null;
+
+        let app;
+        let auth;
+        let db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            async function authenticateFirebase() {
+                try {
+                    if (auth && initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else if (auth) {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    } else {
+                        console.error("Auth object not initialized.");
+                    }
+                } catch (error) {
+                    console.error("Firebase authentication failed:", error);
+                }
+            }
+            authenticateFirebase();
+
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+        }
+    </script>
+
+    {# Placeholder for page-specific JavaScript #}
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

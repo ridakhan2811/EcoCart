@@ -1,0 +1,398 @@
+{# products/templates/products/product_detail.html #}
+    {% load static %}
+{% load products.products_filters %}
+
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>EcoCart | {{ product.name }}</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+        <style>
+            :root {
+                --color-primary-lightest: #E8F5E9;
+                --color-primary-medium: #A5D6A7;
+                --color-primary-dark: #66BB6A;
+                --color-emerald-800: #065F46;
+                --color-emerald-600: #059669;
+            }
+            body {
+                font-family: 'Poppins', sans-serif;
+                @apply bg-gray-50 text-gray-800;
+            }
+            /* Tooltip styles */
+            .tooltip-container {
+                position: relative;
+                display: inline-block;
+            }
+            .tooltip-text {
+                visibility: hidden;
+                width: 220px;
+                background-color: #333;
+                color: #fff;
+                text-align: center;
+                border-radius: 6px;
+                padding: 8px;
+                position: absolute;
+                z-index: 10;
+                bottom: 125%;
+                left: 50%;
+                margin-left: -110px;
+                opacity: 0;
+                transition: opacity 0.3s, transform 0.3s;
+                transform: translateY(10px);
+                font-size: 0.8rem;
+                line-height: 1.2;
+                pointer-events: none;
+            }
+            .tooltip-container:hover .tooltip-text {
+                visibility: visible;
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .tooltip-text::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                margin-left: -5px;
+                border-width: 5px;
+                border-style: solid;
+                border-color: #333 transparent transparent transparent;
+            }
+            /* Wishlist Heart icon */
+            .wishlist-icon {
+                cursor: pointer;
+                color: #ccc;
+                transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            }
+            .wishlist-icon.active {
+                color: #ef4444;
+                transform: scale(1.1);
+            }
+            .wishlist-icon:hover {
+                transform: scale(1.2);
+            }
+            /* Animations for star rating */
+            @keyframes popIn {
+                0% { transform: scale(0.5); opacity: 0; }
+                80% { transform: scale(1.1); opacity: 1; }
+                100% { transform: scale(1); }
+            }
+            .star-icon {
+                animation: popIn 0.3s ease-out forwards;
+                display: inline-block;
+            }
+            /* Add to Cart button animation */
+            .add-to-cart-btn {
+                transition: all 0.2s ease-in-out;
+            }
+            .add-to-cart-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .add-to-cart-btn:active {
+                transform: translateY(0);
+                box-shadow: none;
+            }
+            /* Navbar scroll effect */
+            .navbar-scrolled {
+                background-color: rgba(6, 95, 70, 0.95);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            /* Impact Bar styles */
+            .impact-bar {
+                background-color: var(--color-primary-lightest);
+                border-radius: 9999px;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+                color: var(--color-emerald-800);
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-top: 0.75rem;
+                box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            }
+            .impact-bar span {
+                font-weight: 700;
+                color: var(--color-emerald-600);
+            }
+            /* Carousel specific styles */
+            .carousel-container {
+                overflow: hidden;
+                position: relative;
+            }
+            .carousel-track {
+                display: flex;
+                transition: transform 0.5s ease-in-out;
+            }
+            .carousel-item {
+                flex: 0 0 auto; /* Do not grow, do not shrink, base on content */
+                width: calc(100% / 4); /* 4 items per view for desktop */
+            }
+            @media (max-width: 1024px) { /* Adjust for smaller screens */
+                .carousel-item {
+                    width: calc(100% / 3); /* 3 items for medium screens */
+                }
+            }
+            @media (max-width: 768px) {
+                .carousel-item {
+                    width: calc(100% / 2); /* 2 items for small screens */
+                }
+            }
+            @media (max-width: 640px) {
+                .carousel-item {
+                    width: 100%; /* 1 item for mobile */
+                }
+            }
+
+            .carousel-button {
+                @apply absolute top-1/2 -translate-y-1/2 p-2 rounded-full bg-gray-800 text-white opacity-70 hover:opacity-100 z-10;
+            }
+            .carousel-button.prev { left: 0.5rem; }
+            .carousel-button.next { right: 0.5rem; }
+
+        </style>
+        <link rel="stylesheet" href="{% static 'products/css/product.css' %}">
+    </head>
+    <body class="min-h-screen flex flex-col">
+
+        {# HEADER/NAV BAR CONTENT (Replicated from your landing page) #}
+        <header id="main-navbar" class="bg-emerald-800 p-4 shadow-lg sticky top-0 z-40 transition-all duration-300 ease-in-out">
+            <div class="container mx-auto flex items-center justify-between flex-wrap">
+                <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6">
+                    <span class="font-bold text-3xl tracking-tight text-white flex items-center">
+                        EcoCart <span class="ml-2 text-green-300">🌿</span>
+                    </span>
+                </a>
+                <div class="block lg:hidden">
+                    <button id="nav-toggle" class="flex items-center px-3 py-2 border rounded text-green-200 border-green-400 hover:text-white hover:border-white focus:outline-none focus:ring-2 focus:ring-white">
+                        <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Menu</title><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>
+                    </button>
+                </div>
+                <div id="nav-content" class="w-full block flex-grow lg:flex lg:items-center lg:w-auto hidden">
+                    <div class="text-lg lg:flex-grow">
+                        <a href="{% url 'products:list' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                            Shop Eco
+                        </a>
+                        <a href="{% url 'accounts:blog' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                            Blog
+                        </a>
+                        <a href="{% url 'accounts:about_us' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                            About Us
+                        </a>
+                        <a href="{% url 'accounts:contact' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 transition duration-300 ease-in-out">
+                            Contact
+                        </a>
+                    </div>
+                    <div>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'accounts:profile' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out mr-2">
+                                Welcome, {{ user.username }}
+                            </a>
+                            <a href="{% url 'accounts:logout' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                                Logout
+                            </a>
+                        {% else %}
+                            <a href="{% url 'accounts:login' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out mr-2">
+                                Login
+                            </a>
+                            <a href="{% url 'accounts:register' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                                Register
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <p class="text-3xl md:text-4xl font-bold text-center text-emerald-700 mb-8 mt-4 tracking-tight leading-snug">
+                {{ pick_up_line }}
+            </p>
+            <h1 class="text-4xl font-bold text-center text-gray-900 mb-10 tracking-tight">{{ product.name }}</h1>
+
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-10 flex flex-col lg:flex-row items-start gap-8">
+                {# Product Image #}
+                <div class="w-full lg:w-1/2 flex-shrink-0">
+                    <img src="{% if product.image %}{{ product.image.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
+                         onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
+                         alt="{{ product.name }}"
+                         class="w-full h-96 object-cover rounded-lg shadow-md">
+                </div>
+
+                {# Product Details #}
+                <div class="w-full lg:w-1/2">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-2">{{ product.name }}</h2>
+                    {% if product.brand %}<p class="text-gray-600 text-lg mb-2">Brand: <span class="font-semibold">{{ product.brand }}</span></p>{% endif %}
+                    {% if product.category %}<p class="text-gray-600 text-lg mb-4">Category: <span class="font-semibold">{{ product.category.name }}</span></p>{% endif %}
+
+                    {# Eco-Friendly Badge with Tooltip #}
+                    {% if product.is_eco_friendly %}
+                        <div class="bg-emerald-100 text-emerald-800 text-md font-semibold px-4 py-2 rounded-full shadow-sm inline-flex items-center gap-2 tooltip-container mb-4">
+                            Eco-Friendly 🌿
+                            {% if product.eco_impact_statement %}
+                                <span class="tooltip-text">{{ product.eco_impact_statement }}</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {# Rating #}
+                    <div class="flex items-center mb-4">
+                        {% for _ in "x"|ljust:product.get_stars_full %}<i class="fas fa-star text-yellow-400 star-icon"></i>{% endfor %}
+                        {% if product.get_stars_half %}<i class="fas fa-star-half-alt text-yellow-400 star-icon"></i>{% endif %}
+                        {% for _ in "x"|ljust:product.get_stars_empty %}<i class="far fa-star text-gray-300 star-icon"></i>{% endfor %}
+                        <span class="ml-2 text-gray-700 text-md">({{ product.rating|floatformat:1 }} / {{ product.review_count }} reviews)</span>
+                    </div>
+
+                    <div class="flex items-baseline mb-6">
+                        <span class="text-5xl font-bold text-emerald-700">₹{{ product.price|floatformat:2 }}</span>
+                        {% if product.is_discounted %}
+                            <span class="text-gray-400 line-through text-2xl ml-4">₹{{ product.original_price|floatformat:2 }}</span>
+                            <span class="ml-4 text-red-500 font-semibold text-xl">{{ product.discount_percentage }}% OFF</span>
+                        {% endif %}
+                    </div>
+
+                    {# Start of stock display logic - changed product.stock to product.in_stock #}
+                    {% if product.in_stock > 0 %}
+                        <p class="text-emerald-600 text-sm mt-3">In Stock: {{ product.in_stock }}</p>
+                        {% if product.in_stock < 10 %}
+                            <p class="text-orange-500 text-xs mt-1">Only {{ product.in_stock }} left!</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-red-600 text-sm mt-3">Out of Stock</p>
+                    {% endif %}
+                    {# End of stock display logic #}
+
+
+                    {# Short Description #}
+                    <p class="text-gray-700 text-lg leading-relaxed mb-6">{{ product.short_description }}</p>
+
+                    {# Long Description #}
+                    {% if product.long_description %}
+                        <div class="bg-gray-100 p-4 rounded-lg mb-6">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">Full Description</h3>
+                            <p class="text-gray-700 leading-relaxed">{{ product.long_description|linebreaksbr }}</p>
+                        </div>
+                    {% endif %}
+
+                    {# Impact Bar #}
+                    {% if product.plastic_saved_kg %}
+                        <div class="impact-bar text-lg mb-6">
+                            <i class="fa-solid fa-leaf text-emerald-600"></i>
+                            <span>Eco Impact:</span> By choosing this product, you help save *{{ product.plastic_saved_kg }}kg* of plastic!
+                        </div>
+                    {% endif %}
+
+                    {# Stock & Add to Cart - changed product.stock to product.in_stock #}
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            {% if product.in_stock > 0 %}
+                                <p class="text-emerald-600 text-lg font-semibold">In Stock: {{ product.in_stock }}</p>
+                                {% if product.in_stock < 10 %}<p class="text-orange-500 text-md">Only {{ product.in_stock }} left – Order Soon!</p>{% endif %}
+                            {% else %}
+                                <p class="text-red-600 text-lg font-semibold">Out of Stock</p>
+                            {% endif %}
+                        </div>
+                        <button class="add-to-cart-btn bg-emerald-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
+                                data-product-id="{{ product.id }}" data-product-name="{{ product.name }}"
+                                {% if product.in_stock == 0 %}disabled{% endif %}> {# Changed product.stock to product.in_stock #}
+                            <i class="fas fa-shopping-cart mr-2"></i> Add to Cart
+                        </button>
+                    </div>
+
+                    {# Wishlist Button #}
+                    <div class="text-center">
+                        <i class="far fa-heart text-3xl text-gray-400 hover:text-red-500 transition-colors duration-200 cursor-pointer wishlist-icon" data-product-id="{{ product.id }}"></i>
+                        <span class="ml-2 text-gray-600">Add to Wishlist</span>
+                    </div>
+                </div>
+            </div>
+
+            {# Related Products Section #}
+            {% if related_products %}
+                <section class="mt-12">
+                    <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">You May Also Like</h2>
+                    <div class="relative carousel-container">
+                        <div id="related-products-track" class="carousel-track -mx-4">
+                            {% for related_product in related_products %}
+                                <div class="carousel-item px-4 py-2">
+                                    <div class="product-card bg-white rounded-xl shadow-lg transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl overflow-hidden flex flex-col h-full">
+                                        <a href="{% url 'products:detail' pk=related_product.id %}" class="block relative overflow-hidden w-full h-40 bg-gray-100 rounded-t-xl">
+                                            <img src="{% if related_product.image %}{{ related_product.image.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
+                                                 onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
+                                                 alt="{{ related_product.name }}"
+                                                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                                            {% if related_product.is_eco_friendly %}
+                                                <div class="absolute top-2 right-2 bg-emerald-600 text-white text-xs font-semibold px-2 py-1 rounded-full">🌿</div>
+                                            {% endif %}
+                                        </a>
+                                        <div class="p-4 flex-grow flex flex-col justify-between">
+                                            <div>
+                                                <h3 class="text-lg font-semibold text-gray-900 mb-1 truncate">
+                                                    <a href="{% url 'products:detail' pk=related_product.id %}" class="hover:text-emerald-700 transition-colors duration-200">{{ related_product.name }}</a>
+                                                </h3>
+                                                <p class="text-gray-500 text-sm mb-2">{{ related_product.brand }}</p>
+                                                <div class="flex items-center text-sm mb-2">
+                                                    {% for _ in "x"|ljust:related_product.get_stars_full %}<i class="fas fa-star text-yellow-400 text-xs"></i>{% endfor %}
+                                                    {% if related_product.get_stars_half %}<i class="fas fa-star-half-alt text-yellow-400 text-xs"></i>{% endif %}
+                                                    {% for _ in "x"|ljust:related_product.get_stars_empty %}<i class="far fa-star text-gray-300 text-xs"></i>{% endfor %}
+                                                    <span class="ml-1 text-gray-600 text-xs">({{ related_product.rating|floatformat:1 }})</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-baseline justify-between mt-auto">
+                                                <span class="text-xl font-bold text-emerald-700">₹{{ related_product.price|floatformat:2 }}</span> {# Changed $ to ₹ #}
+                                                {% if related_product.is_discounted %}
+                                                    <span class="text-gray-400 line-through text-sm ml-2">₹{{ related_product.original_price|floatformat:2 }}</span> {# Changed $ to ₹ #}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button class="carousel-button prev" onclick="scrollCarousel(-1)">&#10094;</button>
+                        <button class="carousel-button next" onclick="scrollCarousel(1)">&#10095;</button>
+                    </div>
+                </section>
+            {% endif %}
+
+            {# Message Box #}
+            <div id="message-box" class="fixed bottom-8 right-8 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl hidden z-50 transition-opacity duration-300 ease-out opacity-0">
+                Product added to cart!
+            </div>
+        </main>
+
+        {# FOOTER CONTENT (Replicated from your landing page) #}
+        <footer class="bg-emerald-800 text-green-100 py-8 text-center shadow-inner mt-auto">
+            <div class="container mx-auto px-4">
+                <div class="text-sm">
+                    &copy; {{ "now"|date:"Y" }} EcoCart <span class="ml-1">🌱</span> — Built with sustainability in mind.
+                </div>
+            </div>
+        </footer>
+
+        <script src="{% static 'products/js/product.js' %}"></script>
+        <script>
+            // Carousel logic (simple for related products)
+            function scrollCarousel(direction) {
+                const track = document.getElementById('related-products-track');
+                if (!track) return;
+
+                const itemWidth = track.firstElementChild ? track.firstElementChild.offsetWidth : 0;
+                const scrollAmount = itemWidth * 1; // Scroll by one item at a time
+
+                track.scrollBy({
+                    left: direction * scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+        </script>
+    </body>
+</html>
