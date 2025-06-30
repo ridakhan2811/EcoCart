@@ -11,7 +11,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('accounts.urls')),
     path('wishlist/', include('wishlist.urls')),
+<<<<<<< HEAD
     path('products/', include('products.urls')), # This correctly includes products.urls
+=======
+    path('products/', include('products.urls', namespace='products')), # NEW: Products app URLs
+
+
+>>>>>>> 29b799f3c1aef048cc7e0014e2c2f9dc948e699c
 ]
 
 # Serve media files during development

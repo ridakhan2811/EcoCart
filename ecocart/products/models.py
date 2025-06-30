@@ -1,21 +1,22 @@
+<<<<<<< HEAD
 # ecocart/products/models.py
 
 from django.db import models
 from django.utils.text import slugify # You'll need this if you add a slug to Category or Product later
 
+=======
+# products/models.py
 
-class Product(models.Model):
-    CATEGORY_CHOICES = [
-        ('Home', 'Home'),
-        ('Kitchen', 'Kitchen'),
-        ('Grocery', 'Grocery'),
-        ('Fashion', 'Fashion'),
-        ('Personal Care', 'Personal Care'),
-        ('Stationery', 'Stationery'),
-        ('Cleaning', 'Cleaning'),
-        ('Pet Care', 'Pet Care'),
-    ]
+from django.db import models
+from django.utils.text import slugify # For creating URL-friendly names
+import random # For generating random ratings and stock
+>>>>>>> 29b799f3c1aef048cc7e0014e2c2f9dc948e699c
 
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, blank=True) # For clean URLs
+
+<<<<<<< HEAD
     name = models.CharField(max_length=100)
     brand = models.CharField(max_length=100)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
@@ -38,10 +39,21 @@ class Product(models.Model):
     # Fields for reviews (from template's expectation)
     review_count = models.IntegerField(default=0)
 
+=======
+    class Meta:
+        verbose_name_plural = "Categories" # Correct pluralization in Django Admin
+
+    def save(self, *args, **kwargs):
+        # Auto-generate slug from name if not provided
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+>>>>>>> 29b799f3c1aef048cc7e0014e2c2f9dc948e699c
 
     def __str__(self):
         return self.name
 
+<<<<<<< HEAD
     # Helper methods for star ratings (from template's expectation)
     def get_stars_full(self):
         return int(self.rating)
@@ -69,3 +81,59 @@ class Product(models.Model):
             self.is_discounted = False
             self.discount_percentage = None # Set to None if no discount
         super().save(*args, **kwargs)
+=======
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    brand = models.CharField(max_length=100, blank=True, null=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='products')
+    image = models.ImageField(upload_to='products/', blank=True, null=True) # Images will be stored in media/products/
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    original_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True) # For discounted items
+    short_description = models.CharField(max_length=255)
+    long_description = models.TextField(blank=True, null=True)
+    rating = models.DecimalField(max_digits=2, decimal_places=1, default=0.0) # E.g., 4.5
+    review_count = models.PositiveIntegerField(default=0) # Number of reviews, for popularity/sorting
+    is_eco_friendly = models.BooleanField(default=False)
+    eco_impact_statement = models.TextField(blank=True, null=True, help_text="e.g., 'Saves 3kg of plastic'")
+    stock = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at'] # Default order for new products
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def is_discounted(self):
+        return self.original_price and self.price < self.original_price
+
+    @property
+    def discount_percentage(self):
+        if self.is_discounted:
+            return round(((self.original_price - self.price) / self.original_price) * 100)
+        return 0
+
+    @property
+    def get_stars_full(self):
+        return int(self.rating)
+
+    @property
+    def get_stars_half(self):
+        return 1 if (self.rating - self.get_stars_full) >= 0.5 else 0
+
+    @property
+    def get_stars_empty(self):
+        return 5 - self.get_stars_full - self.get_stars_half
+
+    def save(self, *args, **kwargs):
+        # If rating is not set, provide a random one (for dummy data)
+        if self.rating == 0.0:
+            self.rating = round(random.uniform(3.0, 5.0), 1)
+            self.review_count = random.randint(10, 200) # Give some dummy review count
+        if self.stock == 0:
+            self.stock = random.randint(5, 100) # Give some dummy stock
+        super().save(*args, **kwargs)
+
+>>>>>>> 29b799f3c1aef048cc7e0014e2c2f9dc948e699c
