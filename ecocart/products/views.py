@@ -14,6 +14,7 @@ PICK_UP_LINES = [
     "Your Journey to Sustainable Living Starts Here.",
 ]
 
+
 def get_product_queryset(request):
     """Helper function to build the base queryset with filters and sorting."""
     queryset = Product.objects.all().select_related('category')
@@ -57,13 +58,10 @@ def product_list(request):
     all_categories = Category.objects.all().order_by('name')
     initial_products = get_product_queryset(request)
 
-    # Pagination for the initial load
+    # Pagination
     paginator = Paginator(initial_products, 8)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
-
-    # --- Your NOTE: CATEGORY_CHOICES can be accessed if needed like below ---
-    product_category_choices = Product.CATEGORY_CHOICES
 
     context = {
         'products': page_obj,
@@ -133,3 +131,5 @@ def product_detail(request, pk):
     }
 
     return render(request, 'products/product_detail.html', context)
+
+
