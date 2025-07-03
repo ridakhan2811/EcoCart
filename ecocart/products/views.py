@@ -63,6 +63,13 @@ def product_list(request):
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
+    # DEBUG: Print stock for products on initial load
+    print(f"--- Debugging product_list view ---")
+    for product in page_obj:
+        print(f"Product: {product.name}, Stock: {product.stock}")
+    print(f"-----------------------------------")
+
+
     context = {
         'products': page_obj,
         'categories': all_categories,
@@ -88,7 +95,10 @@ def api_product_list(request):
         return JsonResponse({'products': [], 'has_next': False}, status=200)
 
     products_data = []
+    # DEBUG: Print stock for products in API response
+    print(f"--- Debugging api_product_list view ---")
     for product in page_obj:
+        print(f"API Product: {product.name}, Stock: {product.stock}")
         products_data.append({
             'id': product.id,
             'name': product.name,
@@ -103,13 +113,14 @@ def api_product_list(request):
             'review_count': product.review_count,
             'is_eco_friendly': product.is_eco_friendly,
             'eco_impact_statement': product.eco_impact_statement,
-            'stock': product.stock,
+            'stock': product.stock, # Ensure this is 'stock' to match model and HTML
             'is_discounted': product.is_discounted,
             'discount_percentage': product.discount_percentage,
             'stars_full': product.get_stars_full,
             'stars_half': product.get_stars_half,
             'stars_empty': product.get_stars_empty,
         })
+    print(f"---------------------------------------")
 
     return JsonResponse({
         'products': products_data,
@@ -120,6 +131,11 @@ def api_product_list(request):
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
+    # DEBUG: Print stock for product on detail page
+    print(f"--- Debugging product_detail view ---")
+    print(f"Detail Product: {product.name}, Stock: {product.stock}")
+    print(f"-------------------------------------")
+
     related_products = Product.objects.filter(
         category=product.category
     ).exclude(pk=pk).order_by('?')[:4]
@@ -131,5 +147,3 @@ def product_detail(request, pk):
     }
 
     return render(request, 'products/product_detail.html', context)
-
-
