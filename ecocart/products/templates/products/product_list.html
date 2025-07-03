@@ -16,7 +16,7 @@
     <style>
         :root {
             --color-primary-lightest: #E8F5E9; /* Lightest green */
-            --color-primary-medium: #A5D6A7;  /* Medium green */
+            --color-primary-medium: #A5D6A7;   /* Medium green */
             --color-primary-dark: #66BB6A; /* Darker green */
             --color-emerald-800: #065F46; /* From your landing 
             page header */
@@ -114,9 +114,18 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* Ensure the product-card-link covers the whole card */
+        .product-card-link {
+            display: flex; /* Make it a flex container */
+            flex-direction: column; /* Stack children vertically */
+            height: 100%; /* Take full height of parent */
+            text-decoration: none; /* Remove underline from link */
+            color: inherit; /* Inherit text color */
+        }
         .product-card {
             animation: fadeIn 0.6s ease-out forwards;
             opacity: 0; /* Hidden initially */
+            /* Removed flex-col from here as it's now on product-card-link */
         }
         /* Staggered animation for cards */
         {% for i in "xxxxxxxxxxxxxxxxxxxx" %} {# Max 20 cards for initial load #}
@@ -200,8 +209,9 @@
                     </a>
                 </div>
                 <div>
+                    {# IMPORTANT: These links are conditionally displayed based on user authentication status. #}
+                    {# If 'Profile' is not showing, ensure you are logged in. #}
                     {% if user.is_authenticated %}
-                        {# ADDED: Profile link for authenticated users #}
                         <a href="{% url 'accounts:profile' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out mr-2">
                             Profile
                         </a>
@@ -257,7 +267,7 @@
             {# Sorting Dropdown #}
             <div class="relative w-full md:w-1/4 order-2 md:order-3">
                 <select id="sort-by" onchange="filterProducts()"
-                             class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-300 ease-in-out text-lg appearance-none bg-white pr-8">
+                                 class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-300 ease-in-out text-lg appearance-none bg-white pr-8">
                     <option value="default" {% if current_sort_by == 'default' %}selected{% endif %}>Sort By: Default</option>
                     <option value="price_asc" {% if current_sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
                     <option value="price_desc" {% if current_sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
@@ -273,14 +283,16 @@
         {# Product Grid Section #}
         <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {% for product in products %}
-                <div class="product-card bg-white rounded-xl shadow-lg transform transition-all duration-500 ease-in-out hover:scale-105 hover:shadow-2xl overflow-hidden flex flex-col product-item"
-                     data-category="{{ product.category.slug|default:'uncategorized' }}"
-                     data-price="{{ product.price }}"
-                     data-rating="{{ product.rating }}"
-                     data-name="{{ product.name|lower }}"
-                     data-eco-friendly="{{ product.is_eco_friendly|lower }}"
-                     data-product-id="{{ product.id }}"> {# Added product-id for JS #}
-                        <a href="{% url 'products:detail' pk=product.id %}" class="block relative overflow-hidden w-full h-48 bg-gray-100 rounded-t-xl">
+                {# Wrapped the entire product card in an <a> tag for clickability #}
+                <a href="{% url 'products:detail' pk=product.id %}" class="product-card-link bg-white rounded-xl shadow-lg transform transition-all duration-500 ease-in-out hover:scale-105 hover:shadow-2xl overflow-hidden product-item"
+                   data-category="{{ product.category.slug|default:'uncategorized' }}"
+                   data-price="{{ product.price }}"
+                   data-rating="{{ product.rating }}"
+                   data-name="{{ product.name|lower }}"
+                   data-eco-friendly="{{ product.is_eco_friendly|lower }}"
+                   data-product-id="{{ product.id }}">
+                    <div class="product-card"> {# This div is now inside the link #}
+                        <div class="block relative overflow-hidden w-full h-48 bg-gray-100 rounded-t-xl">
                             <img src="{% if product.image %}{{ product.image.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
                                  onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
                                  alt="{{ product.name }}"
@@ -293,12 +305,13 @@
                                     {% endif %}
                                 </div>
                             {% endif %}
-                            <i class="far fa-heart absolute top-2 left-2 text-2xl text-gray-300 hover:text-red-400 transition-colors duration-200 cursor-pointer wishlist-icon" data-product-id="{{ product.id }}"></i>
-                        </a>
+                            <i class="far fa-heart absolute top-2 left-2 text-2xl text-gray-300 hover:text-red-400 transition-colors duration-200 cursor-pointer wishlist-icon" data-product-id="{{ product.id }}" onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this);"></i> {# Added event stoppers #}
+                        </div>
                         <div class="p-6 flex-grow flex flex-col justify-between">
                             <div>
                                 <h2 class="text-2xl font-semibold text-gray-900 mb-1 truncate" title="{{ product.name }}">
-                                    <a href="{% url 'products:detail' pk=product.id %}" class="hover:text-emerald-700 transition-colors duration-200">{{ product.name }}</a>
+                                    {# Removed <a> tag here, as the parent is now the link #}
+                                    {{ product.name }}
                                 </h2>
                                 {% if product.brand %}<p class="text-gray-500 text-sm mb-2">{{ product.brand }}</p>{% endif %}
                                 <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ product.short_description }}</p>
@@ -326,7 +339,7 @@
                                     {% endif %}
                                 </div>
                                 <button class="add-to-cart-btn w-full bg-emerald-600 text-white font-bold py-3 rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
-                                        data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
+                                        data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" onclick="event.preventDefault(); event.stopPropagation(); addToCart(this);"> {# Added event stoppers #}
                                     Add to Cart
                                 </button>
                                 
@@ -336,11 +349,12 @@
                                     <p class="text-orange-500 text-xs mt-1">Only {{ product.in_stock }} left!</p>
                                    {% endif %}
                                 {% else %}
-                                       <p class="text-red-600 text-sm mt-3">Out of Stock</p>
+                                        <p class="text-red-600 text-sm mt-3">Out of Stock</p>
                                 {% endif %}
                             </div>
                         </div>
-                    </div>
+                    </div> {# End product-card div #}
+                </a> {# End product-card-link a tag #}
                 {% empty %}
                     <div class="col-span-full text-center py-10">
                         <p class="text-xl text-gray-600">No products found matching your criteria. Try adjusting filters!</p>
@@ -381,5 +395,36 @@
         {# END OF FOOTER CONTENT #}
 
         <script src="{% static 'products/js/product.js' %}"></script>
+        <script>
+            // Prevent link click when clicking wishlist or add to cart buttons
+            // This is crucial because the entire card is now a link
+            function toggleWishlist(element) {
+                // Your existing wishlist logic here
+                element.classList.toggle('active');
+                console.log('Wishlist toggled for product ID:', element.dataset.productId);
+            }
+
+            function addToCart(element) {
+                // Your existing add to cart logic here
+                const productId = element.dataset.productId;
+                const productName = element.dataset.productName;
+                console.log(`Added "${productName}" (ID: ${productId}) to cart.`);
+                
+                // Show message box
+                const messageBox = document.getElementById('message-box');
+                if (messageBox) {
+                    messageBox.textContent = `${productName} added to cart!`;
+                    messageBox.classList.remove('hidden', 'opacity-0');
+                    messageBox.classList.add('opacity-100');
+                    setTimeout(() => {
+                        messageBox.classList.remove('opacity-100');
+                        messageBox.classList.add('opacity-0');
+                        setTimeout(() => {
+                            messageBox.classList.add('hidden');
+                        }, 300); // Match fade-out transition duration
+                    }, 3000); // Hide after 3 seconds
+                }
+            }
+        </script>
     </body>
 </html>

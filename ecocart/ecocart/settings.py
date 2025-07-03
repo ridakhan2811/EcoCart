@@ -28,6 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Ensure MEDIA_URL and MEDIA_ROOT are defined once and correctly
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -64,21 +65,25 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'ecocart.urls'
 
 STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-#STATICFILES_DIRS = [BASE_DIR / 'static']
+# STATIC_ROOT is used for `collectstatic` in production, not typically for development serving
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# STATICFILES_DIRS is for additional static files not within app's static folders
+# STATICFILES_DIRS = [BASE_DIR / 'static']
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')], # Project-level templates
+        'APP_DIRS': True, # This allows Django to find templates in app's 'templates' directories
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug', # Added for debug if needed
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.static',
+                'django.template.context_processors.static', # Added for static files in templates
+                'django.template.context_processors.media', # Added for media files in templates
             ],
         },
     },
@@ -129,23 +134,15 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = 'static/'
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Custom User Model
 AUTH_USER_MODEL = 'accounts.CustomUser'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-# ecocart/ecocart/settings.py
 
-# ... other settings ...
-
-LOGIN_URL = '/accounts/login/' # Ensure this is correctly set if you haven't
-LOGOUT_REDIRECT_URL = '/accounts/login/' # Add or modify this line
-
-# ... rest of your settings ...
+# Redirection URLs for authentication (using named URLs for robustness)
+LOGIN_URL = 'accounts:login' # URL for the login page
+LOGIN_REDIRECT_URL = 'products:list' # Where to redirect after successful login
+LOGOUT_REDIRECT_URL = 'accounts:login' # Where to redirect after logout
