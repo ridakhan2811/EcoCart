@@ -5,3 +5,4 @@ document.querySelectorAll('.wishlist').forEach(icon => {
         icon.textContent = icon.classList.contains('active') ? '💚' : '❤️';
     });
 });
+

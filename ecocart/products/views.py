@@ -4,6 +4,18 @@ from .models import Product, Category
 from django.core.paginator import Paginator
 from django.db.models import Q  # For search functionality
 import random  # For pick-up line
+from django.core import serializers
+from .models import Product
+
+
+def load_more_products(request):
+    offset = int(request.GET.get('offset', 0))
+    limit = 4  # how many products to load at once
+
+    products = Product.objects.all()[offset:offset+limit]
+    data = serializers.serialize('json', products)
+    return JsonResponse({'products': data})
+
 
 # Dummy pick-up lines
 PICK_UP_LINES = [
