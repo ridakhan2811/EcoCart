@@ -1,51 +1,117 @@
-# accounts/views.py
-
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm
-from .models import CustomUser
 from django.contrib import messages
 
+# Import your CustomUser model and the updated forms
+from .models import CustomUser
+from .forms import CustomUserCreationForm, CustomUserChangeForm # Ensure CustomUserChangeForm is imported
+
+# Dummy pick-up lines (if used elsewhere, otherwise can be removed)
+PICK_UP_LINES = [
+    "Sustainable Choices, Happy Planet.",
+    "Shop Smarter, Live Greener.",
+    "Eco-Friendly Excellence at Your Fingertips.",
+    "Making a Difference, One Product at a Time.",
+    "Your Journey to Sustainable Living Starts Here.",
+]
+
 def home_view(request):
+    """
+    Renders the main landing page.
+    """
     return render(request, 'accounts/home.html')
 
 def register_view(request):
+    """
+    Handles user registration.
+    Redirects to accounts:login upon successful registration.
+    """
     if request.method == 'POST':
+        # --- ENHANCED DEBUG PRINTS ---
+        print("\n--- REGISTER VIEW: POST Request Received ---")
+        print("request.POST:", request.POST)
+        print("request.FILES:", request.FILES)
+        # --- END ENHANCED DEBUG PRINTS ---
+
+        # Pass request.FILES to handle profile_picture upload
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            messages.success(request, "Registration successful!")
-            return redirect('profile')
+            # No automatic login after registration, redirect to login page instead
+            messages.success(request, f"Account created for {user.username}! Please log in.")
+            print(f"--- REGISTER VIEW: Form is VALID. Redirecting to accounts:login for user {user.username} ---")
+            return redirect('accounts:login') # Redirect to login page
         else:
-            messages.error(request, "Please correct the errors below.")
+            # --- DEBUG PRINT: This will show validation errors in your terminal ---
+            print("--- REGISTER VIEW: Form is NOT valid. Errors: ---")
+            print(form.errors)
+            print("--------------------------------------------------")
+            # --- END DEBUG PRINT ---
+
+            # Display form errors using messages
+            # This block should be working if messages are configured correctly
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field.replace('_', ' ').title()}: {error}")
+            # Also add a general error message if there are any non-field errors
+            if form.non_field_errors():
+                for error in form.non_field_errors():
+                    messages.error(request, f"Error: {error}")
     else:
         form = CustomUserCreationForm()
     return render(request, 'accounts/register.html', {'form': form})
 
 def login_view(request):
+    """
+    Handles user login.
+    Redirects to products:list upon successful login.
+    """
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            messages.success(request, f"Welcome {user.username}!")
-            return redirect('profile')
+            messages.success(request, f"Welcome back, {user.username}!")
+            return redirect('products:list') # Redirect to the products list page
         else:
-            messages.error(request, "Invalid credentials.")
+            messages.error(request, "Invalid username or password.")
     return render(request, 'accounts/login.html')
 
 @login_required
 def profile_view(request):
-    return render(request, 'accounts/profile.html', {'user': request.user})
+    """
+    Handles displaying and updating CustomUser profile information.
+    """
+    if request.method == 'POST':
+        form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully!')
+            return redirect('accounts:profile') # Redirect back to profile to show updates
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field.replace('_', ' ').title()}: {error}")
+    else:
+        form = CustomUserChangeForm(instance=request.user)
+
+    context = {
+        'form': form,
+        'user_object': request.user # Pass the user object directly for display in template
+    }
+    return render(request, 'accounts/profile.html', context)
 
 def logout_view(request):
+    """
+    Logs out the user and redirects to the login page.
+    """
     logout(request)
-    return redirect('home')
+    messages.info(request, "You have been logged out.")
+    return redirect('accounts:login') # Redirect to login page after logout
 
-# --- BLOG VIEW (image_url paths are now relative to the static folder) ---
+# --- BLOG VIEW ---
 def blog_view(request):
     """
     Renders the Blog page with mock blog post data. Image URLs are now
@@ -71,43 +137,21 @@ def blog_view(request):
     ]
     return render(request, 'accounts/blog.html', {'posts': blog_posts_data, 'page_title': 'Our Eco-Blog'})
 
-# --- Other VIEWS (ensure these match your local file) ---
+# --- Other VIEWS ---
 def about_us_view(request):
+    """
+    Renders the About Us page.
+    """
     return render(request, 'accounts/about.html', {'page_title': 'About EcoCart'})
 
 def contact_view(request):
+    """
+    Renders the Contact page.
+    """
     return render(request, 'accounts/contact.html', {'page_title': 'Contact EcoCart'})
 
 def forgot_password_view(request):
+    """
+    Renders the Forgot Password page.
+    """
     return render(request, 'accounts/forgot_pass.html')
-
-def product_list_view(request):
-    products_data_mock = [
-        {'id': 1, 'name': 'Bamboo Toothbrush', 'price': 150, 'category': 'Oral Care', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/34D399/FFFFFF?text=Toothbrush'},
-        {'id': 2, 'name': 'Reusable Shopping Bag', 'price': 300, 'category': 'Household', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/6EE7B7/0F3F2D?text=Bag'},
-        {'id': 3, 'name': 'Organic Cotton T-Shirt', 'price': 800, 'category': 'Apparel', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/A7F3D0/0F3F2D?text=T-Shirt'},
-        {'id': 4, 'name': 'Solid Shampoo Bar', 'price': 450, 'category': 'Personal Care', 'eco_friendly': True, 'image_url': 'https://placehold.co/200x200/D1FAE5/0F3F2D?text=Shampoo'},
-        {'id': 5, 'name': 'Stainless Steel Water Bottle', 'price': 600, 'category': 'Hydration', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/E0F2E5/0F3F2D?text=Bottle'},
-        {'id': 6, 'name': 'Compostable Phone Case', 'price': 750, 'category': 'Accessories', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/FDF8F0/0F3F2D?text=Phone+Case'},
-        {'id': 7, 'name': 'Beeswax Food Wraps', 'price': 400, 'category': 'Kitchen', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/6EE7B7/0F3F2D?text=Wraps'},
-        {'id': 8, 'name': 'Biodegradable Laundry Pods', 'price': 900, 'category': 'Home Cleaning', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/A7F3D0/0F3F2D?text=Pods'},
-        {'id': 9, 'name': 'Recycled Notebook', 'price': 200, 'category': 'Stationery', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/D1FAE5/0F3F2D?text=Notebook'},
-        {'id': 10, 'name': 'Solar-Powered Charger', 'price': 1200, 'category': 'Electronics', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/E0F2E5/0F3F2D?text=Charger'},
-        {'id': 11, 'name': 'Upcycled Denim Bag', 'price': 700, 'category': 'Apparel', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/FDF8F0/0F3F2D?text=Denim+Bag'},
-        {'id': 12, 'name': 'Plant-Based Dish Soap', 'price': 250, 'category': 'Home Cleaning', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/6EE7B7/0F3F2D?text=Dish+Soap'},
-        {'id': 13, 'name': 'Wooden Toys Set', 'price': 1100, 'category': 'Kids & Baby', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/A7F3D0/0F3F2D?text=Wooden+Toys'},
-        {'id': 14, 'name': 'Eco-Friendly Yoga Mat', 'price': 1500, 'category': 'Fitness', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/D1FAE5/0F3F2D?text=Yoga+Mat'},
-        {'id': 15, 'name': 'Natural Soy Candle', 'price': 350, 'category': 'Home Decor', 'eco_friendly': True, 'image_url': 'https://placehold.co/220x220/E0F2E5/0F3F2D?text=Candle'},
-    ]
-
-    products_for_template = []
-    for p in products_data_mock:
-        products_for_template.append({
-            'id': p['id'],
-            'name': p['name'],
-            'price': p['price'],
-            'category': p['category'],
-            'eco_friendly': p['eco_friendly'],
-            'image': type('obj', (object,), {'url': p['image_url']})()
-        })
-    return render(request, 'products/product.html', {'products': products_for_template})

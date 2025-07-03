@@ -8,15 +8,102 @@
     <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        /* Basic styling for form fields to match existing design */
+        .form-box label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #34D399; /* Changed label color to match "Join EcoCart Today!" */
+        }
+        /* Ensure these styles apply to all relevant input types and selects/textareas */
+        .form-box input[type="text"],
+        .form-box input[type="email"],
+        .form-box input[type="password"],
+        .form-box input[type="file"],
+        .form-box select,
+        .form-box textarea,
+        /* Explicitly target inputs with the 'form-control' class */
+        .form-box .form-control { /* Added this rule */
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box; /* Include padding in width */
+            font-size: 1rem;
+        }
+        .password-wrap {
+            position: relative;
+        }
+        .password-wrap input {
+            padding-right: 40px; /* Space for the eye icon */
+        }
+        .password-wrap .fas {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #888;
+        }
+        .form-box textarea {
+            resize: vertical; /* Allow vertical resizing */
+            min-height: 80px;
+        }
+
+        /* Styling for Password Requirements section */
+        .password-requirements {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0fdf4; /* Very light green background */
+            border: 1px solid #d1fae5; /* Light green border */
+            border-radius: 8px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .password-requirements p {
+            font-weight: 600;
+            color: #065f46; /* Darker green for heading */
+            margin-bottom: 10px;
+        }
+        .password-requirements ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .password-requirements li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #333; /* Default text color */
+        }
+        .password-requirements li i {
+            font-size: 1.1em;
+            width: 20px; /* Fixed width for icon */
+            text-align: center;
+            margin-right: 8px; /* Space between icon and text */
+        }
+        .password-requirements li.text-red-500 {
+            color: #ef4444; /* Tailwind red-500 */
+        }
+        .password-requirements li.text-green-500 {
+            color: #22c55e; /* Tailwind green-500 */
+        }
+        .error-messages {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
 
     <nav class="navbar">
         <div class="brand">EcoCart 🌿</div>
         <div class="nav-links">
-            {# CORRECTED: Link to products list page for 'Shop Eco' #}
             <a href="{% url 'products:list' %}">Shop Eco</a>
-            {# CORRECTED: Added 'accounts:' namespace to blog, about_us, contact, and login links #}
             <a href="{% url 'accounts:blog' %}">Blog</a> 
             <a href="{% url 'accounts:about_us' %}">About Us</a> 
             <a href="{% url 'accounts:contact' %}">Contact</a> 
@@ -29,29 +116,160 @@
             <h1>Join EcoCart Today!</h1>
             <p class="tagline">Create your account and start your sustainable shopping 🌱</p>
 
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data"> {# IMPORTANT: Add enctype for file uploads #}
                 {% csrf_token %}
 
-                <label for="username">Choose a Username</label>
-                <input type="text" name="username" placeholder="Your EcoCart username" required />
+                {# Display non-field errors if any #}
+                {% if form.non_field_errors %}
+                    <div class="error-messages">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
-                <label for="email">Your Email Address</label>
-                <input type="email" name="email" placeholder="email@example.com" required />
+                {# Username Field #}
+                <label for="{{ form.username.id_for_label }}">Choose a Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="error-messages">
+                        {% for error in form.username.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
 
+                {# Email Field #}
+                <label for="{{ form.email.id_for_label }}">Your Email Address</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="error-messages">
+                        {% for error in form.email.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                {# First Name Field - MANUAL RENDERING WITH CLASS #}
+                <label for="{{ form.first_name.id_for_label }}">First Name</label>
+                <input type="text" name="{{ form.first_name.name }}" id="{{ form.first_name.id_for_label }}"
+                       value="{{ form.first_name.value|default:'' }}"
+                       class="form-control rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-200"
+                       {% if form.first_name.field.required %}required{% endif %} />
+                {% if form.first_name.errors %}
+                    <div class="error-messages">
+                        {% for error in form.first_name.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Last Name Field - MANUAL RENDERING WITH CLASS #}
+                <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+                <input type="text" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}"
+                       value="{{ form.last_name.value|default:'' }}"
+                       class="form-control rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-200"
+                       {% if form.last_name.field.required %}required{% endif %} />
+                {% if form.last_name.errors %}
+                    <div class="error-messages">
+                        {% for error in form.last_name.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Phone Field #}
+                <label for="{{ form.phone.id_for_label }}">Phone Number</label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                    <div class="error-messages">
+                        {% for error in form.phone.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Gender Field #}
+                <label for="{{ form.gender.id_for_label }}">Gender</label>
+                {{ form.gender }}
+                {% if form.gender.errors %}
+                    <div class="error-messages">
+                        {% for error in form.gender.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Profile Picture Field #}
+                <label for="{{ form.profile_picture.id_for_label }}">Profile Picture</label>
+                {{ form.profile_picture }}
+                {% if form.profile_picture.errors %}
+                    <div class="error-messages">
+                        {% for error in form.profile_picture.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Bio Field #}
+                <label for="{{ form.bio.id_for_label }}">Biography</label>
+                {{ form.bio }}
+                {% if form.bio.errors %}
+                    <div class="error-messages">
+                        {% for error in form.bio.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Address Field #}
+                <label for="{{ form.address.id_for_label }}">Shipping Address</label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                    <div class="error-messages">
+                        {% for error in form.address.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Password Fields (using manual inputs for eye toggles) #}
                 <label for="password">Create Password</label>
                 <div class="password-wrap">
-                    <input type="password" name="password" id="password" placeholder="Your secret password" required />
+                    {# FIX: Changed name="password" to name="password1" #}
+                    <input type="password" name="password1" id="password" placeholder="Your secret password" required />
                     <i class="fas fa-eye" id="togglePassword1"></i>
                 </div>
+                {# Django form errors for password1 field #}
+                {% if form.password.errors %} {# Note: form.password refers to password1 in UserCreationForm #}
+                    <div class="error-messages">
+                        {% for error in form.password.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Password Requirements Section #}
+                <div class="password-requirements">
+                    <p>For a strong password, dear EcoCartist, ensure it has:</p>
+                    <ul>
+                        <li id="length" class="requirement-item">
+                            <i class="fas fa-times-circle"></i>
+                            At least 8 characters
+                        </li>
+                        <li id="uppercase" class="requirement-item">
+                            <i class="fas fa-times-circle"></i>
+                            An uppercase letter (A-Z)
+                        </li>
+                        <li id="lowercase" class="requirement-item">
+                            <i class="fas fa-times-circle"></i>
+                            A lowercase letter (a-z)
+                        </li>
+                        <li id="number" class="requirement-item">
+                            <i class="fas fa-times-circle"></i>
+                            A number (0-9)
+                        </li>
+                        <li id="special" class="requirement-item">
+                            <i class="fas fa-times-circle"></i>
+                            A special character (!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)
+                        </li>
+                    </ul>
+                </div>
+
 
                 <label for="confirm_password">Confirm Password</label>
                 <div class="password-wrap">
-                    <input type="password" name="confirm_password" id="confirm_password" placeholder="Repeat your password" required />
+                    <input type="password" name="password2" id="confirm_password" placeholder="Repeat your password" required />
                     <i class="fas fa-eye" id="togglePassword2"></i>
                 </div>
+                {# Django form errors for password2 field #}
+                {% if form.password2.errors %}
+                    <div class="error-messages">
+                        {% for error in form.password2.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
 
                 <button type="submit" class="login-btn">Register Account</button>
-                {# CORRECTED: Added 'accounts:' namespace to login link #}
                 <a href="{% url 'accounts:login' %}" class="forgot-btn">Already have an account? Log In</a>
             </form>
 
@@ -59,6 +277,7 @@
     </div>
 
     <script>
+        // JavaScript for password toggles
         const toggle1 = document.getElementById('togglePassword1');
         const passwordField1 = document.getElementById('password');
 
@@ -79,6 +298,48 @@
                 passwordField2.setAttribute('type', type);
                 this.classList.toggle('fa-eye-slash');
             });
+        }
+
+        // JavaScript for Password Strength Feedback
+        const passwordInput = document.getElementById('password');
+        const lengthRequirement = document.getElementById('length');
+        const uppercaseRequirement = document.getElementById('uppercase');
+        const lowercaseRequirement = document.getElementById('lowercase');
+        const numberRequirement = document.getElementById('number');
+        const specialRequirement = document.getElementById('special');
+
+        const requirements = [
+            { element: lengthRequirement, regex: /.{8,}/ },
+            { element: uppercaseRequirement, regex: /[A-Z]/ },
+            { element: lowercaseRequirement, regex: /[a-z]/ },
+            { element: numberRequirement, regex: /[0-9]/ },
+            { element: specialRequirement, regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/ }
+        ];
+
+        function checkPasswordRequirements() {
+            const password = passwordInput.value;
+
+            requirements.forEach(req => {
+                const icon = req.element.querySelector('i');
+                req.element.classList.remove('text-red-500', 'text-green-500');
+                icon.classList.remove('fa-times-circle', 'fa-check-circle');
+
+                if (req.regex.test(password)) {
+                    req.element.classList.add('text-green-500');
+                    icon.classList.add('fa-check-circle');
+                    icon.classList.remove('fa-times-circle');
+                } else {
+                    req.element.classList.add('text-red-500');
+                    icon.classList.add('fa-times-circle');
+                    icon.classList.remove('fa-check-circle');
+                }
+            });
+        }
+
+        if (passwordInput) {
+            passwordInput.addEventListener('input', checkPasswordRequirements);
+            // Also check on page load if there's any pre-filled value (e.g., from browser autofill)
+            checkPasswordRequirements();
         }
     </script>
 
