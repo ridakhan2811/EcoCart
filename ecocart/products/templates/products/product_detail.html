@@ -1,6 +1,5 @@
 {# products/templates/products/product_detail.html #}
 {% load static %}
-{# Removed: {% load products.products_filters %} as no custom filters are used for stock logic #}
 
 
 <!DOCTYPE html>
@@ -193,9 +192,15 @@
                     </a>
                 </div>
                 <div class="flex items-center">
+                    {# Cart Icon and Count - NEW ADDITION #}
+                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">0</span>
+                    </a>
+
                     {% if user.is_authenticated %}
                         <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 ease-in-out mr-4 mt-4 lg:mt-0">
-                            <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
+                            <img src="{% if user.profile.profile_picture %}{{ user.profile.profile_picture.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
                                  onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
                                  alt="{{ user.username }} Profile Picture"
                                  class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
@@ -306,7 +311,11 @@
                         {% endif %}
                     </div>
                     <button class="add-to-cart-btn bg-emerald-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
-                            data-product-id="{{ product.id }}" data-product-name="{{ product.name }}"
+                            data-product-id="{{ product.id }}"
+                            data-product-name="{{ product.name }}"
+                            data-product-price="{{ product.price }}" {# ADDED THIS #}
+                            data-product-image-url="{% if product.image %}{{ product.image.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}" {# ADDED THIS #}
+                            onclick="event.preventDefault(); event.stopPropagation(); addToCart(this);" {# ADDED onclick handler #}
                             {% if product.stock == 0 %}disabled{% endif %}> {# Changed product.in_stock to product.stock #}
                         <i class="fas fa-shopping-cart mr-2"></i> Add to Cart
                     </button>
@@ -352,9 +361,9 @@
                                             </div>
                                         </div>
                                         <div class="flex items-baseline justify-between mt-auto">
-                                            <span class="text-xl font-bold text-emerald-700">₹{{ related_product.price|floatformat:2 }}</span> {# Changed $ to ₹ #}
+                                            <span class="text-xl font-bold text-emerald-700">₹{{ related_product.price|floatformat:2 }}</span>
                                             {% if related_product.is_discounted %}
-                                                <span class="text-gray-400 line-through text-sm ml-2">₹{{ related_product.original_price|floatformat:2 }}</span> {# Changed $ to ₹ #}
+                                                <span class="text-gray-400 line-through text-sm ml-2">₹{{ related_product.original_price|floatformat:2 }}</span>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -426,10 +435,9 @@
                     event.preventDefault(); 
                     event.stopPropagation(); // Prevent event bubbling up to parent links
 
-                    const productId = addToCartBtn.dataset.productId;
-                    const productName = addToCartBtn.dataset.productName;
-                    console.log(`Added "${productName}" (ID: ${productId}) to cart.`);
-                    showMessageBox(`${productName} added to cart!`);
+                    // The addToCart function is now defined in product.js and called from here.
+                    // Pass the button element to the global addToCart function
+                    addToCart(addToCartBtn);
                 });
             }
 

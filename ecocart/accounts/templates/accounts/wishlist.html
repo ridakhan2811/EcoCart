@@ -1,0 +1,72 @@
+{# ecocart/accounts/templates/accounts/wishlist.html #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Wishlist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; @apply bg-gray-50 text-gray-800 min-h-screen flex flex-col; }
+        /* Add any shared styles if you have a base template */
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <header class="bg-emerald-800 p-4 shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto flex items-center justify-between flex-wrap">
+            <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6">
+                <span class="font-bold text-3xl tracking-tight text-white flex items-center">
+                    EcoCart <span class="ml-2 text-green-300">🌿</span>
+                </span>
+            </a>
+            <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
+                <div class="text-lg lg:flex-grow">
+                    <a href="{% url 'products:list' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6">Shop Eco</a>
+                    <a href="{% url 'accounts:blog' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6">Blog</a>
+                    <a href="{% url 'accounts:about_us' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6">About Us</a>
+                    <a href="{% url 'accounts:contact' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200">Contact</a>
+                </div>
+                <div class="flex items-center">
+                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">0</span>
+                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 mr-4">
+                            <img src="{% if user.profile.profile_picture %}{{ user.profile.profile_picture.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
+                                 onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
+                                 alt="{{ user.username }} Profile Picture"
+                                 class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
+                            <span class="hidden sm:inline">{{ user.username }}</span>
+                        </a>
+                        <a href="{% url 'accounts:logout' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800">Logout</a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mr-2">Login</a>
+                        <a href="{% url 'accounts:register' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 text-center">
+        <h1 class="text-4xl font-bold text-gray-900 mb-6">Your Wishlist</h1>
+        <p class="text-xl text-gray-700">{{ message }}</p>
+        <p class="text-lg text-gray-600 mt-4">This page is under construction. Come back soon to manage your favorite eco-friendly products!</p>
+        <a href="{% url 'products:list' %}" class="mt-8 inline-block px-6 py-3 bg-emerald-600 text-white font-bold rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300">
+            Continue Shopping
+        </a>
+    </main>
+
+    <footer class="bg-emerald-800 text-green-100 py-8 text-center shadow-inner mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="text-sm">
+                &copy; {{ "now"|date:"Y" }} EcoCart <span class="ml-1">🌱</span> — Built with sustainability in mind.
+            </div>
+        </div>
+    </footer>
+    <script src="{% static 'products/js/product.js' %}"></script>
+</body>
+</html>

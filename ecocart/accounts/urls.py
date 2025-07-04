@@ -13,6 +13,10 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('blog/', views.blog_view, name='blog'),
     path('about-us/', views.about_us_view, name='about_us'), 
+    path('wishlist/', views.wishlist_view, name='wishlist_view'),
     path('contact/', views.contact_view, name='contact'),
     path('forgot_password/', views.forgot_password_view, name='forgot_password'),
+    path('cart/', views.cart_detail, name='cart_detail'),
+    path('checkout/', views.checkout_view, name='checkout_view'), # NEW: Checkout page
+
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

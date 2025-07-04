@@ -1,0 +1,642 @@
+{# products/templates/products/checkout.html #}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | EcoCart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {# Load Stripe.js library - This is crucial for secure client-side card handling #}
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        :root {
+            --color-primary-lightest: #E8F5E9; /* Lightest green */
+            --color-primary-medium: #A5D6A7;   /* Medium green */
+            --color-primary-dark: #66BB6A; /* Darker green */
+            --color-emerald-800: #065F46; /* From your landing page header */
+            --color-emerald-600: #059669; /* From your landing page buttons */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            @apply bg-gray-50 text-gray-800;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-primary-medium);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-primary-dark);
+        }
+
+        /* Message Box Styles (consistent across pages) */
+        #message-box {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+            pointer-events: none;
+        }
+
+        #message-box.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        #message-box.hidden {
+            display: none;
+        }
+
+        #message-box.bg-green-600 { background-color: #059669; }
+        #message-box.bg-red-600 { background-color: #dc2626; }
+        #message-box.bg-blue-600 { background-color: #2563eb; }
+        #message-box.bg-gray-700 { background-color: #374151; }
+
+        /* Checkout specific styles */
+        .checkout-container {
+            display: grid;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 768px) { /* Medium screens and up */
+            .checkout-container {
+                grid-template-columns: 1.5fr 1fr; /* Billing/Shipping on left, Order Summary/Payment on right */
+            }
+        }
+
+        .form-label {
+            @apply block text-gray-700 text-sm font-bold mb-2;
+        }
+        .form-input {
+            @apply shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent;
+        }
+        .form-select {
+            @apply block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-3 pr-8 rounded shadow leading-tight focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent;
+        }
+        .submit-button {
+            @apply w-full py-3 rounded-full font-bold text-white transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95;
+            background: linear-gradient(to right, #059669, #10B981); /* Emerald gradient */
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4);
+        }
+        .submit-button:hover {
+            box-shadow: 0 6px 15px rgba(5, 150, 105, 0.6);
+        }
+
+        /* Stripe Elements styling */
+        #card-element {
+            border: 1px solid #e2e8f0; /* Tailwind gray-300 */
+            padding: 0.75rem 1rem;
+            border-radius: 0.25rem;
+            background-color: white;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease-in-out;
+        }
+        #card-element.StripeElement--focus {
+            border-color: #10B981; /* Tailwind emerald-500 */
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3); /* Ring effect */
+        }
+        .StripeElement--invalid {
+            border-color: #ef4444; /* Tailwind red-500 */
+        }
+        /* Important: Stripe elements create iframes, so direct CSS targeting is limited.
+           Use Stripe's `style` option for internal styling.
+           The autofill background color below is a common workaround for Chrome. */
+        .StripeElement--webkit-autofill {
+            background-color: #fefcbf !important; /* Tailwind yellow-100 */
+        }
+
+        #card-errors {
+            @apply text-red-500 text-sm mt-2;
+        }
+
+        .promo-input {
+            @apply flex-grow p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-emerald-500;
+        }
+        .apply-promo-btn {
+            @apply px-5 py-3 bg-emerald-600 text-white font-semibold rounded-r-lg hover:bg-emerald-700 transition-colors duration-200;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    {# START OF HEADER/NAV BAR CONTENT #}
+    <header id="main-navbar" class="bg-emerald-800 p-4 shadow-lg sticky top-0 z-40 transition-all duration-300 ease-in-out">
+        <div class="container mx-auto flex items-center justify-between flex-wrap">
+            {# Left side of navbar: EcoCart Logo #}
+            <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6">
+                <span class="font-bold text-3xl tracking-tight text-white flex items-center">
+                    EcoCart <span class="ml-2 text-green-300">🌿</span>
+                </span>
+            </a>
+
+            <div class="block lg:hidden">
+                <button id="nav-toggle" class="flex items-center px-3 py-2 border rounded text-green-200 border-green-400 hover:text-white hover:border-white focus:outline-none focus:ring-2 focus:ring-white">
+                    <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Menu</title><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>
+                </button>
+            </div>
+
+            <div id="nav-content" class="w-full block flex-grow lg:flex lg:items-center lg:w-auto hidden">
+                <div class="text-lg lg:flex-grow">
+                    <a href="{% url 'products:list' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                        Shop Eco
+                    </a>
+                    <a href="{% url 'accounts:blog' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                        Blog
+                    </a>
+                    <a href="{% url 'accounts:about_us' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                        About Us
+                    </a>
+                    <a href="{% url 'accounts:contact' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 transition duration-300 ease-in-out">
+                        Contact
+                    </a>
+                </div>
+                <div class="flex items-center">
+                    {# Cart Icon and Count #}
+                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">0</span>
+                    </a>
+
+                    {% if user.is_authenticated %}
+                        {# Profile Picture and Name moved to the right #}
+                        <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 ease-in-out mr-4 mt-4 lg:mt-0">
+                            <img src="{% if user.profile.profile_picture %}{{ user.profile.profile_picture.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
+                                 onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
+                                 alt="{{ user.username }} Profile Picture"
+                                 class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
+                            <span class="hidden sm:inline">{{ user.username }}</span>
+                        </a>
+                        <a href="{% url 'accounts:logout' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out mr-2">
+                            Login
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                            Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+    {# END OF HEADER/NAV BAR CONTENT #}
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center text-gray-900 mb-10 tracking-tight">Secure Checkout</h1>
+
+        <div class="checkout-container bg-white p-8 rounded-lg shadow-xl">
+            {# Left Column: Billing & Shipping Address #}
+            <section>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-4">Shipping Information</h2>
+                <form id="shipping-form" class="space-y-4">
+                    <div>
+                        <label for="full-name" class="form-label">Full Name</label>
+                        <input type="text" id="full-name" class="form-input" placeholder="John Doe" required>
+                    </div>
+                    <div>
+                        <label for="address-line1" class="form-label">Address Line 1</label>
+                        <input type="text" id="address-line1" class="form-input" placeholder="123 Eco Street" required>
+                    </div>
+                    <div>
+                        <label for="address-line2" class="form-label">Address Line 2 (Optional)</label>
+                        <input type="text" id="address-line2" class="form-input" placeholder="Apt 4B">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" id="city" class="form-input" placeholder="Greenville" required>
+                        </div>
+                        <div>
+                            <label for="state" class="form-label">State / Province</label>
+                            <input type="text" id="state" class="form-input" placeholder="CA" required>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="zip-code" class="form-label">Zip Code</label>
+                            <input type="text" id="zip-code" class="form-input" placeholder="90210" required>
+                        </div>
+                        <div>
+                            <label for="country" class="form-label">Country</label>
+                            <select id="country" class="form-select" required>
+                                <option value="IN">India</option>
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="GB">United Kingdom</option>
+                                {# Add more countries as needed #}
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="phone-number" class="form-label">Phone Number</label>
+                        <input type="tel" id="phone-number" class="form-input" placeholder="+91 9876543210" required>
+                    </div>
+                </form>
+            </section>
+
+            {# Right Column: Order Summary & Payment #}
+            <aside>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-4">Order Summary</h2>
+                <div class="space-y-3 text-lg mb-6">
+                    <div class="flex justify-between">
+                        <span>Items Subtotal:</span>
+                        <span class="font-semibold">₹<span id="checkout-subtotal">0.00</span></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Shipping:</span>
+                        <span class="font-semibold">₹<span id="checkout-shipping">0.00</span></span>
+                    </div>
+                    <div class="flex justify-between text-emerald-600 font-bold" id="checkout-discount-row" style="display: none;">
+                        <span>Discount (<span id="checkout-promo-code-display"></span>):</span>
+                        <span>- ₹<span id="checkout-discount">0.00</span></span>
+                    </div>
+                    <div class="border-t border-gray-200 pt-4 flex justify-between items-center text-2xl font-bold text-gray-900">
+                        <span>Total:</span>
+                        <span>₹<span id="checkout-total">0.00</span></span>
+                    </div>
+                </div>
+
+                {# Promo Code Section #}
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Have a promo code?</h3>
+                    <div class="flex">
+                        <input type="text" id="promo-code-input" placeholder="Enter code" class="promo-input">
+                        <button id="apply-promo-btn" class="apply-promo-btn">Apply</button>
+                    </div>
+                    <p id="promo-message" class="text-sm mt-2"></p>
+                </div>
+
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-4 mt-8">Payment Information</h2>
+                <form id="payment-form" class="space-y-4">
+                    <div>
+                        <label for="card-name" class="form-label">Name on Card</label>
+                        <input type="text" id="card-name" class="form-input" placeholder="John Doe" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Card Details</label>
+                        <div id="card-element">
+                            {# A Stripe Element will be inserted here by Stripe.js #}
+                        </div>
+                        {# Used to display form errors from Stripe.js #}
+                        <div id="card-errors" role="alert"></div>
+                    </div>
+                    <button id="submit-button" class="submit-button mt-6">
+                        Place Order <i class="fas fa-lock ml-2"></i>
+                    </button>
+                    <p class="text-xs text-gray-500 text-center mt-4">
+                        Your payment is secured by Stripe. This is a simulation for demonstration purposes.
+                    </p>
+                </form>
+            </aside>
+        </div>
+
+        {# Simple Message Box for confirmations #}
+        <div id="message-box" class="fixed bottom-8 right-8 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl hidden z-50 transition-opacity duration-300 ease-out opacity-0">
+            Message will appear here.
+        </div>
+
+    </main>
+
+    {# START OF FOOTER CONTENT #}
+    <footer class="bg-emerald-800 text-green-100 py-8 text-center shadow-inner mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="text-sm">
+                &copy; {{ "now"|date:"Y" }} EcoCart <span class="ml-1">🌱</span> — Built with sustainability in mind.
+            </div>
+        </div>
+    </footer>
+    {# END OF FOOTER CONTENT #}
+
+    {# Load product.js for the Cart object and showMessageBox function #}
+    <script src="{% static 'products/js/product.js' %}"></script>
+
+    <script>
+        // Ensure Cart object and showMessageBox from product.js are available
+        if (typeof Cart === 'undefined') {
+            console.error('Cart object not found. Ensure product.js is loaded before checkout.html script.');
+            // Fallback showMessageBox if product.js failed to load
+            window.showMessageBox = window.showMessageBox || function(msg, type) { console.log(`Message: ${msg} (${type})`); };
+        } else {
+            // Update cart count for the navbar on checkout page load
+            Cart.updateCartCount();
+        }
+
+        // Initialize Stripe.js with your publishable key
+        const stripe = Stripe('{{ stripe_publishable_key }}');
+        const elements = stripe.elements();
+
+        // Create an instance of the card Element. This is the secure iframe for card input.
+        const cardElement = elements.create('card', {
+            style: {
+                base: {
+                    iconColor: '#059669', // Emerald-600
+                    color: '#374151',    // Gray-700
+                    fontWeight: '500',
+                    fontFamily: 'Poppins, sans-serif',
+                    fontSize: '16px',
+                    '::placeholder': {
+                        color: '#9ca3af', // Gray-400
+                    },
+                    ':-webkit-autofill': {
+                        color: '#fefcbf !important', // Light yellow for autofill
+                    },
+                },
+                invalid: {
+                    iconColor: '#ef4444', // Red-500
+                    color: '#ef4444',     // Red-500
+                },
+            },
+        });
+
+        // Add an instance of the card Element into the `card-element` div.
+        cardElement.mount('#card-element');
+
+        // Handle real-time validation errors from the card Element.
+        cardElement.on('change', function(event) {
+            const displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        // --- Order Summary Calculation and Promo Code Logic ---
+        // 'appliedPromoCode' will store the currently applied valid code
+        let appliedPromoCode = '';
+        const validPromoCodes = {
+            'ECOSAVE10': { type: 'percentage', value: 0.10, message: '10% off applied!' },
+            'FREESHIP': { type: 'shipping', value: 0, message: 'Free shipping applied!' },
+            'SAVE20': { type: 'flat', value: 20.00, message: '₹20 flat discount applied!' }
+        };
+
+        function calculateCheckoutSummary() {
+            const cartItems = Cart.getItems();
+            let subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            let shippingCost = 50.00; // Example fixed shipping cost
+            let discountAmount = 0;
+
+            // Apply promo code if one is set
+            if (appliedPromoCode) {
+                const codeInfo = validPromoCodes[appliedPromoCode.toUpperCase()];
+                if (codeInfo) {
+                    if (codeInfo.type === 'percentage') {
+                        discountAmount = subtotal * codeInfo.value;
+                    } else if (codeInfo.type === 'flat') {
+                        discountAmount = codeInfo.value;
+                    } else if (codeInfo.type === 'shipping') {
+                        shippingCost = 0; // Set shipping to 0 for free shipping
+                    }
+                }
+            }
+
+            const total = (subtotal + shippingCost - discountAmount);
+
+            document.getElementById('checkout-subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('checkout-shipping').textContent = shippingCost.toFixed(2);
+            document.getElementById('checkout-total').textContent = Math.max(0, total).toFixed(2); // Ensure total doesn't go negative
+
+            const discountRow = document.getElementById('checkout-discount-row');
+            const checkoutDiscountSpan = document.getElementById('checkout-discount');
+            const checkoutPromoCodeDisplay = document.getElementById('checkout-promo-code-display');
+
+            if (discountAmount > 0 || (appliedPromoCode && validPromoCodes[appliedPromoCode.toUpperCase()]?.type === 'shipping')) {
+                discountRow.style.display = 'flex';
+                checkoutDiscountSpan.textContent = discountAmount.toFixed(2);
+                checkoutPromoCodeDisplay.textContent = appliedPromoCode;
+            } else {
+                discountRow.style.display = 'none';
+            }
+
+            return Math.max(0, total); // Return the calculated total
+        }
+
+        // Event listener for applying promo code
+        document.getElementById('apply-promo-btn').addEventListener('click', () => {
+            const promoInput = document.getElementById('promo-code-input');
+            const promoCode = promoInput.value.trim().toUpperCase();
+            const promoMessage = document.getElementById('promo-message');
+
+            if (promoCode === '') {
+                promoMessage.textContent = 'Please enter a promo code.';
+                promoMessage.classList.remove('text-green-600', 'text-red-600');
+                promoMessage.classList.add('text-orange-500');
+                appliedPromoCode = ''; // Clear applied code
+                calculateCheckoutSummary(); // Recalculate without discount
+                return;
+            }
+
+            const codeInfo = validPromoCodes[promoCode];
+            if (codeInfo) {
+                appliedPromoCode = promoCode; // Set the applied code
+                promoMessage.textContent = codeInfo.message;
+                promoMessage.classList.remove('text-red-600', 'text-orange-500');
+                promoMessage.classList.add('text-green-600');
+                showMessageBox(`Coupon "${promoCode}" applied!`, 'success');
+            } else {
+                promoMessage.textContent = 'Invalid promo code. Please try again.';
+                promoMessage.classList.remove('text-green-600', 'text-orange-500');
+                promoMessage.classList.add('text-red-600');
+                appliedPromoCode = ''; // Clear applied code if invalid
+                showMessageBox('Invalid coupon code.', 'error');
+            }
+            calculateCheckoutSummary(); // Re-calculate summary with the new promo code status
+        });
+        // --- End Order Summary Calculation and Promo Code Logic ---
+
+
+        // Handle form submission for payment.
+        const form = document.getElementById('payment-form');
+        const submitButton = document.getElementById('submit-button');
+        const cardNameInput = document.getElementById('card-name');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            submitButton.disabled = true; // Disable button to prevent multiple submissions
+            submitButton.textContent = 'Processing...';
+
+            const totalAmount = calculateCheckoutSummary(); // Get the final amount to charge
+
+            // --- IMPORTANT: REAL BACKEND INTEGRATION STARTS HERE ---
+            // In a real application, you would make a fetch request to your Django backend here.
+            // Your backend would then call Stripe's API to create a PaymentIntent,
+            // passing the totalAmount (in cents), currency, and other order details.
+            // Stripe would return a client_secret, which your backend would send back to this frontend.
+
+            // Example of what a real backend call might look like:
+            /*
+            try {
+                const backendResponse = await fetch('/create-payment-intent/', { // Your Django URL
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken') // Function to get CSRF token
+                    },
+                    body: JSON.stringify({
+                        amount: Math.round(totalAmount * 100), // Stripe expects amount in cents
+                        currency: 'inr', // Your currency (e.g., 'usd', 'inr')
+                        cart_items: Cart.getItems(), // Send cart details
+                        shipping_info: { // Send shipping details
+                            fullName: document.getElementById('full-name').value,
+                            address1: document.getElementById('address-line1').value,
+                            city: document.getElementById('city').value,
+                            zipCode: document.getElementById('zip-code').value,
+                            country: document.getElementById('country').value,
+                            // ... other fields
+                        },
+                        promo_code: appliedPromoCode // Send applied promo code to backend
+                    })
+                });
+
+                if (!backendResponse.ok) {
+                    const errorData = await backendResponse.json();
+                    throw new Error(errorData.message || 'Failed to create PaymentIntent on backend.');
+                }
+
+                const { clientSecret } = await backendResponse.json();
+
+                // Now confirm the payment with Stripe using the client_secret from your backend
+                const { paymentIntent, error: confirmError } = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: cardNameInput.value,
+                            // You would collect full billing address here if needed
+                        },
+                    },
+                    setup_future_usage: 'off_session', // Optional: for saving card details for future use
+                });
+
+                if (confirmError) {
+                    const errorDisplay = document.getElementById('card-errors');
+                    errorDisplay.textContent = confirmError.message;
+                    showMessageBox(confirmError.message, 'error');
+                } else if (paymentIntent.status === 'succeeded') {
+                    // Payment succeeded! Now inform your backend to finalize the order.
+                    await fetch('/finalize-order/', { // Your Django URL to finalize order
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            payment_intent_id: paymentIntent.id,
+                            order_status: 'paid',
+                            // ... any other data your backend needs
+                        })
+                    });
+
+                    showMessageBox('Payment Successful! Your order has been placed.', 'success');
+                    Cart.clearCart(); // Clear cart on successful order
+                    setTimeout(() => {
+                        window.location.href = '{% url "accounts:home" %}'; // Redirect to home or a specific order confirmation page
+                    }, 2000);
+                }
+            } catch (backendError) {
+                console.error('Backend or Stripe error:', backendError);
+                const errorDisplay = document.getElementById('card-errors');
+                errorDisplay.textContent = backendError.message || 'An unexpected error occurred during payment setup.';
+                showMessageBox(backendError.message || 'Payment setup failed.', 'error');
+            }
+            */
+            // --- END OF REAL BACKEND INTEGRATION EXAMPLE ---
+
+
+            // --- SIMULATED PAYMENT FOR DEMONSTRATION (NO REAL TRANSACTION) ---
+            // For demonstration, we'll simulate success/failure based on test card numbers
+            // without actually calling a backend or Stripe's API.
+            // This is purely client-side for visual and functional demo.
+            const { paymentMethod, error } = await stripe.createPaymentMethod({
+                type: 'card',
+                card: cardElement,
+                billing_details: {
+                    name: cardNameInput.value,
+                },
+            });
+
+            if (error) {
+                const errorDisplay = document.getElementById('card-errors');
+                errorDisplay.textContent = error.message;
+                showMessageBox(error.message, 'error');
+            } else {
+                const last4 = paymentMethod.card.last4;
+                if (last4 === '4242' || last4 === '5555') { // Simulate success for common test cards
+                    showMessageBox('Payment Successful! Your order has been placed. (SIMULATED)', 'success');
+                    Cart.clearCart(); // Clear cart on successful order
+                    setTimeout(() => {
+                        window.location.href = '{% url "accounts:home" %}'; // Redirect to home for now
+                    }, 2000);
+                } else { // Simulate failure for other test cards or invalid ones
+                    const errorMessage = 'Payment failed. Please try a different card. (SIMULATED)';
+                    document.getElementById('card-errors').textContent = errorMessage;
+                    showMessageBox(errorMessage, 'error');
+                }
+            }
+
+            submitButton.disabled = false;
+            submitButton.innerHTML = 'Place Order <i class="fas fa-lock ml-2"></i>';
+        });
+
+        // Function to get CSRF token for Django AJAX calls (if you implement real backend)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+
+        // Initial calculation of order summary when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            calculateCheckoutSummary();
+
+            // Mobile Navigation Toggle (re-used from product_list.html)
+            const navToggle = document.getElementById('nav-toggle');
+            const navContent = document.getElementById('nav-content');
+            if (navToggle && navContent) {
+                navToggle.addEventListener('click', function() {
+                    navContent.classList.toggle('hidden');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
