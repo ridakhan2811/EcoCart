@@ -1,0 +1,565 @@
+{# products/templates/products/cart.html #}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your EcoCart | Sustainable Shopping</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --color-primary-lightest: #E8F5E9; /* Lightest green */
+            --color-primary-medium: #A5D6A7;   /* Medium green */
+            --color-primary-dark: #66BB6A; /* Darker green */
+            --color-emerald-800: #065F46; /* From your landing page header */
+            --color-emerald-600: #059669; /* From your landing page buttons */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            @apply bg-gray-50 text-gray-800;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-primary-medium);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-primary-dark);
+        }
+
+        /* Message Box Styles (ensure these are consistent with product.js) */
+        #message-box {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+            z-index: 1000; /* Ensure it's on top of other content */
+            opacity: 0;
+            transform: translateY(20px); /* Start slightly below */
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+            pointer-events: none; /* Allow clicks to pass through when hidden */
+        }
+
+        #message-box.show {
+            opacity: 1;
+            transform: translateY(0); /* Slide up to position */
+            pointer-events: auto; /* Enable clicks when visible */
+        }
+
+        #message-box.hidden {
+            display: none; /* Completely hide after transition */
+        }
+
+        /* Message Box Type Colors */
+        #message-box.bg-green-600 { /* Success */
+            background-color: #059669; /* Tailwind emerald-600 */
+        }
+        #message-box.bg-red-600 { /* Error */
+            background-color: #dc2626; /* Tailwind red-600 */
+        }
+        #message-box.bg-blue-600 { /* Info */
+            background-color: #2563eb; /* Tailwind blue-600 */
+        }
+        #message-box.bg-gray-700 { /* Default */
+            background-color: #374151; /* Tailwind gray-700 */
+        }
+
+        /* Custom styles for the cart page inspired by cartinspo.jpg */
+        .cart-container {
+            display: grid;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 1024px) { /* Large screens */
+            .cart-container {
+                grid-template-columns: 2fr 1fr; /* Two-column layout */
+            }
+        }
+
+        .cart-item-card {
+            /* Keep cart item cards white or very light for contrast against darker section */
+            @apply flex items-center p-4 bg-white rounded-lg shadow-md mb-4 transition-all duration-300 ease-in-out;
+        }
+        .cart-item-card:hover {
+            @apply shadow-lg transform scale-[1.005];
+        }
+
+        .quantity-control {
+            @apply flex items-center border border-gray-300 rounded-md overflow-hidden;
+        }
+        .quantity-btn {
+            @apply px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition-colors duration-200;
+        }
+        .quantity-input {
+            @apply w-12 text-center border-l border-r border-gray-300 text-gray-700 font-semibold focus:outline-none;
+        }
+
+        .checkout-button {
+            @apply w-full py-3 rounded-full font-bold text-white transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95;
+            background: linear-gradient(to right, #059669, #10B981); /* Emerald gradient */
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4);
+        }
+        .checkout-button:hover {
+            box-shadow: 0 6px 15px rgba(5, 150, 105, 0.6);
+        }
+
+        .promo-input {
+            @apply flex-grow p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-emerald-500;
+        }
+        .apply-promo-btn {
+            @apply px-5 py-3 bg-emerald-600 text-white font-semibold rounded-r-lg hover:bg-emerald-700 transition-colors duration-200;
+        }
+
+        /* UPDATED: Color Changing Animation for Sections - Darker Shades */
+        @keyframes subtleBackgroundShift {
+            0% { background-color: #F0FFF0; } /* Starting light green */
+            25% { background-color: #E8F5E9; } /* Slightly darker green */
+            50% { background-color: #F0FFF0; }
+            75% { background-color: #E8F5E9; }
+            100% { background-color: #F0FFF0; }
+        }
+
+        .animated-section {
+            animation: subtleBackgroundShift 15s ease-in-out infinite; /* 15s duration, infinite loop */
+            background-color: #F0FFF0; /* Set initial background to a light green */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    {# START OF HEADER/NAV BAR CONTENT (Re-used from product_list.html) #}
+    <header id="main-navbar" class="bg-emerald-800 p-4 shadow-lg sticky top-0 z-40 transition-all duration-300 ease-in-out">
+        <div class="container mx-auto flex items-center justify-between flex-wrap">
+            {# Left side of navbar: EcoCart Logo #}
+            <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6">
+                <span class="font-bold text-3xl tracking-tight text-white flex items-center">
+                    EcoCart <span class="ml-2 text-green-300">🌿</span>
+                </span>
+            </a>
+
+            <div class="block lg:hidden">
+                <button id="nav-toggle" class="flex items-center px-3 py-2 border rounded text-green-200 border-green-400 hover:text-white hover:border-white focus:outline-none focus:ring-2 focus:ring-white">
+                    <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Menu</title><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>
+                </button>
+            </div>
+
+            <div id="nav-content" class="w-full block flex-grow lg:flex lg:items-center lg:w-auto hidden">
+                <div class="text-lg lg:flex-grow">
+                    <a href="{% url 'products:list' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                        Shop Eco
+                    </a>
+                    {# Assuming these URLs exist in your 'accounts' app #}
+                    <a href="{% url 'accounts:blog' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                        Blog
+                    </a>
+                    <a href="{% url 'accounts:about_us' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                        About Us
+                    </a>
+                    <a href="{% url 'accounts:contact' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 transition duration-300 ease-in-out">
+                        Contact
+                    </a>
+                </div>
+                <div class="flex items-center">
+                    {# Cart Icon and Count #}
+                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">0</span>
+                    </a>
+
+                    {% if user.is_authenticated %}
+                        {# Profile Picture and Name moved to the right #}
+                        <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 ease-in-out mr-4 mt-4 lg:mt-0">
+                            <img src="{% if user.profile.profile_picture %}{{ user.profile.profile_picture.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
+                                 onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
+                                 alt="{{ user.username }} Profile Picture"
+                                 class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
+                            <span class="hidden sm:inline">{{ user.username }}</span>
+                        </a>
+                        <a href="{% url 'accounts:logout' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out mr-2">
+                            Login
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                            Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+    {# END OF HEADER/NAV BAR CONTENT #}
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center text-gray-900 mb-10 tracking-tight">Your Eco-Friendly Cart</h1>
+
+        <div class="cart-container">
+            {# Left Column: Cart Items List #}
+            <section class="lg:col-span-2 p-6 rounded-lg shadow-md animated-section"> {# No bg-white, animation handles it #}
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-4">Shopping Bag (<span id="cart-items-count">0</span> items)</h2>
+                <div id="cart-items-list" class="divide-y divide-gray-200">
+                    {# Cart items will be dynamically loaded here by JavaScript #}
+                    <p id="empty-cart-message" class="text-center text-gray-500 text-lg py-8 hidden">Your cart is empty. Start adding some eco-friendly products!</p>
+                </div>
+                <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <a href="{% url 'products:list' %}" class="px-6 py-3 border border-emerald-600 text-emerald-600 rounded-full font-semibold hover:bg-emerald-50 transition-colors duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i> Continue Shopping
+                    </a>
+                    <a href="{% url 'accounts:wishlist_view' %}" class="px-6 py-3 bg-emerald-100 text-emerald-800 rounded-full font-semibold hover:bg-emerald-200 transition-colors duration-200">
+                        <i class="far fa-heart mr-2"></i> Go to Wishlist
+                    </a>
+                </div>
+            </section>
+
+            {# Right Column: Order Summary & Promo #}
+            <aside class="lg:col-span-1 p-6 rounded-lg shadow-md h-fit sticky top-24 animated-section"> {# No bg-white, animation handles it #}
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-4">Order Summary</h2>
+
+                <div class="space-y-4 text-lg">
+                    <div class="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span class="font-semibold">₹<span id="cart-subtotal">0.00</span></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Shipping:</span>
+                        <span class="font-semibold">₹<span id="cart-shipping">0.00</span></span>
+                    </div>
+                    <div class="flex justify-between text-emerald-600 font-bold" id="discount-row" style="display: none;">
+                        <span>Discount (<span id="promo-code-display"></span>):</span>
+                        <span>- ₹<span id="cart-discount">0.00</span></span>
+                    </div>
+                    <div class="border-t border-gray-200 pt-4 flex justify-between items-center text-2xl font-bold text-gray-900">
+                        <span>Total:</span>
+                        <span>₹<span id="cart-total">0.00</span></span>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Have a promo code?</h3>
+                    <div class="flex">
+                        <input type="text" id="promo-code-input" placeholder="Enter code" class="promo-input">
+                        <button id="apply-promo-btn" class="apply-promo-btn">Apply</button>
+                    </div>
+                    <p id="promo-message" class="text-sm mt-2"></p>
+                </div>
+
+                <a href="{% url 'accounts:checkout_view' %}" class="checkout-button mt-8 flex items-center justify-center">
+                    Proceed to Checkout <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </aside>
+        </div>
+
+        {# Simple Message Box for confirmations #}
+        <div id="message-box" class="fixed bottom-8 right-8 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl hidden z-50 transition-opacity duration-300 ease-out opacity-0">
+            Product added to cart!
+        </div>
+
+    </main>
+
+    {# START OF FOOTER CONTENT (Re-used from product_list.html) #}
+    <footer class="bg-emerald-800 text-green-100 py-8 text-center shadow-inner mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="text-sm">
+                &copy; {{ "now"|date:"Y" }} EcoCart <span class="ml-1">🌱</span> — Built with sustainability in mind.
+            </div>
+        </div>
+    </footer>
+    {# END OF FOOTER CONTENT #}
+
+    {# Load product.js for the Cart object and showMessageBox function #}
+    <script src="{% static 'products/js/product.js' %}"></script>
+
+    <script>
+        // Cart-specific JavaScript logic
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ensure Cart object from product.js is available
+            if (typeof Cart === 'undefined') {
+                console.error('Cart object not found. Ensure product.js is loaded before cart.html script.');
+                showMessageBox('Error: Cart functionality not available.', 'error');
+                return;
+            }
+
+            // Initial cart count update for the navbar
+            Cart.updateCartCount();
+
+            // Function to render cart items
+            function renderCartItems() {
+                const cartItems = Cart.getItems();
+                const cartItemsList = document.getElementById('cart-items-list');
+                const emptyCartMessage = document.getElementById('empty-cart-message');
+                let subtotal = 0;
+                let totalItemsInCart = 0;
+
+                cartItemsList.innerHTML = ''; // Clear existing items
+
+                if (cartItems.length === 0) {
+                    emptyCartMessage.classList.remove('hidden');
+                } else {
+                    emptyCartMessage.classList.add('hidden');
+                    cartItems.forEach(item => {
+                        const itemTotal = item.price * item.quantity;
+                        subtotal += itemTotal;
+                        totalItemsInCart += item.quantity;
+
+                        const itemHtml = `
+                            <div class="cart-item-card" data-product-id="${item.id}">
+                                <img src="${item.image_url}"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/100x100/e0ffe0/333333?text=Product';"
+                                     alt="${item.name}"
+                                     class="w-24 h-24 object-cover rounded-md mr-4 border border-gray-200">
+                                <div class="flex-grow">
+                                    <h3 class="text-xl font-semibold text-gray-800">${item.name}</h3>
+                                    <p class="text-gray-600">Price: ₹${item.price.toFixed(2)}</p>
+                                    <div class="flex items-center mt-2">
+                                        <div class="quantity-control">
+                                            <button class="quantity-btn decrease-quantity" data-product-id="${item.id}">-</button>
+                                            <input type="number" value="${item.quantity}" min="1" class="quantity-input" data-product-id="${item.id}">
+                                            <button class="quantity-btn increase-quantity" data-product-id="${item.id}">+</button>
+                                        </div>
+                                        <button class="ml-4 text-red-500 hover:text-red-700 transition-colors duration-200 remove-item-btn" data-product-id="${item.id}">
+                                            <i class="fas fa-trash-alt mr-1"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="text-lg font-bold text-gray-900 ml-auto">
+                                    ₹${itemTotal.toFixed(2)}
+                                </div>
+                            </div>
+                        `;
+                        cartItemsList.insertAdjacentHTML('beforeend', itemHtml);
+                    });
+                }
+
+                document.getElementById('cart-items-count').textContent = totalItemsInCart;
+                document.getElementById('cart-subtotal').textContent = subtotal.toFixed(2);
+                calculateOrderSummary(subtotal); // Recalculate totals including potential discount
+                attachCartEventListeners(); // Re-attach listeners after rendering
+            }
+
+            // Function to attach event listeners to dynamically created cart elements
+            function attachCartEventListeners() {
+                // Remove existing listeners to prevent duplicates
+                document.querySelectorAll('.increase-quantity').forEach(button => {
+                    button.removeEventListener('click', handleQuantityChange);
+                    button.addEventListener('click', handleQuantityChange);
+                });
+                document.querySelectorAll('.decrease-quantity').forEach(button => {
+                    button.removeEventListener('click', handleQuantityChange);
+                    button.addEventListener('click', handleQuantityChange);
+                });
+                document.querySelectorAll('.quantity-input').forEach(input => {
+                    input.removeEventListener('change', handleQuantityChange);
+                    input.addEventListener('change', handleQuantityChange);
+                });
+                document.querySelectorAll('.remove-item-btn').forEach(button => {
+                    button.removeEventListener('click', handleRemoveItem);
+                    button.addEventListener('click', handleRemoveItem);
+                });
+            }
+
+            // Event handler for quantity changes
+            function handleQuantityChange(event) {
+                const productId = event.target.dataset.productId;
+                const inputElement = event.target.closest('.cart-item-card').querySelector('.quantity-input');
+                let newQuantity = parseInt(inputElement.value);
+
+                if (event.target.classList.contains('increase-quantity')) {
+                    newQuantity++;
+                } else if (event.target.classList.contains('decrease-quantity')) {
+                    newQuantity--;
+                }
+
+                // Ensure quantity doesn't go below 1 if it's an input change
+                if (newQuantity < 1 && event.type === 'change') {
+                    newQuantity = 1;
+                    inputElement.value = 1; // Correct the input field visually
+                }
+
+                // Update cart using the global Cart object
+                Cart.updateQuantity(productId, newQuantity);
+                renderCartItems(); // Re-render the cart to reflect changes
+                showMessageBox('Cart updated!', 'info');
+            }
+
+            // Event handler for removing items
+            function handleRemoveItem(event) {
+                const productId = event.target.dataset.productId || event.target.closest('button').dataset.productId;
+                // Using a custom modal instead of `confirm()` for better UX and consistency
+                showConfirmationModal('Are you sure you want to remove this item from your cart?', () => {
+                    Cart.removeItem(productId);
+                    renderCartItems(); // Re-render the cart after removal
+                    showMessageBox('Item removed from cart.', 'success');
+                });
+            }
+
+            // Promo code logic
+            let currentDiscount = 0;
+            let appliedPromoCode = '';
+            const validPromoCodes = {
+                'ECOSAVE10': 0.10, // 10% off
+                'FREESHIP': 0, // Free shipping (handled separately)
+                'SAVE20': 20.00 // ₹20 flat discount
+            };
+
+            function calculateOrderSummary(subtotal) {
+                const shippingCost = 50.00; // Example fixed shipping cost
+                let discountAmount = 0;
+                let finalShipping = shippingCost;
+
+                if (appliedPromoCode) {
+                    const code = appliedPromoCode.toUpperCase();
+                    if (validPromoCodes[code] !== undefined) {
+                        if (code === 'FREESHIP') {
+                            finalShipping = 0;
+                            // showMessageBox('Free shipping applied!', 'success'); // Don't show here to avoid spamming
+                        } else if (validPromoCodes[code] < 1) { // Percentage discount
+                            discountAmount = subtotal * validPromoCodes[code];
+                            // showMessageBox(`Discount of ${(validPromoCodes[code] * 100).toFixed(0)}% applied!`, 'success');
+                        } else { // Flat discount
+                            discountAmount = validPromoCodes[code];
+                            // showMessageBox(`Discount of ₹${discountAmount.toFixed(2)} applied!`, 'success');
+                        }
+                    }
+                }
+
+                currentDiscount = discountAmount; // Store actual calculated discount
+
+                const total = (subtotal + finalShipping - discountAmount);
+
+                document.getElementById('cart-shipping').textContent = finalShipping.toFixed(2);
+                document.getElementById('cart-total').textContent = Math.max(0, total).toFixed(2); // Ensure total doesn't go negative
+
+                const discountRow = document.getElementById('discount-row');
+                const cartDiscountSpan = document.getElementById('cart-discount');
+                const promoCodeDisplay = document.getElementById('promo-code-display');
+
+                if (discountAmount > 0 || (finalShipping === 0 && shippingCost > 0)) {
+                    discountRow.style.display = 'flex';
+                    cartDiscountSpan.textContent = discountAmount.toFixed(2);
+                    promoCodeDisplay.textContent = appliedPromoCode;
+                } else {
+                    discountRow.style.display = 'none';
+                }
+            }
+
+            document.getElementById('apply-promo-btn').addEventListener('click', () => {
+                const promoInput = document.getElementById('promo-code-input');
+                const promoCode = promoInput.value.trim().toUpperCase();
+                const promoMessage = document.getElementById('promo-message');
+
+                if (promoCode === '') {
+                    promoMessage.textContent = 'Please enter a promo code.';
+                    promoMessage.classList.remove('text-green-600', 'text-red-600');
+                    promoMessage.classList.add('text-orange-500');
+                    appliedPromoCode = ''; // Clear applied code
+                    renderCartItems(); // Re-render to remove discount
+                    return;
+                }
+
+                if (validPromoCodes[promoCode]) {
+                    appliedPromoCode = promoCode;
+                    promoMessage.textContent = `Promo code "${promoCode}" applied!`;
+                    promoMessage.classList.remove('text-red-600', 'text-orange-500');
+                    promoMessage.classList.add('text-green-600');
+                    renderCartItems(); // Re-render to apply discount
+                } else {
+                    promoMessage.textContent = 'Invalid promo code. Please try again.';
+                    promoMessage.classList.remove('text-green-600', 'text-orange-500');
+                    promoMessage.classList.add('text-red-600');
+                    appliedPromoCode = ''; // Clear applied code
+                    renderCartItems(); // Re-render to remove discount
+                }
+            });
+
+            // Custom Confirmation Modal (replaces alert/confirm)
+            function showConfirmationModal(message, onConfirm) {
+                let modal = document.getElementById('confirmation-modal');
+                if (!modal) {
+                    // Create modal elements if they don't exist
+                    modal = document.createElement('div');
+                    modal.id = 'confirmation-modal';
+                    modal.className = 'fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[1001] hidden';
+                    modal.innerHTML = `
+                        <div class="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full text-center transform scale-95 opacity-0 transition-all duration-300">
+                            <p id="confirmation-message" class="text-lg font-semibold text-gray-800 mb-6"></p>
+                            <div class="flex justify-center space-x-4">
+                                <button id="confirm-yes" class="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200">Yes</button>
+                                <button id="confirm-no" class="px-6 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors duration-200">No</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                }
+
+                document.getElementById('confirmation-message').textContent = message;
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.querySelector('div').classList.remove('scale-95', 'opacity-0');
+                    modal.querySelector('div').classList.add('scale-100', 'opacity-100');
+                }, 10); // Small delay to trigger transition
+
+                const confirmYes = document.getElementById('confirm-yes');
+                const confirmNo = document.getElementById('confirm-no');
+
+                const cleanup = () => {
+                    confirmYes.removeEventListener('click', handleYes);
+                    confirmNo.removeEventListener('click', handleNo);
+                    modal.querySelector('div').classList.remove('scale-100', 'opacity-100');
+                    modal.querySelector('div').classList.add('scale-95', 'opacity-0');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                    }, 300); // Match transition duration
+                };
+
+                const handleYes = () => {
+                    onConfirm();
+                    cleanup();
+                };
+
+                const handleNo = () => {
+                    cleanup();
+                };
+
+                confirmYes.addEventListener('click', handleYes);
+                confirmNo.addEventListener('click', handleNo);
+            }
+
+
+            // Initial render of cart items when the page loads
+            renderCartItems();
+
+            // Mobile Navigation Toggle (re-used from product_list.html)
+            const navToggle = document.getElementById('nav-toggle');
+            const navContent = document.getElementById('nav-content');
+            if (navToggle && navContent) {
+                navToggle.addEventListener('click', function() {
+                    navContent.classList.toggle('hidden');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

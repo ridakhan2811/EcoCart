@@ -155,3 +155,38 @@ def forgot_password_view(request):
     Renders the Forgot Password page.
     """
     return render(request, 'accounts/forgot_pass.html')
+
+def cart_detail(request):
+    # In a real application, you might fetch cart items from a database
+    # or a session. For now, we assume cart data is managed client-side
+    # and passed to this view if needed (e.g., for checkout processing).
+
+    # For now, we'll just render the cart template.
+    # The actual cart items will be loaded by JavaScript on the frontend.
+    context = {
+        'pick_up_line': "Your cart is a step towards a greener future!",
+    }
+    return render(request, 'products/cart.html', context)
+def wishlist_view(request):
+    """
+    Placeholder view for the user's wishlist.
+    You will add logic here later to fetch and display wishlist items.
+    """
+    # For now, just render a simple template or redirect
+    return render(request, 'accounts/wishlist.html', {'message': 'Your Wishlist Page'})
+
+def checkout_view(request):
+    """
+    View for the checkout page with simulated payment gateway.
+    In a real application, this view would handle creating a Stripe PaymentIntent
+    and passing its client_secret to the frontend.
+    """
+    # Simulate a client secret. In a real app, this would come from your backend
+    # after creating a PaymentIntent with Stripe.
+    # For testing, you can use a dummy client secret or leave it empty for basic Stripe Elements demo.
+    # Example: client_secret = "pi_YOUR_PAYMENT_INTENT_CLIENT_SECRET_HERE"
+    context = {
+        'stripe_publishable_key': 'pk_test_TYooMQauvdEDq542VcVE8qPO', # Use Stripe's test publishable key
+        'simulated_client_secret': 'seti_12345_secret_abc123', # Dummy client secret for frontend demo
+    }
+    return render(request, 'products/checkout.html', context)

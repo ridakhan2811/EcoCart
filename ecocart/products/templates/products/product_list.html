@@ -102,17 +102,6 @@
         }
 
         /* Animations for star rating */
-        @keyframes popIn {
-            0% { transform: scale(0.5); opacity: 0; }
-            80% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); }
-        }
-        .star-icon {
-            animation: popIn 0.3s ease-out forwards;
-            display: inline-block;
-        }
-
-        /* Product card animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -130,12 +119,6 @@
             opacity: 0; /* Hidden initially */
             /* Removed flex-col from here as it's now on product-card-link */
         }
-        {# Removed: Staggered animation for cards - will be handled by JS below #}
-        {# Removed: {% for i in "xxxxxxxxxxxxxxxxxxxx" %} #}
-        {# Removed: .product-card:nth-child({{ forloop.counter }}) { #}
-        {# Removed:     animation-delay: {{ forloop.counter|multiply:0.08 }}s; #}
-        {# Removed: } #}
-        {# Removed: {% endfor %} #}
 
         /* Add to Cart button animation */
         .add-to-cart-btn {
@@ -212,11 +195,17 @@
                         Contact
                     </a>
                 </div>
-                <div class="flex items-center"> {# Added flex and items-center for correct alignment of profile/login buttons #}
+                <div class="flex items-center">
+                    {# Cart Icon and Count - NEW ADDITION #}
+                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0"> {# FIXED: Changed products:cart_detail to accounts:cart_detail #}
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">0</span>
+                    </a>
+
                     {% if user.is_authenticated %}
                         {# Profile Picture and Name moved to the right #}
                         <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 ease-in-out mr-4 mt-4 lg:mt-0">
-                            <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
+                            <img src="{% if user.profile.profile_picture %}{{ user.profile.profile_picture.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
                                  onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
                                  alt="{{ user.username }} Profile Picture"
                                  class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
@@ -347,7 +336,11 @@
                                     {% endif %}
                                 </div>
                                 <button class="add-to-cart-btn w-full bg-emerald-600 text-white font-bold py-3 rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
-                                        data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" onclick="event.preventDefault(); event.stopPropagation(); addToCart(this);"> {# Added event stoppers #}
+                                        data-product-id="{{ product.id }}"
+                                        data-product-name="{{ product.name }}"
+                                        data-product-price="{{ product.price }}" {# ADDED THIS #}
+                                        data-product-image-url="{% if product.image %}{{ product.image.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}" {# ADDED THIS #}
+                                        onclick="event.preventDefault(); event.stopPropagation(); addToCart(this);"> {# Added event stoppers #}
                                     Add to Cart
                                 </button>
                                 
@@ -412,27 +405,8 @@
                 console.log('Wishlist toggled for product ID:', element.dataset.productId);
             }
 
-            function addToCart(element) {
-                // Your existing add to cart logic here
-                const productId = element.dataset.productId;
-                const productName = element.dataset.productName;
-                console.log(`Added "${productName}" (ID: ${productId}) to cart.`);
-                
-                // Show message box
-                const messageBox = document.getElementById('message-box');
-                if (messageBox) {
-                    messageBox.textContent = `${productName} added to cart!`;
-                    messageBox.classList.remove('hidden', 'opacity-0');
-                    messageBox.classList.add('opacity-100');
-                    setTimeout(() => {
-                        messageBox.classList.remove('opacity-100');
-                        messageBox.classList.add('opacity-0');
-                        setTimeout(() => {
-                            messageBox.classList.add('hidden');
-                        }, 300); // Match fade-out transition duration
-                    }, 3000); // Hide after 3 seconds
-                }
-            }
+            // The addToCart function is now defined in product.js and called from here.
+            // No need to redefine it here.
 
             // JavaScript to apply staggered animation delay to product cards
             document.addEventListener('DOMContentLoaded', () => {
