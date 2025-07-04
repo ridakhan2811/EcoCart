@@ -177,16 +177,14 @@ def wishlist_view(request):
 
 def checkout_view(request):
     """
-    View for the checkout page with simulated payment gateway.
-    In a real application, this view would handle creating a Stripe PaymentIntent
-    and passing its client_secret to the frontend.
+    View for the checkout page.
+    It now receives the chosen payment method from the cart page.
     """
-    # Simulate a client secret. In a real app, this would come from your backend
-    # after creating a PaymentIntent with Stripe.
-    # For testing, you can use a dummy client secret or leave it empty for basic Stripe Elements demo.
-    # Example: client_secret = "pi_YOUR_PAYMENT_INTENT_CLIENT_SECRET_HERE"
+    payment_method = request.GET.get('payment_method', 'online') # Default to 'online' if not specified
+
     context = {
-        'stripe_publishable_key': 'pk_test_TYooMQauvdEDq542VcVE8qPO', # Use Stripe's test publishable key
+        'stripe_publishable_key': 'pk_test_TYooMQauvdEDq542VcVE8qPO', # Stripe's public test key
         'simulated_client_secret': 'seti_12345_secret_abc123', # Dummy client secret for frontend demo
+        'payment_method': payment_method, # Pass the selected payment method to the template
     }
     return render(request, 'products/checkout.html', context)

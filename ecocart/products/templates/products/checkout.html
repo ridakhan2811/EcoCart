@@ -10,8 +10,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    {# Load Stripe.js library - This is crucial for secure client-side card handling #}
+    {# Load Stripe.js library conditionally - only if online payment is chosen #}
+    {% if payment_method == 'online' %}
     <script src="https://js.stripe.com/v3/"></script>
+    {% endif %}
     <style>
         :root {
             --color-primary-lightest: #E8F5E9; /* Lightest green */
@@ -124,9 +126,6 @@
         .StripeElement--invalid {
             border-color: #ef4444; /* Tailwind red-500 */
         }
-        /* Important: Stripe elements create iframes, so direct CSS targeting is limited.
-           Use Stripe's `style` option for internal styling.
-           The autofill background color below is a common workaround for Chrome. */
         .StripeElement--webkit-autofill {
             background-color: #fefcbf !important; /* Tailwind yellow-100 */
         }
@@ -284,7 +283,7 @@
                     </div>
                 </div>
 
-                {# Promo Code Section #}
+                {# Promo Code Section - MOVED TO CHECKOUT PAGE ONLY #}
                 <div class="mt-8">
                     <h3 class="text-xl font-semibold text-gray-800 mb-4">Have a promo code?</h3>
                     <div class="flex">
@@ -295,26 +294,45 @@
                 </div>
 
                 <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-4 mt-8">Payment Information</h2>
-                <form id="payment-form" class="space-y-4">
-                    <div>
-                        <label for="card-name" class="form-label">Name on Card</label>
-                        <input type="text" id="card-name" class="form-input" placeholder="John Doe" required>
+
+                {# Conditional Payment Form based on selection from cart page #}
+                {% if payment_method == 'online' %}
+                    <div id="online-payment-section">
+                        <form id="payment-form" class="space-y-4">
+                            <div>
+                                <label for="card-name" class="form-label">Name on Card</label>
+                                <input type="text" id="card-name" class="form-input" placeholder="John Doe" required>
+                            </div>
+                            <div>
+                                <label class="form-label">Card Details</label>
+                                <div id="card-element">
+                                    {# A Stripe Element will be inserted here by Stripe.js #}
+                                </div>
+                                {# Used to display form errors from Stripe.js #}
+                                <div id="card-errors" role="alert"></div>
+                            </div>
+                            <button id="submit-button-online" class="submit-button mt-6">
+                                Pay Now <i class="fas fa-lock ml-2"></i>
+                            </button>
+                            <p class="text-xs text-gray-500 text-center mt-4">
+                                Your payment is securely processed by Stripe. This is a simulation.
+                            </p>
+                        </form>
                     </div>
-                    <div>
-                        <label class="form-label">Card Details</label>
-                        <div id="card-element">
-                            {# A Stripe Element will be inserted here by Stripe.js #}
-                        </div>
-                        {# Used to display form errors from Stripe.js #}
-                        <div id="card-errors" role="alert"></div>
+                {% elif payment_method == 'cod' %}
+                    <div id="cod-payment-section" class="text-center py-8">
+                        <p class="text-lg text-gray-700 mb-6">You have selected **Cash on Delivery (COD)**.</p>
+                        <p class="text-md text-gray-600 mb-8">Please confirm your order. Payment will be collected upon delivery.</p>
+                        <button id="submit-button-cod" class="submit-button mt-6">
+                            Confirm Order (COD) <i class="fas fa-truck-fast ml-2"></i>
+                        </button>
                     </div>
-                    <button id="submit-button" class="submit-button mt-6">
-                        Place Order <i class="fas fa-lock ml-2"></i>
-                    </button>
-                    <p class="text-xs text-gray-500 text-center mt-4">
-                        Your payment is secured by Stripe. This is a simulation for demonstration purposes.
-                    </p>
-                </form>
+                {% else %}
+                    <div class="text-center py-8 text-red-500">
+                        <p>Invalid payment method selected. Please go back to cart and choose a method.</p>
+                        <a href="{% url 'accounts:cart_detail' %}" class="mt-4 inline-block text-emerald-600 hover:underline">Go to Cart</a>
+                    </div>
+                {% endif %}
             </aside>
         </div>
 
@@ -339,59 +357,59 @@
     <script src="{% static 'products/js/product.js' %}"></script>
 
     <script>
+        // Get the payment method passed from Django context
+        const paymentMethod = "{{ payment_method }}";
+
         // Ensure Cart object and showMessageBox from product.js are available
         if (typeof Cart === 'undefined') {
             console.error('Cart object not found. Ensure product.js is loaded before checkout.html script.');
-            // Fallback showMessageBox if product.js failed to load
             window.showMessageBox = window.showMessageBox || function(msg, type) { console.log(`Message: ${msg} (${type})`); };
         } else {
-            // Update cart count for the navbar on checkout page load
             Cart.updateCartCount();
         }
 
-        // Initialize Stripe.js with your publishable key
-        const stripe = Stripe('{{ stripe_publishable_key }}');
-        const elements = stripe.elements();
+        let stripe;
+        let elements;
+        let cardElement;
 
-        // Create an instance of the card Element. This is the secure iframe for card input.
-        const cardElement = elements.create('card', {
-            style: {
-                base: {
-                    iconColor: '#059669', // Emerald-600
-                    color: '#374151',    // Gray-700
-                    fontWeight: '500',
-                    fontFamily: 'Poppins, sans-serif',
-                    fontSize: '16px',
-                    '::placeholder': {
-                        color: '#9ca3af', // Gray-400
+        // Initialize Stripe.js only if online payment is selected
+        if (paymentMethod === 'online') {
+            stripe = Stripe('{{ stripe_publishable_key }}');
+            elements = stripe.elements();
+
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        iconColor: '#059669',
+                        color: '#374151',
+                        fontWeight: '500',
+                        fontFamily: 'Poppins, sans-serif',
+                        fontSize: '16px',
+                        '::placeholder': { color: '#9ca3af' },
+                        ':-webkit-autofill': { color: '#fefcbf !important' },
                     },
-                    ':-webkit-autofill': {
-                        color: '#fefcbf !important', // Light yellow for autofill
+                    invalid: {
+                        iconColor: '#ef4444',
+                        color: '#ef4444',
                     },
                 },
-                invalid: {
-                    iconColor: '#ef4444', // Red-500
-                    color: '#ef4444',     // Red-500
-                },
-            },
-        });
+            });
+            cardElement.mount('#card-element');
 
-        // Add an instance of the card Element into the `card-element` div.
-        cardElement.mount('#card-element');
-
-        // Handle real-time validation errors from the card Element.
-        cardElement.on('change', function(event) {
-            const displayError = document.getElementById('card-errors');
-            if (event.error) {
-                displayError.textContent = event.error.message;
-            } else {
-                displayError.textContent = '';
-            }
-        });
+            cardElement.on('change', function(event) {
+                const displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+        }
 
         // --- Order Summary Calculation and Promo Code Logic ---
-        // 'appliedPromoCode' will store the currently applied valid code
         let appliedPromoCode = '';
+        // In a real app, these validPromoCodes would come from a backend API call
+        // after the user enters a code, rather than being hardcoded here.
         const validPromoCodes = {
             'ECOSAVE10': { type: 'percentage', value: 0.10, message: '10% off applied!' },
             'FREESHIP': { type: 'shipping', value: 0, message: 'Free shipping applied!' },
@@ -401,10 +419,9 @@
         function calculateCheckoutSummary() {
             const cartItems = Cart.getItems();
             let subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            let shippingCost = 50.00; // Example fixed shipping cost
+            let shippingCost = 50.00;
             let discountAmount = 0;
 
-            // Apply promo code if one is set
             if (appliedPromoCode) {
                 const codeInfo = validPromoCodes[appliedPromoCode.toUpperCase()];
                 if (codeInfo) {
@@ -413,7 +430,7 @@
                     } else if (codeInfo.type === 'flat') {
                         discountAmount = codeInfo.value;
                     } else if (codeInfo.type === 'shipping') {
-                        shippingCost = 0; // Set shipping to 0 for free shipping
+                        shippingCost = 0;
                     }
                 }
             }
@@ -422,7 +439,7 @@
 
             document.getElementById('checkout-subtotal').textContent = subtotal.toFixed(2);
             document.getElementById('checkout-shipping').textContent = shippingCost.toFixed(2);
-            document.getElementById('checkout-total').textContent = Math.max(0, total).toFixed(2); // Ensure total doesn't go negative
+            document.getElementById('checkout-total').textContent = Math.max(0, total).toFixed(2);
 
             const discountRow = document.getElementById('checkout-discount-row');
             const checkoutDiscountSpan = document.getElementById('checkout-discount');
@@ -436,7 +453,7 @@
                 discountRow.style.display = 'none';
             }
 
-            return Math.max(0, total); // Return the calculated total
+            return Math.max(0, total);
         }
 
         // Event listener for applying promo code
@@ -449,14 +466,14 @@
                 promoMessage.textContent = 'Please enter a promo code.';
                 promoMessage.classList.remove('text-green-600', 'text-red-600');
                 promoMessage.classList.add('text-orange-500');
-                appliedPromoCode = ''; // Clear applied code
-                calculateCheckoutSummary(); // Recalculate without discount
+                appliedPromoCode = '';
+                calculateCheckoutSummary();
                 return;
             }
 
             const codeInfo = validPromoCodes[promoCode];
             if (codeInfo) {
-                appliedPromoCode = promoCode; // Set the applied code
+                appliedPromoCode = promoCode;
                 promoMessage.textContent = codeInfo.message;
                 promoMessage.classList.remove('text-red-600', 'text-orange-500');
                 promoMessage.classList.add('text-green-600');
@@ -465,168 +482,84 @@
                 promoMessage.textContent = 'Invalid promo code. Please try again.';
                 promoMessage.classList.remove('text-green-600', 'text-orange-500');
                 promoMessage.classList.add('text-red-600');
-                appliedPromoCode = ''; // Clear applied code if invalid
+                appliedPromoCode = '';
                 showMessageBox('Invalid coupon code.', 'error');
             }
-            calculateCheckoutSummary(); // Re-calculate summary with the new promo code status
+            calculateCheckoutSummary();
         });
         // --- End Order Summary Calculation and Promo Code Logic ---
 
 
-        // Handle form submission for payment.
-        const form = document.getElementById('payment-form');
-        const submitButton = document.getElementById('submit-button');
-        const cardNameInput = document.getElementById('card-name');
-
-        form.addEventListener('submit', async function(event) {
-            event.preventDefault(); // Prevent default form submission
-
-            submitButton.disabled = true; // Disable button to prevent multiple submissions
-            submitButton.textContent = 'Processing...';
-
-            const totalAmount = calculateCheckoutSummary(); // Get the final amount to charge
-
-            // --- IMPORTANT: REAL BACKEND INTEGRATION STARTS HERE ---
-            // In a real application, you would make a fetch request to your Django backend here.
-            // Your backend would then call Stripe's API to create a PaymentIntent,
-            // passing the totalAmount (in cents), currency, and other order details.
-            // Stripe would return a client_secret, which your backend would send back to this frontend.
-
-            // Example of what a real backend call might look like:
-            /*
-            try {
-                const backendResponse = await fetch('/create-payment-intent/', { // Your Django URL
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken') // Function to get CSRF token
-                    },
-                    body: JSON.stringify({
-                        amount: Math.round(totalAmount * 100), // Stripe expects amount in cents
-                        currency: 'inr', // Your currency (e.g., 'usd', 'inr')
-                        cart_items: Cart.getItems(), // Send cart details
-                        shipping_info: { // Send shipping details
-                            fullName: document.getElementById('full-name').value,
-                            address1: document.getElementById('address-line1').value,
-                            city: document.getElementById('city').value,
-                            zipCode: document.getElementById('zip-code').value,
-                            country: document.getElementById('country').value,
-                            // ... other fields
-                        },
-                        promo_code: appliedPromoCode // Send applied promo code to backend
-                    })
-                });
-
-                if (!backendResponse.ok) {
-                    const errorData = await backendResponse.json();
-                    throw new Error(errorData.message || 'Failed to create PaymentIntent on backend.');
-                }
-
-                const { clientSecret } = await backendResponse.json();
-
-                // Now confirm the payment with Stripe using the client_secret from your backend
-                const { paymentIntent, error: confirmError } = await stripe.confirmCardPayment(clientSecret, {
-                    payment_method: {
-                        card: cardElement,
-                        billing_details: {
-                            name: cardNameInput.value,
-                            // You would collect full billing address here if needed
-                        },
-                    },
-                    setup_future_usage: 'off_session', // Optional: for saving card details for future use
-                });
-
-                if (confirmError) {
-                    const errorDisplay = document.getElementById('card-errors');
-                    errorDisplay.textContent = confirmError.message;
-                    showMessageBox(confirmError.message, 'error');
-                } else if (paymentIntent.status === 'succeeded') {
-                    // Payment succeeded! Now inform your backend to finalize the order.
-                    await fetch('/finalize-order/', { // Your Django URL to finalize order
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCookie('csrftoken')
-                        },
-                        body: JSON.stringify({
-                            payment_intent_id: paymentIntent.id,
-                            order_status: 'paid',
-                            // ... any other data your backend needs
-                        })
-                    });
-
-                    showMessageBox('Payment Successful! Your order has been placed.', 'success');
-                    Cart.clearCart(); // Clear cart on successful order
-                    setTimeout(() => {
-                        window.location.href = '{% url "accounts:home" %}'; // Redirect to home or a specific order confirmation page
-                    }, 2000);
-                }
-            } catch (backendError) {
-                console.error('Backend or Stripe error:', backendError);
-                const errorDisplay = document.getElementById('card-errors');
-                errorDisplay.textContent = backendError.message || 'An unexpected error occurred during payment setup.';
-                showMessageBox(backendError.message || 'Payment setup failed.', 'error');
-            }
-            */
-            // --- END OF REAL BACKEND INTEGRATION EXAMPLE ---
-
-
-            // --- SIMULATED PAYMENT FOR DEMONSTRATION (NO REAL TRANSACTION) ---
-            // For demonstration, we'll simulate success/failure based on test card numbers
-            // without actually calling a backend or Stripe's API.
-            // This is purely client-side for visual and functional demo.
-            const { paymentMethod, error } = await stripe.createPaymentMethod({
-                type: 'card',
-                card: cardElement,
-                billing_details: {
-                    name: cardNameInput.value,
-                },
-            });
-
-            if (error) {
-                const errorDisplay = document.getElementById('card-errors');
-                errorDisplay.textContent = error.message;
-                showMessageBox(error.message, 'error');
-            } else {
-                const last4 = paymentMethod.card.last4;
-                if (last4 === '4242' || last4 === '5555') { // Simulate success for common test cards
-                    showMessageBox('Payment Successful! Your order has been placed. (SIMULATED)', 'success');
-                    Cart.clearCart(); // Clear cart on successful order
-                    setTimeout(() => {
-                        window.location.href = '{% url "accounts:home" %}'; // Redirect to home for now
-                    }, 2000);
-                } else { // Simulate failure for other test cards or invalid ones
-                    const errorMessage = 'Payment failed. Please try a different card. (SIMULATED)';
-                    document.getElementById('card-errors').textContent = errorMessage;
-                    showMessageBox(errorMessage, 'error');
-                }
-            }
-
-            submitButton.disabled = false;
-            submitButton.innerHTML = 'Place Order <i class="fas fa-lock ml-2"></i>';
-        });
-
-        // Function to get CSRF token for Django AJAX calls (if you implement real backend)
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-
-        // Initial calculation of order summary when page loads
+        // Handle form submission based on payment method
         document.addEventListener('DOMContentLoaded', () => {
-            calculateCheckoutSummary();
+            calculateCheckoutSummary(); // Initial summary calculation
+
+            if (paymentMethod === 'online') {
+                const onlineForm = document.getElementById('payment-form');
+                const submitButtonOnline = document.getElementById('submit-button-online');
+
+                if (onlineForm && submitButtonOnline) {
+                    onlineForm.addEventListener('submit', async function(event) {
+                        event.preventDefault();
+                        submitButtonOnline.disabled = true;
+                        submitButtonOnline.textContent = 'Processing...';
+
+                        const totalAmount = calculateCheckoutSummary();
+
+                        // --- SIMULATED STRIPE PAYMENT ---
+                        const { paymentMethod: stripePaymentMethod, error: stripeError } = await stripe.createPaymentMethod({
+                            type: 'card',
+                            card: cardElement,
+                            billing_details: {
+                                name: document.getElementById('card-name').value,
+                            },
+                        });
+
+                        if (stripeError) {
+                            const errorDisplay = document.getElementById('card-errors');
+                            errorDisplay.textContent = stripeError.message;
+                            showMessageBox(stripeError.message, 'error');
+                        } else {
+                            const last4 = stripePaymentMethod.card.last4;
+                            if (last4 === '4242' || last4 === '5555') { // Simulate success for common test cards
+                                showMessageBox('Payment Successful! Your order has been placed. (SIMULATED ONLINE)', 'success');
+                                Cart.clearCart();
+                                setTimeout(() => {
+                                    window.location.href = '{% url "accounts:home" %}'; // Redirect after simulated success
+                                }, 2000);
+                            } else {
+                                const errorMessage = 'Payment failed. Please try a different card. (SIMULATED ONLINE)';
+                                document.getElementById('card-errors').textContent = errorMessage;
+                                showMessageBox(errorMessage, 'error');
+                            }
+                        }
+                        submitButtonOnline.disabled = false;
+                        submitButtonOnline.innerHTML = 'Pay Now <i class="fas fa-lock ml-2"></i>';
+                    });
+                } else {
+                    console.error('Online payment form or button not found.');
+                }
+
+            } else if (paymentMethod === 'cod') {
+                const submitButtonCod = document.getElementById('submit-button-cod');
+                if (submitButtonCod) {
+                    submitButtonCod.addEventListener('click', () => {
+                        submitButtonCod.disabled = true;
+                        submitButtonCod.textContent = 'Confirming...';
+
+                        // --- SIMULATED COD ORDER PLACEMENT ---
+                        showMessageBox('Order Confirmed! Payment will be collected on delivery. (SIMULATED COD)', 'success');
+                        Cart.clearCart();
+                        setTimeout(() => {
+                            window.location.href = '{% url "accounts:home" %}'; // Redirect after simulated COD order
+                        }, 2000);
+                        submitButtonCod.disabled = false;
+                        submitButtonCod.innerHTML = 'Confirm Order (COD) <i class="fas fa-truck-fast ml-2"></i>';
+                    });
+                } else {
+                    console.error('COD payment button not found.');
+                }
+            }
 
             // Mobile Navigation Toggle (re-used from product_list.html)
             const navToggle = document.getElementById('nav-toggle');
