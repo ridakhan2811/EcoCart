@@ -1,3 +1,5 @@
+# ecocart/urls.py
+
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -5,9 +7,11 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('accounts.urls')),
-    path('wishlist/', include('wishlist.urls')),
-    path('products/', include('products.urls', namespace='products')),
+    # This line is correct and necessary for namespacing
+    path('', include('accounts.urls', namespace='accounts')),
+    path('wishlist/', include('wishlist.urls')), # Assuming wishlist/urls.py has app_name = 'wishlist'
+    path('products/', include('products.urls', namespace='products')), # Assuming products/urls.py has app_name = 'products'
+    path('orders/', include('orders.urls', namespace='orders')), # Assuming orders/urls.py exists and has app_name = 'orders'
 ]
 
 if settings.DEBUG:

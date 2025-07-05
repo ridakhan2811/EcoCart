@@ -146,3 +146,22 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 LOGIN_URL = 'accounts:login' # URL for the login page
 LOGIN_REDIRECT_URL = 'products:list' # Where to redirect after successful login
 LOGOUT_REDIRECT_URL = 'accounts:login' # Where to redirect after logout
+
+# ecocart/settings.py
+
+# ... (rest of your settings) ...
+
+# Email Configuration for real-time emails
+# For testing, you can use a dummy SMTP server like Python's smtpd (python -m smtpd -n -c DebuggingServer localhost:1025)
+# Or use a real SMTP server like Gmail, SendGrid, Mailgun etc.
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com' # e.g., 'smtp.gmail.com' for Gmail, 'smtp.sendgrid.net' for SendGrid
+EMAIL_PORT = 587 # 587 for TLS, 465 for SSL
+EMAIL_USE_TLS = True # Use TLS for security
+EMAIL_HOST_USER = 'your_email@example.com' # Your email address
+EMAIL_HOST_PASSWORD = 'your_email_password' # Your email password or app-specific password
+DEFAULT_FROM_EMAIL = 'EcoCart Support <support@ecocart.com>' # The email address emails will appear to come from
+
+# For development, you might use console backend to see emails in console
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

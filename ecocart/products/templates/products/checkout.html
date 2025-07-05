@@ -221,6 +221,10 @@
                         <input type="text" id="full-name" class="form-input" placeholder="John Doe" required>
                     </div>
                     <div>
+                        <label for="email" class="form-label">Email Address</label> {# NEW: Email Input #}
+                        <input type="email" id="email" class="form-input" placeholder="you@example.com" value="{% if user.is_authenticated %}{{ user.email }}{% endif %}" required>
+                    </div>
+                    <div>
                         <label for="address-line1" class="form-label">Address Line 1</label>
                         <input type="text" id="address-line1" class="form-input" placeholder="123 Eco Street" required>
                     </div>
@@ -283,7 +287,7 @@
                     </div>
                 </div>
 
-                {# Promo Code Section - MOVED TO CHECKOUT PAGE ONLY #}
+                {# Promo Code Section - REMAINS ON CHECKOUT PAGE ONLY #}
                 <div class="mt-8">
                     <h3 class="text-xl font-semibold text-gray-800 mb-4">Have a promo code?</h3>
                     <div class="flex">
@@ -357,8 +361,10 @@
     <script src="{% static 'products/js/product.js' %}"></script>
 
     <script>
+        console.log("checkout.html script started.");
         // Get the payment method passed from Django context
         const paymentMethod = "{{ payment_method }}";
+        console.log("Payment Method from Django context:", paymentMethod);
 
         // Ensure Cart object and showMessageBox from product.js are available
         if (typeof Cart === 'undefined') {
@@ -366,6 +372,7 @@
             window.showMessageBox = window.showMessageBox || function(msg, type) { console.log(`Message: ${msg} (${type})`); };
         } else {
             Cart.updateCartCount();
+            console.log("Cart object found and navbar count updated.");
         }
 
         let stripe;
@@ -374,42 +381,53 @@
 
         // Initialize Stripe.js only if online payment is selected
         if (paymentMethod === 'online') {
-            stripe = Stripe('{{ stripe_publishable_key }}');
-            elements = stripe.elements();
+            console.log("Initializing Stripe.js...");
+            // Ensure stripe_publishable_key is available from Django context
+            const stripePublishableKey = "{{ stripe_publishable_key }}";
+            if (!stripePublishableKey) {
+                console.error("Stripe Publishable Key is not provided in Django context.");
+                showMessageBox("Payment gateway configuration error. Please try again later.", "error");
+            } else {
+                stripe = Stripe(stripePublishableKey);
+                elements = stripe.elements();
 
-            cardElement = elements.create('card', {
-                style: {
-                    base: {
-                        iconColor: '#059669',
-                        color: '#374151',
-                        fontWeight: '500',
-                        fontFamily: 'Poppins, sans-serif',
-                        fontSize: '16px',
-                        '::placeholder': { color: '#9ca3af' },
-                        ':-webkit-autofill': { color: '#fefcbf !important' },
+                cardElement = elements.create('card', {
+                    style: {
+                        base: {
+                            iconColor: '#059669',
+                            color: '#374151',
+                            fontWeight: '500',
+                            fontFamily: 'Poppins, sans-serif',
+                            fontSize: '16px',
+                            '::placeholder': { color: '#9ca3af' },
+                            ':-webkit-autofill': { color: '#fefcbf !important' },
+                        },
+                        invalid: {
+                            iconColor: '#ef4444',
+                            color: '#ef4444',
+                        },
                     },
-                    invalid: {
-                        iconColor: '#ef4444',
-                        color: '#ef4444',
-                    },
-                },
-            });
-            cardElement.mount('#card-element');
+                });
+                cardElement.mount('#card-element');
+                console.log("Stripe card element mounted.");
 
-            cardElement.on('change', function(event) {
-                const displayError = document.getElementById('card-errors');
-                if (event.error) {
-                    displayError.textContent = event.error.message;
-                } else {
-                    displayError.textContent = '';
-                }
-            });
+                cardElement.on('change', function(event) {
+                    const displayError = document.getElementById('card-errors');
+                    if (event.error) {
+                        displayError.textContent = event.error.message;
+                        console.log("Stripe card error:", event.error.message);
+                    } else {
+                        displayError.textContent = '';
+                    }
+                });
+            }
         }
 
         // --- Order Summary Calculation and Promo Code Logic ---
         let appliedPromoCode = '';
-        // In a real app, these validPromoCodes would come from a backend API call
-        // after the user enters a code, rather than being hardcoded here.
+        let currentDiscountAmount = 0;
+        let originalShippingCost = 50.00;
+
         const validPromoCodes = {
             'ECOSAVE10': { type: 'percentage', value: 0.10, message: '10% off applied!' },
             'FREESHIP': { type: 'shipping', value: 0, message: 'Free shipping applied!' },
@@ -417,9 +435,10 @@
         };
 
         function calculateCheckoutSummary() {
+            console.log("Calculating checkout summary...");
             const cartItems = Cart.getItems();
             let subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            let shippingCost = 50.00;
+            let shippingCost = originalShippingCost;
             let discountAmount = 0;
 
             if (appliedPromoCode) {
@@ -434,6 +453,7 @@
                     }
                 }
             }
+            currentDiscountAmount = discountAmount;
 
             const total = (subtotal + shippingCost - discountAmount);
 
@@ -452,12 +472,19 @@
             } else {
                 discountRow.style.display = 'none';
             }
-
-            return Math.max(0, total);
+            console.log(`Summary: Subtotal=${subtotal}, Shipping=${shippingCost}, Discount=${discountAmount}, Total=${total}`);
+            return {
+                subtotal: subtotal,
+                shippingCost: shippingCost,
+                discountAmount: discountAmount,
+                total: Math.max(0, total),
+                appliedPromoCode: appliedPromoCode,
+                originalShippingCost: originalShippingCost
+            };
         }
 
-        // Event listener for applying promo code
         document.getElementById('apply-promo-btn').addEventListener('click', () => {
+            console.log("Apply promo button clicked.");
             const promoInput = document.getElementById('promo-code-input');
             const promoCode = promoInput.value.trim().toUpperCase();
             const promoMessage = document.getElementById('promo-message');
@@ -478,40 +505,107 @@
                 promoMessage.classList.remove('text-red-600', 'text-orange-500');
                 promoMessage.classList.add('text-green-600');
                 showMessageBox(`Coupon "${promoCode}" applied!`, 'success');
+                console.log(`Coupon ${promoCode} applied successfully.`);
             } else {
                 promoMessage.textContent = 'Invalid promo code. Please try again.';
                 promoMessage.classList.remove('text-green-600', 'text-orange-500');
                 promoMessage.classList.add('text-red-600');
                 appliedPromoCode = '';
                 showMessageBox('Invalid coupon code.', 'error');
+                console.log(`Coupon ${promoCode} is invalid.`);
             }
             calculateCheckoutSummary();
         });
-        // --- End Order Summary Calculation and Promo Code Logic ---
 
+        // Function to collect all order details for sending to backend and receipt
+        function collectOrderDetails(paymentMethod, orderStatus) {
+            console.log("Collecting order details...");
+            const summary = calculateCheckoutSummary();
+            const shippingForm = document.getElementById('shipping-form');
+
+            const orderDetails = {
+                // The orderId here is client-side generated for immediate use.
+                // The backend will generate the authoritative one.
+                orderId: 'ECO-' + Math.random().toString(36).substring(2, 11).toUpperCase(),
+                orderDate: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                paymentMethod: paymentMethod,
+                orderStatus: orderStatus,
+                items: Cart.getItems().map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    total_price: item.price * item.quantity // Add total_price for convenience
+                })),
+                orderSummary: summary, // Pass the entire summary object
+                shippingInfo: {
+                    fullName: shippingForm.elements['full-name'].value,
+                    customerEmail: shippingForm.elements['email'].value, // NEW: Include email
+                    address1: shippingForm.elements['address-line1'].value,
+                    address2: shippingForm.elements['address-line2'].value,
+                    city: shippingForm.elements['city'].value,
+                    state: shippingForm.elements['state'].value,
+                    zipCode: shippingForm.elements['zip-code'].value,
+                    country: shippingForm.elements['country'].value,
+                    phoneNumber: shippingForm.elements['phone-number'].value,
+                }
+            };
+            console.log("Collected Order Details:", orderDetails);
+            return orderDetails;
+        }
+
+        // Function to get CSRF token for Django AJAX calls
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
 
         // Handle form submission based on payment method
         document.addEventListener('DOMContentLoaded', () => {
-            calculateCheckoutSummary(); // Initial summary calculation
+            console.log("DOM Content Loaded. Initializing checkout logic.");
+            calculateCheckoutSummary();
 
             if (paymentMethod === 'online') {
                 const onlineForm = document.getElementById('payment-form');
                 const submitButtonOnline = document.getElementById('submit-button-online');
+                const shippingForm = document.getElementById('shipping-form');
 
                 if (onlineForm && submitButtonOnline) {
+                    console.log("Online payment section detected. Attaching event listener.");
                     onlineForm.addEventListener('submit', async function(event) {
                         event.preventDefault();
+                        console.log("Online payment form submitted.");
+
+                        if (!shippingForm.checkValidity()) {
+                            showMessageBox('Please fill in all required shipping information.', 'error');
+                            shippingForm.reportValidity();
+                            submitButtonOnline.disabled = false;
+                            submitButtonOnline.innerHTML = 'Pay Now <i class="fas fa-lock ml-2"></i>';
+                            console.log("Shipping form validation failed.");
+                            return;
+                        }
+
                         submitButtonOnline.disabled = true;
                         submitButtonOnline.textContent = 'Processing...';
 
-                        const totalAmount = calculateCheckoutSummary();
-
-                        // --- SIMULATED STRIPE PAYMENT ---
+                        // --- SIMULATED STRIPE PAYMENT (Client-side) ---
+                        // In a real app, this would involve a backend call to create PaymentIntent first.
                         const { paymentMethod: stripePaymentMethod, error: stripeError } = await stripe.createPaymentMethod({
                             type: 'card',
                             card: cardElement,
                             billing_details: {
                                 name: document.getElementById('card-name').value,
+                                email: document.getElementById('email').value, // Pass email to Stripe
                             },
                         });
 
@@ -519,57 +613,123 @@
                             const errorDisplay = document.getElementById('card-errors');
                             errorDisplay.textContent = stripeError.message;
                             showMessageBox(stripeError.message, 'error');
-                        } else {
-                            const last4 = stripePaymentMethod.card.last4;
-                            if (last4 === '4242' || last4 === '5555') { // Simulate success for common test cards
-                                showMessageBox('Payment Successful! Your order has been placed. (SIMULATED ONLINE)', 'success');
-                                Cart.clearCart();
-                                setTimeout(() => {
-                                    window.location.href = '{% url "accounts:home" %}'; // Redirect after simulated success
-                                }, 2000);
-                            } else {
-                                const errorMessage = 'Payment failed. Please try a different card. (SIMULATED ONLINE)';
-                                document.getElementById('card-errors').textContent = errorMessage;
-                                showMessageBox(errorMessage, 'error');
-                            }
+                            console.log("Stripe createPaymentMethod error:", stripeError.message);
+                            submitButtonOnline.disabled = false;
+                            submitButtonOnline.innerHTML = 'Pay Now <i class="fas fa-lock ml-2"></i>';
+                            return; // Stop execution on Stripe error
                         }
-                        submitButtonOnline.disabled = false;
-                        submitButtonOnline.innerHTML = 'Pay Now <i class="fas fa-lock ml-2"></i>';
-                    });
-                } else {
-                    console.error('Online payment form or button not found.');
-                }
 
+                        console.log("Stripe Payment Method created:", stripePaymentMethod.id);
+
+                        // Collect all order details
+                        const orderDetails = collectOrderDetails(paymentMethod, 'Processing'); // Assuming 'Processing' for online
+                        orderDetails.stripePaymentMethodId = stripePaymentMethod.id; // Add Stripe PaymentMethod ID
+
+                        // Send order details to your Django backend
+                        try {
+                            const response = await fetch('{% url "orders:process_order" %}', { // Corrected URL
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': getCookie('csrftoken'),
+                                },
+                                body: JSON.stringify(orderDetails)
+                            });
+
+                            const data = await response.json();
+                            console.log("Backend response:", data);
+
+                            if (data.status === 'success') {
+                                showMessageBox(data.message, 'success');
+                                Cart.clearCart(); // Clear the cart
+                                Cart.updateCartCount(); // Update navbar cart count
+                                localStorage.setItem('lastOrderDetails', JSON.stringify(data.orderDetails)); // Store for receipt page
+                                // Redirect to a success page or update UI
+                                window.location.href = data.redirect_url || '{% url "orders:order_success" %}?order_id=' + data.order_id; // Pass order_id
+                            } else {
+                                showMessageBox(data.message || 'Order failed. Please try again.', 'error');
+                                submitButtonOnline.disabled = false;
+                                submitButtonOnline.innerHTML = 'Pay Now <i class="fas fa-lock ml-2"></i>';
+                            }
+                        } catch (error) {
+                            console.error("Error during order placement (fetch API):", error);
+                            showMessageBox('An error occurred during payment. Please try again.', 'error');
+                            submitButtonOnline.disabled = false;
+                            submitButtonOnline.innerHTML = 'Pay Now <i class="fas fa-lock ml-2"></i>';
+                        }
+                    });
+                }
             } else if (paymentMethod === 'cod') {
                 const submitButtonCod = document.getElementById('submit-button-cod');
+                const shippingForm = document.getElementById('shipping-form');
+
                 if (submitButtonCod) {
-                    submitButtonCod.addEventListener('click', () => {
+                    console.log("COD payment section detected. Attaching event listener.");
+                    submitButtonCod.addEventListener('click', async function() {
+                        console.log("COD confirm order button clicked.");
+
+                        if (!shippingForm.checkValidity()) {
+                            showMessageBox('Please fill in all required shipping information.', 'error');
+                            shippingForm.reportValidity();
+                            submitButtonCod.disabled = false;
+                            submitButtonCod.innerHTML = 'Confirm Order (COD) <i class="fas fa-truck-fast ml-2"></i>';
+                            console.log("Shipping form validation failed for COD.");
+                            return;
+                        }
+
                         submitButtonCod.disabled = true;
                         submitButtonCod.textContent = 'Confirming...';
 
-                        // --- SIMULATED COD ORDER PLACEMENT ---
-                        showMessageBox('Order Confirmed! Payment will be collected on delivery. (SIMULATED COD)', 'success');
-                        Cart.clearCart();
-                        setTimeout(() => {
-                            window.location.href = '{% url "accounts:home" %}'; // Redirect after simulated COD order
-                        }, 2000);
-                        submitButtonCod.disabled = false;
-                        submitButtonCod.innerHTML = 'Confirm Order (COD) <i class="fas fa-truck-fast ml-2"></i>';
+                        // Collect all order details for COD
+                        const orderDetails = collectOrderDetails(paymentMethod, 'Pending'); // COD orders are typically 'Pending' initially
+
+                        // Send order details to your Django backend
+                        try {
+                            const response = await fetch('{% url "orders:process_order" %}', { // Corrected URL
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': getCookie('csrftoken'),
+                                },
+                                body: JSON.stringify(orderDetails)
+                            });
+
+                            const data = await response.json();
+                            console.log("Backend response for COD:", data);
+
+                            if (data.status === 'success') {
+                                showMessageBox(data.message, 'success');
+                                Cart.clearCart(); // Clear the cart
+                                Cart.updateCartCount(); // Update navbar cart count
+                                localStorage.setItem('lastOrderDetails', JSON.stringify(data.orderDetails)); // Store for receipt page
+                                // Redirect to a success page or update UI
+                                window.location.href = data.redirect_url || '{% url "orders:order_success" %}?order_id=' + data.order_id;
+                            } else {
+                                showMessageBox(data.message || 'Order failed. Please try again.', 'error');
+                                submitButtonCod.disabled = false;
+                                submitButtonCod.innerHTML = 'Confirm Order (COD) <i class="fas fa-truck-fast ml-2"></i>';
+                            }
+                        } catch (error) {
+                            console.error("Error during order placement (fetch API for COD):", error);
+                            showMessageBox('An error occurred during COD order. Please try again.', 'error');
+                            submitButtonCod.disabled = false;
+                            submitButtonCod.innerHTML = 'Confirm Order (COD) <i class="fas fa-truck-fast ml-2"></i>';
+                        }
                     });
-                } else {
-                    console.error('COD payment button not found.');
                 }
             }
-
-            // Mobile Navigation Toggle (re-used from product_list.html)
-            const navToggle = document.getElementById('nav-toggle');
-            const navContent = document.getElementById('nav-content');
-            if (navToggle && navContent) {
-                navToggle.addEventListener('click', function() {
-                    navContent.classList.toggle('hidden');
-                });
-            }
         });
+
+        // Navbar toggle for mobile
+        const navToggle = document.getElementById('nav-toggle');
+        const navContent = document.getElementById('nav-content');
+
+        if (navToggle && navContent) {
+            navToggle.addEventListener('click', function () {
+                navContent.classList.toggle('hidden');
+            });
+        }
     </script>
+
 </body>
 </html>

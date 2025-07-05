@@ -1,0 +1,559 @@
+{# accounts/templates/accounts/order_receipt.html #}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Receipt | EcoCart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --color-primary-lightest: #E8F5E9; /* Lightest green */
+            --color-primary-medium: #A5D6A7;   /* Medium green */
+            --color-primary-dark: #66BB6A; /* Darker green */
+            --color-emerald-800: #065F46; /* From your landing page header */
+            --color-emerald-600: #059669; /* From your landing page buttons */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            @apply bg-gray-50 text-gray-800;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-primary-medium);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-primary-dark);
+        }
+
+        /* Message Box Styles (consistent across pages) */
+        #message-box {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+            pointer-events: none;
+        }
+
+        #message-box.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        #message-box.hidden {
+            display: none;
+        }
+
+        #message-box.bg-green-600 { background-color: #059669; }
+        #message-box.bg-red-600 { background-color: #dc2626; }
+        #message-box.bg-blue-600 { background-color: #2563eb; }
+        #message-box.bg-gray-700 { background-color: #374151; }
+
+        /* Receipt specific styles */
+        .receipt-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            @apply bg-white p-10 rounded-lg shadow-xl transition-all duration-300 ease-in-out; /* Increased padding */
+        }
+        .receipt-container:hover { /* Hover effect for the main container */
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3); /* Stronger emerald shadow */
+            transform: translateY(-5px); /* Slight lift */
+        }
+
+        .receipt-header {
+            @apply text-center mb-10 pb-4 border-b border-gray-200; /* Increased margin-bottom */
+        }
+        .receipt-section-title {
+            @apply text-xl font-semibold text-gray-800 mb-6 pb-3 border-b pb-2; /* Increased margin-bottom and padding-bottom */
+        }
+        .receipt-item-row {
+            @apply flex justify-between items-center py-3 border-b border-gray-100; /* Increased vertical padding */
+        }
+        .receipt-summary-row {
+            @apply flex justify-between py-2;
+        }
+        .receipt-total-row {
+            @apply flex justify-between pt-4 border-t-2 border-gray-300 text-2xl font-bold text-gray-900;
+        }
+        .action-button { /* Unified style for action buttons */
+            @apply w-full py-3 rounded-full font-bold text-white transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95;
+            background: linear-gradient(to right, #059669, #10B981); /* Emerald gradient */
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4);
+        }
+        .action-button:hover {
+            box-shadow: 0 6px 15px rgba(5, 150, 105, 0.6);
+        }
+
+        /* Invoice specific styles (for print) */
+        @media print {
+            body {
+                background-color: #fff !important;
+                margin: 0;
+                padding: 0;
+            }
+            .main-navbar, footer, .action-buttons, #message-box {
+                display: none !important;
+            }
+            .receipt-container {
+                box-shadow: none !important;
+                border: 1px solid #eee;
+                margin: 0;
+                padding: 1rem;
+                width: 100%;
+                max-width: none;
+                transform: none;
+            }
+            .receipt-header, .receipt-section-title, .receipt-item-row, .receipt-summary-row, .receipt-total-row {
+                border-color: #ddd !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    {# START OF HEADER/NAV BAR CONTENT #}
+    <header id="main-navbar" class="bg-emerald-800 p-4 shadow-lg sticky top-0 z-40 transition-all duration-300 ease-in-out">
+        <div class="container mx-auto flex items-center justify-between flex-wrap">
+            {# Left side of navbar: EcoCart Logo #}
+            <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6">
+                <span class="font-bold text-3xl tracking-tight text-white flex items-center">
+                    EcoCart <span class="ml-2 text-green-300">🌿</span>
+                </span>
+            </a>
+
+            <div class="block lg:hidden">
+                <button id="nav-toggle" class="flex items-center px-3 py-2 border rounded text-green-200 border-green-400 hover:text-white hover:border-white focus:outline-none focus:ring-2 focus:ring-white">
+                    <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Menu</title><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>
+                </button>
+            </div>
+
+            <div id="nav-content" class="w-full block flex-grow lg:flex lg:items-center lg:w-auto hidden">
+                <div class="text-lg lg:flex-grow">
+                    <a href="{% url 'products:list' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                        Shop Eco
+                    </a>
+                    <a href="{% url 'accounts:blog' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                        Blog
+                    </a>
+                    <a href="{% url 'accounts:about_us' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                        About Us
+                    </a>
+                    <a href="{% url 'accounts:contact' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 transition duration-300 ease-in-out">
+                        Contact
+                    </a>
+                </div>
+                <div class="flex items-center">
+                    {# Cart Icon and Count - Not needed on receipt page but kept for consistency #}
+                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">0</span>
+                    </a>
+
+                    {% if user.is_authenticated %}
+                        {# Profile Picture and Name moved to the right #}
+                        <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 ease-in-out mr-4 mt-4 lg:mt-0">
+                            <img src="{% if user.profile.profile_picture %}{{ user.profile.profile_picture.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
+                                 onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
+                                 alt="{{ user.username }} Profile Picture"
+                                 class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
+                            <span class="hidden sm:inline">{{ user.username }}</span>
+                        </a>
+                        <a href="{% url 'accounts:logout' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out mr-2">
+                            Login
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                            Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+    {# END OF HEADER/NAV BAR CONTENT #}
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        {# Enhanced Order Confirmed Section #}
+        <div class="text-center mb-10 py-8 bg-gradient-to-r from-emerald-50 to-green-100 rounded-lg shadow-md">
+            <h1 class="text-5xl font-bold text-emerald-800 mb-4">
+                Order Confirmed! 🎉✨
+            </h1>
+            <p class="text-xl text-gray-700 mb-2">
+                Thank you for your eco-friendly purchase from EcoCart! 🌿🛍️
+            </p>
+            <p class="text-md text-gray-600">
+                Your journey towards a sustainable future continues! 💚
+            </p>
+        </div>
+
+        <div class="receipt-container" id="receipt-details-container">
+            {# Content will be dynamically loaded here or 'No Order Found' message #}
+            {# Initial display of order ID from Django context, if available #}
+            {% if order_id %}
+                <div class="receipt-header">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Your Order Details</h2>
+                    <p class="text-gray-600 text-lg">Invoice for Order <span id="receipt-order-id-django" class="font-semibold text-emerald-700">{{ order_id }}</span></p>
+                </div>
+                {# The rest of the content will still be populated by JavaScript #}
+            {% else %}
+                {# If no order_id from Django context, JS will fill in the 'No Order Found' message #}
+                <div class="text-center py-12">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-4">Loading Order Details...</h1>
+                    <p class="text-gray-600 mb-8">Attempting to retrieve your order information.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        {# Simple Message Box for confirmations #}
+        <div id="message-box" class="fixed bottom-8 right-8 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl hidden z-50 transition-opacity duration-300 ease-out opacity-0">
+            Message will appear here.
+        </div>
+    </main>
+
+    {# START OF FOOTER CONTENT #}
+    <footer class="bg-emerald-800 text-green-100 py-8 text-center shadow-inner mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="text-sm">
+                &copy; {{ "now"|date:"Y" }} EcoCart <span class="ml-1">🌱</span> — Built with sustainability in mind.
+            </div>
+        </div>
+    </footer>
+    {# END OF FOOTER CONTENT #}
+
+    {# Load product.js for the Cart object and showMessageBox function #}
+    <script src="{% static 'products/js/product.js' %}"></script>
+
+    <script>
+        // Ensure showMessageBox from product.js is available
+        if (typeof showMessageBox === 'undefined') {
+            window.showMessageBox = function(msg, type) { console.log(`Message: ${msg} (${type})`); };
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const receiptDetailsContainer = document.getElementById('receipt-details-container');
+            // Retrieve order details from localStorage
+            const orderDetailsString = localStorage.getItem('lastOrderDetails');
+            localStorage.removeItem('lastOrderDetails'); // Clean up localStorage after retrieval
+
+            let orderDetails = null;
+
+            // Get order_id from Django context if available, otherwise it's null
+            const djangoOrderId = "{{ order_id|default:'' }}"; // Get the order_id passed from Django view
+
+            if (orderDetailsString) {
+                try {
+                    orderDetails = JSON.parse(orderDetailsString);
+                    console.log("Order Details from localStorage:", orderDetails); // Debugging
+
+                    // If orderDetails.orderId is not set from localStorage, try to use djangoOrderId
+                    if (!orderDetails.orderId && djangoOrderId) {
+                        orderDetails.orderId = djangoOrderId;
+                        console.log("Using orderId from Django context:", orderDetails.orderId);
+                    }
+
+                    // Build the HTML for the receipt
+                    let receiptHtml = `
+                        <div class="receipt-header">
+                            <h2 class="text-3xl font-bold text-gray-900 mb-2">Your Order Details</h2>
+                            <p class="text-gray-600 text-lg">Invoice for Order <span id="receipt-order-id" class="font-semibold text-emerald-700">${orderDetails.orderId || '#ECO-UNKNOWN'}</span></p>
+                        </div>
+
+                        <div class="mb-8">
+                            <h3 class="receipt-section-title">Order Information 📝📦</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-700 text-base">
+                                <div>
+                                    <p class="py-1.5"><span class="font-semibold">Order Date: 📅</span> <span id="receipt-order-date">${orderDetails.orderDate || new Date().toLocaleDateString()}</span></p>
+                                    <p class="py-1.5"><span class="font-semibold">Payment Method:
+                                        <span id="receipt-payment-method-emoji">${orderDetails.paymentMethod === 'cod' ? '💵' : '💳'}</span>
+                                    </span> <span id="receipt-payment-method">${orderDetails.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</span></p>
+                                    <p class="py-1.5"><span class="font-semibold">Order Status:
+                                        <span id="receipt-order-status-emoji">${orderDetails.orderStatus === 'Paid' ? '✅' : orderDetails.orderStatus === 'Pending Payment' ? '⏳' : '❓'}</span>
+                                    </span> <span id="receipt-order-status" class="font-medium ${orderDetails.orderStatus === 'Paid' ? 'text-green-600' : orderDetails.orderStatus === 'Pending Payment' ? 'text-orange-500' : 'text-gray-600'}">${orderDetails.orderStatus || 'Pending'}</span></p>
+                                    <p class="py-1.5"><span class="font-semibold">Estimated Delivery: 🚚</span> <span id="receipt-delivery-date">${orderDetails.deliveryDate || 'N/A'}</span></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-2">Shipping Address 🏡🚚</h4>
+                                    <p class="py-1.5" id="receipt-shipping-name">${orderDetails.shippingInfo.fullName || ''}</p>
+                                    <p class="py-1.5" id="receipt-shipping-address1">${orderDetails.shippingInfo.address1 || ''}</p>
+                                    ${orderDetails.shippingInfo.address2 ? `<p class="py-1.5" id="receipt-shipping-address2">${orderDetails.shippingInfo.address2}</p>` : ''}
+                                    <p class="py-1.5"><span id="receipt-shipping-city">${orderDetails.shippingInfo.city || ''}</span>, <span id="receipt-shipping-state">${orderDetails.shippingInfo.state || ''}</span> <span id="receipt-shipping-zip">${orderDetails.shippingInfo.zipCode || ''}</span></p>
+                                    <p class="py-1.5" id="receipt-shipping-country">${orderDetails.shippingInfo.country || ''}</p>
+                                    <p class="py-1.5"><span class="font-semibold">Phone: 📞</span> <span id="receipt-shipping-phone">${orderDetails.shippingInfo.phoneNumber || ''}</span></p>
+                                    <p class="py-1.5"><span class="font-semibold">Email: 📧</span> <span id="receipt-customer-email">${orderDetails.shippingInfo.customerEmail || 'N/A'}</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-8">
+                            <h3 class="receipt-section-title">Items Purchased 🛒✨</h3>
+                            <div id="receipt-items-list">`;
+
+                    if (orderDetails.items && orderDetails.items.length > 0) {
+                        orderDetails.items.forEach(item => {
+                            receiptHtml += `
+                                <div class="receipt-item-row">
+                                    <span class="text-gray-800">${item.name} (x${item.quantity})</span>
+                                    <span class="font-semibold">₹${(item.price * item.quantity).toFixed(2)}</span>
+                                </div>`;
+                        });
+                    } else {
+                        receiptHtml += '<p class="text-gray-500">No items found for this order.</p>';
+                    }
+
+                    receiptHtml += `
+                            </div>
+                        </div>
+
+                        <div class="mb-8">
+                            <h3 class="receipt-section-title">Order Summary 💰📊</h3>
+                            <div class="space-y-4 text-lg text-gray-700">
+                                <div class="receipt-summary-row">
+                                    <span>Subtotal:</span>
+                                    <span class="font-semibold">₹<span id="receipt-subtotal">${orderDetails.orderSummary.subtotal.toFixed(2)}</span></span>
+                                </div>
+                                <div class="receipt-summary-row">
+                                    <span>Shipping:</span>
+                                    <span class="font-semibold">₹<span id="receipt-shipping-cost">${orderDetails.orderSummary.shippingCost.toFixed(2)}</span></span>
+                                </div>`;
+
+                    if (orderDetails.orderSummary.discountAmount > 0 || (orderDetails.orderSummary.appliedPromoCode && orderDetails.orderSummary.shippingCost === 0 && orderDetails.orderSummary.originalShippingCost > 0)) {
+                        receiptHtml += `
+                                <div class="receipt-summary-row text-emerald-600 font-bold" id="receipt-discount-row">
+                                    <span>Discount (${orderDetails.orderSummary.appliedPromoCode}):</span>
+                                    <span>- ₹<span id="receipt-discount">${orderDetails.orderSummary.discountAmount.toFixed(2)}</span></span>
+                                </div>`;
+                    }
+
+                    receiptHtml += `
+                                <div class="receipt-total-row">
+                                    <span>Total Paid:</span>
+                                    <span>₹<span id="receipt-total">${orderDetails.orderSummary.total.toFixed(2)}</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-4 mt-8 action-buttons">
+                            <button id="download-invoice-btn" class="action-button flex-1 flex items-center justify-center bg-blue-600 hover:bg-blue-700">
+                                <i class="fas fa-file-invoice mr-2"></i> Download Invoice
+                            </button>
+                            <a href="{% url 'accounts:home' %}" class="action-button flex-1 flex items-center justify-center">
+                                <i class="fas fa-home mr-2"></i> Back to Home
+                            </a>
+                        </div>
+                    `;
+
+                    receiptDetailsContainer.innerHTML = receiptHtml;
+
+                } catch (e) {
+                    console.error("Failed to parse order details from localStorage:", e);
+                    showMessageBox('Error loading order receipt. Details might be corrupted.', 'error');
+                    displayNoOrderMessage(receiptDetailsContainer);
+                }
+            } else if (djangoOrderId) {
+                // If localStorage is empty but we have an order_id from Django,
+                // we should consider fetching details from the server here if possible.
+                // For now, we'll just show a "loading" or "no details in local storage" message
+                // but keep the order_id visible.
+                showMessageBox(`Order ID ${djangoOrderId} loaded, but full details not found in local storage.`, 'warning');
+                // You might want to add AJAX call here to fetch details by orderId from server
+                displayNoOrderMessage(receiptDetailsContainer, `Order ID: ${djangoOrderId}`); // Updated call
+            } else {
+                console.warn("No order details found in localStorage or Django context for receipt.");
+                displayNoOrderMessage(receiptDetailsContainer);
+            }
+
+            // Function to display "No Order Found" message (updated)
+            function displayNoOrderMessage(container, customMessage = null) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <h1 class="text-3xl font-bold text-gray-800 mb-4">${customMessage ? 'Order Details Unavailable' : 'No Order Found'}</h1>
+                        <p class="text-gray-600 mb-8">${customMessage || 'It looks like there are no recent order details to display. Please ensure you completed a purchase.'}</p>
+                        <a href="{% url 'accounts:home' %}" class="action-button inline-flex items-center justify-center w-auto px-8">
+                            Go to Home <i class="fas fa-home ml-2"></i>
+                        </a>
+                    </div>
+                `;
+                // Also hide the download button if it was previously rendered
+                const downloadBtn = document.getElementById('download-invoice-btn');
+                if (downloadBtn) downloadBtn.style.display = 'none';
+            }
+
+
+            // --- Invoice Generation Logic (moved inside DOMContentLoaded and added check) ---
+            const downloadInvoiceBtn = document.getElementById('download-invoice-btn');
+            if (downloadInvoiceBtn) { // Only add listener if the button exists
+                downloadInvoiceBtn.addEventListener('click', () => {
+                    if (!orderDetails || !orderDetails.orderId) {
+                        showMessageBox('No complete order details available to generate invoice.', 'error');
+                        return;
+                    }
+
+                    const invoiceWindow = window.open('', '_blank');
+                    invoiceWindow.document.write(`
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Invoice - Order ${orderDetails.orderId}</title>
+                            <style>
+                                body { font-family: 'Poppins', sans-serif; margin: 20px; color: #333; }
+                                .invoice-header { text-align: center; margin-bottom: 30px; }
+                                .invoice-header h1 { color: #065F46; font-size: 2.5em; margin-bottom: 5px; }
+                                .invoice-header p { color: #555; font-size: 0.9em; }
+                                .section-title { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-top: 30px; margin-bottom: 20px; font-weight: 600; font-size: 1.25em; color: #059669; } /* Increased padding/margin/font-size */
+                                .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; } /* Increased gap */
+                                .info-grid div p { margin: 0; line-height: 2; padding-bottom: 5px; } /* Increased line-height and padding */
+                                .info-grid div p span { font-weight: 600; }
+                                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                                table th, table td { border: 1px solid #eee; padding: 15px; text-align: left; } /* Increased padding */
+                                table th { background-color: #f9f9f9; color: #065F46; }
+                                .text-right { text-align: right; }
+                                .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #eee; } /* Increased padding */
+                                .summary-row.total { font-weight: 700; font-size: 1.4em; border-top: 2px solid #ddd; padding-top: 20px; margin-top: 20px; } /* Increased padding/margin/font-size */
+                                .footer { text-align: center; margin-top: 50px; font-size: 0.8em; color: #777; }
+                                .footer p { margin: 5px 0; }
+                                .text-green { color: #059669; }
+                                .text-red { color: #dc2626; }
+                                .text-orange { color: #f97316; } /* Tailwind orange-500 */
+                                .font-bold { font-weight: 700; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="invoice-header">
+                                <h1>EcoCart Invoice 🌿💰</h1>
+                                <p>Sustainable Shopping for a Better Tomorrow</p>
+                                <p>Date: ${orderDetails.orderDate}</p>
+                                <p>Invoice ID: ${orderDetails.orderId}</p>
+                            </div>
+
+                            <div class="info-grid">
+                                <div>
+                                    <div class="section-title">Billing Information 📝</div>
+                                    <p><span>Name:</span> ${orderDetails.shippingInfo.fullName}</p>
+                                    <p><span>Email:</span> ${orderDetails.shippingInfo.customerEmail}</p>
+                                    <p><span>Phone:</span> ${orderDetails.shippingInfo.phoneNumber}</p>
+                                </div>
+                                <div>
+                                    <div class="section-title">Shipping Address 🏡🚚</div>
+                                    <p>${orderDetails.shippingInfo.address1}</p>
+                                    ${orderDetails.shippingInfo.address2 ? `<p>${orderDetails.shippingInfo.address2}</p>` : ''}
+                                    <p>${orderDetails.shippingInfo.city}, ${orderDetails.shippingInfo.state} ${orderDetails.shippingInfo.zipCode}</p>
+                                    <p>${orderDetails.shippingInfo.country}</p>
+                                </div>
+                            </div>
+
+                            <div class="section-title">Order Summary 📊</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Quantity</th>
+                                        <th class="text-right">Unit Price</th>
+                                        <th class="text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${orderDetails.items.map(item => `
+                                        <tr>
+                                            <td>${item.name}</td>
+                                            <td>${item.quantity}</td>
+                                            <td class="text-right">₹${item.price.toFixed(2)}</td>
+                                            <td class="text-right">₹${(item.price * item.quantity).toFixed(2)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+
+                            <div style="max-width: 300px; margin-left: auto;">
+                                <div class="summary-row">
+                                    <span>Subtotal:</span>
+                                    <span>₹${orderDetails.orderSummary.subtotal.toFixed(2)}</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Shipping:</span>
+                                    <span>₹${orderDetails.orderSummary.shippingCost.toFixed(2)}</span>
+                                </div>
+                                ${orderDetails.orderSummary.discountAmount > 0 || (orderDetails.orderSummary.appliedPromoCode && orderDetails.orderSummary.shippingCost === 0 && orderDetails.orderSummary.originalShippingCost > 0) ? `
+                                <div class="summary-row text-green">
+                                    <span>Discount (${orderDetails.orderSummary.appliedPromoCode}):</span>
+                                    <span>- ₹${orderDetails.orderSummary.discountAmount.toFixed(2)}</span>
+                                </div>
+                                ` : ''}
+                                <div class="summary-row total">
+                                    <span>Total Paid:</span>
+                                    <span>₹${orderDetails.orderSummary.total.toFixed(2)}</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Payment Method:</span>
+                                    <span>${orderDetails.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Order Status:</span>
+                                    <span class="${orderDetails.orderStatus === 'Paid' ? 'text-green' : orderDetails.orderStatus === 'Pending Payment' ? 'text-orange' : ''} font-bold">${orderDetails.orderStatus}</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Estimated Delivery:</span>
+                                    <span>${orderDetails.deliveryDate} 🚚</span>
+                                </div>
+                            </div>
+
+                            <div class="footer">
+                                <p>Thank you for choosing EcoCart! 💚</p>
+                                <p>For support, contact us at support@ecocart.com</p>
+                                <p>EcoCart, 123 Green Street, Eco City, EC 12345</p>
+                            </div>
+                        </body>
+                        </html>
+                    `);
+                    invoiceWindow.document.close();
+                    invoiceWindow.print();
+                });
+            }
+
+            // Navbar toggle for mobile
+            const navToggle = document.getElementById('nav-toggle');
+            const navContent = document.getElementById('nav-content');
+
+            if (navToggle && navContent) {
+                navToggle.addEventListener('click', function () {
+                    navContent.classList.toggle('hidden');
+                });
+            }
+
+            // Initial update of cart count (assuming Cart object is available from product.js)
+            if (typeof Cart !== 'undefined') {
+                Cart.updateCartCount();
+            }
+        });
+    </script>
+
+</body>
+</html>

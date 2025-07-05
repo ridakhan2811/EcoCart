@@ -1,11 +1,30 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+# ecocart/accounts/views.py
 
-# Import your CustomUser model and the updated forms
-from .models import CustomUser
-from .forms import CustomUserCreationForm, CustomUserChangeForm # Ensure CustomUserChangeForm is imported
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse # Keep JsonResponse for other potential AJAX needs in accounts
+from django.utils import timezone
+from datetime import timedelta
+import json
+import uuid # Use uuid for robust unique ID generation, replace random
+import random # <--- ADDED: Import the random module
+
+# Core Django authentication and messaging imports
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.mail import EmailMessage # Keep for other email needs if any
+from django.template.loader import render_to_string # Keep for other template rendering needs if any
+from django.conf import settings
+from django.template.defaultfilters import strip_tags # Keep for other template rendering needs if any
+
+# Import your custom forms
+from .forms import CustomUserCreationForm, CustomUserChangeForm
+
+# CORRECTED IMPORT: Import Order model from orders app, not accounts app
+from orders.models import Order # <--- FIX IS HERE
+
+# Import Product model (still needed for validating product IDs if used in other accounts views)
+from products.models import Product
 
 # Dummy pick-up lines (if used elsewhere, otherwise can be removed)
 PICK_UP_LINES = [
@@ -19,6 +38,7 @@ PICK_UP_LINES = [
 def home_view(request):
     """
     Renders the main landing page.
+    This view should be mapped to path('', views.home_view, name='home') in accounts/urls.py
     """
     return render(request, 'accounts/home.html')
 
@@ -50,7 +70,6 @@ def register_view(request):
             # --- END DEBUG PRINT ---
 
             # Display form errors using messages
-            # This block should be working if messages are configured correctly
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field.replace('_', ' ').title()}: {error}")
@@ -167,6 +186,7 @@ def cart_detail(request):
         'pick_up_line': "Your cart is a step towards a greener future!",
     }
     return render(request, 'products/cart.html', context)
+
 def wishlist_view(request):
     """
     Placeholder view for the user's wishlist.
@@ -188,3 +208,50 @@ def checkout_view(request):
         'payment_method': payment_method, # Pass the selected payment method to the template
     }
     return render(request, 'products/checkout.html', context)
+
+@login_required
+def order_receipt_view(request, order_id):
+    """
+    Displays the order receipt for a specific order ID.
+    Fetches order details from the database using the Order model's JSON fields.
+    """
+    try:
+        # Fetch the order by ID, ensuring it belongs to the logged-in user
+        order = get_object_or_404(Order, order_id=order_id, user=request.user)
+    except Order.DoesNotExist:
+        messages.error(request, "Order not found or you don't have permission to view it.")
+        return redirect('accounts:home') # Or redirect to an orders list page
+    except Exception as e:
+        messages.error(request, f"An unexpected error occurred: {e}")
+        return redirect('accounts:home')
+
+    context = {
+        'order': order, # Pass the Django Order object
+        'order_id': order_id, # Also pass the order_id directly for JS to pick up
+    }
+    # You confirmed this template path is correct from your directory structure
+    return render(request, 'accounts/order_receipt.html', context)
+
+
+@login_required
+def printable_invoice_view(request, order_id):
+    """
+    Renders a minimalist version of the invoice suitable for printing.
+    Fetches order details from the database using the Order model's JSON fields.
+    """
+    try:
+        # Fetch the order by ID, ensuring it belongs to the logged-in user
+        order = get_object_or_404(Order, order_id=order_id, user=request.user)
+    except Order.DoesNotExist:
+        messages.error(request, "Invoice not found or you don't have permission to view it.")
+        return redirect('accounts:home') # Or redirect to order_receipt_view
+    except Exception as e:
+        messages.error(request, f"An unexpected error occurred: {e}")
+        return redirect('accounts:home')
+
+    context = {
+        'order': order,
+        'timedelta': timedelta # Pass timedelta to the template for date calculations if needed
+    }
+    # You should place this template in accounts/templates/accounts/printable_invoice.html
+    return render(request, 'accounts/printable_invoice.html', context)

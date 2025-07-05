@@ -1,0 +1,153 @@
+{# orders/templates/orders/order_success.html #}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed! | EcoCart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; @apply bg-gray-50 text-gray-800; }
+        .success-icon {
+            animation: bounceIn 0.8s ease-out;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.1); opacity: 0; }
+            60% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        .submit-button { /* Re-using existing button style */
+            @apply w-full py-3 rounded-full font-bold text-white transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95;
+            background: linear-gradient(to right, #059669, #10B981); /* Emerald gradient */
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4);
+        }
+        .submit-button:hover {
+            box-shadow: 0 6px 15px rgba(5, 150, 105, 0.6);
+        }
+
+        /* New styles for the order confirmed card hover effect */
+        .order-confirmed-card {
+            transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        .order-confirmed-card:hover {
+            background-color: #f0fdf4; /* A slightly darker green tint on hover */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* More pronounced shadow */
+        }
+
+        /* Adjust button layout for multiple buttons */
+        .action-buttons {
+            @apply flex flex-col md:flex-row justify-center items-center gap-4 mt-8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    {# Include your existing navbar here. Assuming it's in products/navbar.html or a similar path #}
+    {# If you have a base.html, you can extend it and put the navbar/footer in blocks #}
+    <header id="main-navbar" class="bg-emerald-800 p-4 shadow-lg sticky top-0 z-40 transition-all duration-300 ease-in-out">
+        <div class="container mx-auto flex items-center justify-between flex-wrap">
+            <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6">
+                <span class="font-bold text-3xl tracking-tight text-white flex items-center">
+                    EcoCart <span class="ml-2 text-green-300">🌿</span>
+                </span>
+            </a>
+            <div class="block lg:hidden">
+                <button id="nav-toggle" class="flex items-center px-3 py-2 border rounded text-green-200 border-green-400 hover:text-white hover:border-white focus:outline-none focus:ring-2 focus:ring-white">
+                    <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Menu</title><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>
+                </button>
+            </div>
+            <div id="nav-content" class="w-full block flex-grow lg:flex lg:items-center lg:w-auto hidden">
+                <div class="text-lg lg:flex-grow">
+                    <a href="{% url 'products:list' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">Shop Eco</a>
+                    <a href="{% url 'accounts:blog' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">Blog</a>
+                    <a href="{% url 'accounts:about_us' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">About Us</a>
+                    <a href="{% url 'accounts:contact' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 transition duration-300 ease-in-out">Contact</a>
+                </div>
+                <div class="flex items-center">
+                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">0</span>
+                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 ease-in-out mr-4 mt-4 lg:mt-0">
+                            <img src="{% if user.profile.profile_picture %}{{ user.profile.profile_picture.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
+                                 onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
+                                 alt="{{ user.username }} Profile Picture"
+                                 class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
+                            <span class="hidden sm:inline">{{ user.username }}</span>
+                        </a>
+                        <a href="{% url 'accounts:logout' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">Logout</a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out mr-2">Login</a>
+                        <a href="{% url 'accounts:register' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow flex items-center justify-center p-8">
+            <div class="bg-white p-10 rounded-lg shadow-xl text-center max-w-lg w-full order-confirmed-card"> {# Added order-confirmed-card class #}
+                <div class="text-green-500 text-6xl mb-6 success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">Order Confirmed!</h1>
+                <p class="text-lg text-gray-700 mb-6">Thank you for your purchase from EcoCart.</p>
+
+                {% if order_id %}
+                    <p class="text-xl font-semibold text-emerald-700 mb-2">Your Order ID: <span class="tracking-wider">{{ order_id }}</span></p>
+                    <p class="text-md text-gray-600 mb-4">You will receive a confirmation email shortly.</p>
+                    <div class="mt-6 p-4 bg-gray-100 rounded-md text-left text-sm text-gray-700">
+                        <h3 class="font-semibold text-base mb-2">What's next?</h3>
+                        <p>We're preparing your order for shipment. You can view full details of your order on your <a href="{% url 'accounts:order_receipt' order_id=order_id %}" class="text-emerald-600 hover:underline">order receipt page</a>.</p>
+                    </div>
+                {% else %}
+                    <p class="text-md text-gray-600 mb-4">Your order has been placed. We're unable to display order details at this moment, but you will receive a confirmation email shortly.</p>
+                {% endif %}
+
+                <div class="action-buttons"> {# New container for buttons #}
+                    <a href="{% url 'products:list' %}" class="inline-block submit-button px-8 py-3 rounded-full text-white font-bold transition-all hover:scale-105">
+                        Continue Shopping
+                    </a>
+                    {% if user.is_authenticated and order_id %} {# Ensure order_id exists to generate URL #}
+                        <a href="{% url 'accounts:order_receipt' order_id=order_id %}" class="inline-block text-emerald-600 hover:text-emerald-800 hover:underline px-4 py-3 rounded-full border border-emerald-600 hover:border-emerald-800 transition-colors duration-300">
+                            View My Order
+                        </a>
+                        <a href="{% url 'accounts:printable_invoice' order_id=order_id %}" target="_blank" class="inline-block text-emerald-600 hover:text-emerald-800 hover:underline px-4 py-3 rounded-full border border-emerald-600 hover:border-emerald-800 transition-colors duration-300">
+                            <i class="fas fa-download mr-2"></i> Download Invoice
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+
+        {# Include your existing footer here. Assuming it's in products/footer.html or a similar path #}
+        <footer class="bg-emerald-800 text-green-100 py-8 text-center shadow-inner mt-auto">
+            <div class="container mx-auto px-4">
+                <div class="text-sm">
+                    &copy; {{ "now"|date:"Y" }} EcoCart <span class="ml-1">🌱</span> — Built with sustainability in mind.
+                </div>
+            </div>
+        </footer>
+        <script src="{% static 'products/js/product.js' %}"></script>
+        <script>
+            // Optional: clear cart locally in case redirect happened before it was cleared by the view
+            if (typeof Cart !== 'undefined') {
+                Cart.clearCart();
+                Cart.updateCartCount();
+            }
+            // Navbar toggle for mobile
+            const navToggle = document.getElementById('nav-toggle');
+            const navContent = document.getElementById('nav-content');
+
+            if (navToggle && navContent) {
+                navToggle.addEventListener('click', function () {
+                    navContent.classList.toggle('hidden');
+                });
+            }
+        </script>
+    </body>
+    </html>
