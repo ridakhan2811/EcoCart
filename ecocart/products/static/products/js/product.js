@@ -1,562 +1,381 @@
-// products/static/products/js/product.js
+// ecocart/products/static/products/js/product.js
 
-// products/static/products/js/product.js
+// Global references to DOM elements
+const productGrid = document.getElementById('product-grid');
+const loadMoreBtn = document.getElementById('load-more-btn');
+const messageBox = document.getElementById('message-box');
+const productSearchInput = document.getElementById('product-search');
+const categoryButtons = document.querySelectorAll('.filter-btn');
+const ecoFriendlyCheckbox = document.getElementById('eco_friendly_checkbox');
+const sortByDropdown = document.getElementById('sort-by');
 
-document.addEventListener('DOMContentLoaded', function() {
-    // ... (other variable declarations like navToggle, searchInput, filterButtons, etc.) ...
-
-    const productGrid = document.getElementById('product-grid');
-    const loadMoreBtn = document.getElementById('load-more-btn'); // Get the load more button
-    // const messageBox = document.getElementById('message-box'); // (already there for wishlist/add to cart)
-
-    let currentPage = 1; // Tracks current page for pagination
-    let isLoading = false; // Prevents multiple simultaneous AJAX requests
-
-    // ... (getFilterParams function remains the same) ...
-
-    /**
-     * Fetches products from the backend API based on current filters and sorting.
-     * @param {boolean} append - If true, new products are appended; otherwise, the grid is cleared.
-     */
-    function filterProducts(append = false) {
-        if (isLoading) return; // Prevent multiple requests if one is already in progress
-        isLoading = true;
-
-        const params = getFilterParams(); // Gathers all filter/sort parameters
-        if (!append) { // If it's a new filter/search (not "Load More"), reset to page 1
-            currentPage = 1;
-            params.set('page', currentPage);
-        } else { // For "Load More", use the current page number
-            params.set('page', currentPage);
-        }
-
-        const apiUrl = `/products/api/products/?${params.toString()}`;
-        console.log("Fetching: " + apiUrl);
-
-        fetch(apiUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (!append) {
-                    productGrid.innerHTML = ''; // Clear existing products if not appending
-                }
-                renderProducts(data.products); // Render the fetched products
-
-                // Manage "Load More" button visibility based on API response
-                if (loadMoreBtn) {
-                    if (data.has_next) {
-                        loadMoreBtn.classList.remove('hidden'); // Show button if there's a next page
-                        loadMoreBtn.dataset.nextPage = data.next_page_number; // Update next page number (though currentPage is used in JS)
-                    } else {
-                        loadMoreBtn.classList.add('hidden'); // Hide if no more pages
-                    }
-                }
-                isLoading = false; // Request complete
-            })
-            .catch(error => {
-                console.error('Error fetching products:', error);
-                if (!append) {
-                    productGrid.innerHTML = '<p class="col-span-full text-center text-red-500 py-10">Error loading products. Please try again.</p>';
-                }
-                isLoading = false;
-            });
-    }
-
-    /**
-     * Renders product cards into the product grid.
-     * @param {Array} products - An array of product objects to render.
-     * (This function dynamically creates the HTML for each product card based on the JSON data)
-     */
-    function renderProducts(products) {
-        if (products.length === 0 && currentPage === 1) {
-            productGrid.innerHTML = '<div class="col-span-full text-center py-10"><p class="text-xl text-gray-600">No products found matching your criteria. Try adjusting filters!</p></div>';
-            return;
-        }
-
-        products.forEach((product, index) => {
-            // ... (Product card HTML creation using template literals and product data) ...
-            // This part takes the JSON data and builds a new product card HTML element.
-            // Example of how data is used: product.name, product.price, product.image_url, etc.
-            // You can find the full renderProducts function in the previous comprehensive code block.
-            // It dynamically builds the div.product-card and appends it to productGrid.
-        });
-    }
-
-
-    // ... (Event Listeners for Category, Search, Eco-Friendly, Sort By) ...
-
-    // "Load More" button event listener
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', function() {
-            currentPage++; // Increment page number
-            filterProducts(true); // Fetch and append more products
-        });
-    }
-
-    // ... (Add to Cart & Wishlist Interaction, Message Box Utility) ...
-
-    // Initial Load - crucial to fetch the first set of products
-    filterProducts();
-});
-
-// Cart object to manage items in local storage
-const Cart = {
-    // Retrieves all items currently in the cart from local storage.
-    // If no cart exists, it returns an empty array.
-    getItems: function() {
-        const cart = localStorage.getItem('ecocart_cart');
-        return cart ? JSON.parse(cart) : [];
-    },
-
-    // Saves the current array of cart items to local storage.
-    // Includes a console log for debugging purposes.
-    saveItems: function(items) {
-        localStorage.setItem('ecocart_cart', JSON.stringify(items));
-        console.log('Cart saved to localStorage:', items); // Debugging: Confirm cart save
-    },
-
-    // Add a product to the cart or increment its quantity if it already exists.
-    // Takes a product object as an argument, which must contain id, name, price, and image_url.
-    addItem: function(product) {
-        console.log('Attempting to add item to cart:', product); // Debugging: Item received by addItem
-        let items = this.getItems(); // Get current cart items
-        const existingItemIndex = items.findIndex(item => item.id === product.id); // Check if product already in cart
-
-        if (existingItemIndex > -1) {
-            // If item exists, increment its quantity
-            items[existingItemIndex].quantity += 1;
-            console.log('Item already in cart, incrementing quantity:', items[existingItemIndex]); // Debugging
-        } else {
-            // If item does not exist, add it as a new item with quantity 1
-            items.push({
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                image_url: product.image_url,
-                quantity: 1
-            });
-            console.log('New item added to cart:', product); // Debugging
-        }
-        this.saveItems(items); // Save updated cart to local storage
-        this.updateCartCount(); // Update the cart count displayed in the navbar
-    },
-
-    // Remove an item from the cart based on its product ID.
-    removeItem: function(productId) {
-        let items = this.getItems();
-        items = items.filter(item => item.id !== productId); // Filter out the item to be removed
-        this.saveItems(items); // Save updated cart
-        this.updateCartCount(); // Update cart count
-        console.log('Item removed from cart:', productId); // Debugging
-    },
-
-    // Update the quantity of a specific item in the cart.
-    // If the new quantity is 0 or less, the item is removed from the cart.
-    updateQuantity: function(productId, newQuantity) {
-        let items = this.getItems();
-        const itemIndex = items.findIndex(item => item.id === productId);
-
-        if (itemIndex > -1) {
-            items[itemIndex].quantity = newQuantity;
-            if (items[itemIndex].quantity <= 0) {
-                // Remove item if quantity drops to 0 or less
-                items.splice(itemIndex, 1);
-                console.log('Item quantity updated to 0 or less, removing item:', productId); // Debugging
-            }
-            this.saveItems(items); // Save updated cart
-            this.updateCartCount(); // Update cart count
-            console.log(`Quantity updated for ${productId} to ${newQuantity}`); // Debugging
-        }
-    },
-
-    // Calculates and returns the total number of items (sum of quantities) in the cart.
-    getTotalItemsCount: function() {
-        return this.getItems().reduce((total, item) => total + item.quantity, 0);
-    },
-
-    // Update the text content of the cart count element in the navbar.
-    // Assumes an element with id 'cart-count' exists in the DOM.
-    updateCartCount: function() {
-        const cartCountElement = document.getElementById('cart-count');
-        if (cartCountElement) {
-            cartCountElement.textContent = this.getTotalItemsCount();
-            console.log('Cart count updated to:', this.getTotalItemsCount()); // Debugging
-        } else {
-            console.warn('Cart count element #cart-count not found in the DOM.'); // Debugging: Warn if element is missing
-        }
-    },
-
-    // Clears all items from the cart in local storage.
-    clearCart: function() {
-        localStorage.removeItem('ecocart_cart');
-        this.updateCartCount(); // Reset cart count to 0
-        console.log('Cart cleared.'); // Debugging
-    }
+// Initial state for filters and pagination (defaults, will be overwritten by INITIAL_FILTERS from Django)
+let currentPage = 1;
+let currentFilters = {
+    category: 'all',
+    search: '',
+    eco_friendly: false,
+    sort_by: 'default',
 };
 
-// Function to display a temporary message box on the screen.
-// It slides in, displays the message, and then fades out.
-// 'type' can be 'success', 'error', or 'info' to apply different styling.
-function showMessageBox(message, type = 'success') {
-    const messageBox = document.getElementById('message-box');
-    if (messageBox) {
-        // Remove existing type classes and reset visibility
-        messageBox.classList.remove('success', 'error', 'info', 'hidden', 'opacity-0');
-        messageBox.classList.add('show', 'opacity-100'); // Show and make opaque
+// Placeholder for image path from Django context (set in product_list.html)
+let PLACEHOLDER_IMG = '/static/products/images/placeholder.jpg'; // Fallback if not set by Django
 
-        messageBox.textContent = message; // Set the message text
+let debounceTimer; // For search input debounce
 
-        // Add type-specific class
-        if (type === 'success') messageBox.classList.add('bg-green-600');
-        else if (type === 'error') messageBox.classList.add('bg-red-600');
-        else if (type === 'info') messageBox.classList.add('bg-blue-600');
-        else messageBox.classList.add('bg-gray-700'); // Default if no valid type
+// --- Utility Functions ---
 
-        // Set a timeout to hide the message box
-        setTimeout(() => {
-            messageBox.classList.remove('opacity-100'); // Start fade out
-            messageBox.classList.add('opacity-0');
-            setTimeout(() => {
-                messageBox.classList.add('hidden'); // Fully hide after transition
-                // Remove type-specific classes to clean up for next message
-                messageBox.classList.remove('bg-green-600', 'bg-red-600', 'bg-blue-600', 'bg-gray-700');
-            }, 400); // Matches CSS transition duration for opacity
-        }, 5000); // Message visible for 5 seconds
-    } else {
-        console.warn('Message box element #message-box not found in the DOM. Message:', message); // Debugging: Warn if element is missing
-    }
-}
-
-
-// Global function to handle adding a product to the cart from a button click.
-// It extracts product data from the button's data attributes.
-function addToCart(element) {
-    console.log('addToCart function called with element:', element); // Debugging: Confirm function call
-
-    // Extract product data from data attributes of the clicked element
-    const productId = element.dataset.productId;
-    const productName = element.dataset.productName;
-    const productPrice = parseFloat(element.dataset.productPrice); // Convert price to a number
-    const productImageUrl = element.dataset.productImageUrl;
-
-    console.log('Extracted product data:', {
-        productId,
-        productName,
-        productPrice,
-        productImageUrl
-    }); // Debugging: Show extracted data
-
-    // Validate extracted data
-    if (!productId || !productName || isNaN(productPrice) || !productImageUrl) {
-        console.error('Missing or invalid product data for Add to Cart:', {
-            productId,
-            productName,
-            productPrice,
-            productImageUrl
-        });
-        showMessageBox('Error: Could not add product to cart. Missing data.', 'error');
-        return; // Stop execution if data is invalid
-    }
-
-    // Create a product object to pass to the Cart.addItem method
-    const productToAdd = {
-        id: productId,
-        name: productName,
-        price: productPrice,
-        image_url: productImageUrl
-    };
-
-    Cart.addItem(productToAdd); // Add the product to the cart
-    console.log(`Successfully called Cart.addItem for "${productName}" (ID: ${productId}).`);
-    showMessageBox(`${productName} added to cart!`); // Show success notification
-}
-
-// Global function to toggle wishlist status of a product.
-// It toggles the 'active' class on the heart icon.
-function toggleWishlist(iconElement) {
-    iconElement.classList.toggle('active');
-    console.log('Wishlist toggled for product ID:', iconElement.dataset.productId);
-    // In a real application, you would send an AJAX request here to update the user's wishlist on the server.
-    showMessageBox('Wishlist status updated!', 'info');
-}
-
-
-// Debounce function for search input to prevent excessive API calls.
-let debounceTimer;
-function debounceFilter() {
+// Debounce function to limit how often a function runs
+function debounce(func, delay) {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        filterProducts(); // Call filterProducts after a delay
-    }, 300); // 300ms delay
+    debounceTimer = setTimeout(func, delay);
 }
 
-// Function to filter products based on category, search query, eco-friendly status, and sort order.
-// It makes an API call to fetch filtered products and updates the product grid.
-function filterProducts(page = 1) { // Added page parameter for pagination
-    const currentCategory = document.querySelector('.filter-btn.bg-emerald-600')?.dataset.filter || 'all';
-    const searchInput = document.getElementById('product-search');
-    const searchQuery = searchInput ? searchInput.value : '';
-    const ecoFriendlyCheckbox = document.getElementById('eco_friendly_checkbox');
-    const ecoFriendlyChecked = ecoFriendlyCheckbox ? ecoFriendlyCheckbox.checked : false;
-    const sortBy = document.getElementById('sort-by')?.value || 'default';
+// Function to show a temporary notification (e.g., "Product added to cart!")
+function showNotification(message) {
+    messageBox.textContent = message;
+    messageBox.classList.remove('hidden', 'opacity-0');
+    messageBox.classList.add('opacity-100');
+    setTimeout(() => {
+        messageBox.classList.remove('opacity-100');
+        messageBox.classList.add('opacity-0');
+        setTimeout(() => {
+            messageBox.classList.add('hidden');
+        }, 300); // Wait for fade-out transition
+    }, 3000); // Show for 3 seconds
+}
 
-    const params = new URLSearchParams();
-    params.append('page', page); // Always append page for API call
-    if (currentCategory !== 'all') params.append('category', currentCategory);
-    if (searchQuery) params.append('search', searchQuery);
-    if (ecoFriendlyChecked) params.append('eco_friendly', 'true');
-    if (sortBy !== 'default') params.append('sort_by', sortBy);
-
-    // Update URL without reloading page for better user experience, only if not loading more
-    if (page === 1) {
-        history.pushState(null, '', `?${params.toString()}`);
+// Placeholder for updating cart count (client-side for now)
+function updateCartCount(newCount) {
+    const cartCountSpan = document.getElementById('cart-count');
+    if (cartCountSpan) {
+        // In a real application, you'd likely fetch this from a cart API or local storage
+        let currentCount = parseInt(cartCountSpan.textContent) || 0;
+        if (newCount !== undefined) {
+             cartCountSpan.textContent = newCount;
+        } else {
+             cartCountSpan.textContent = currentCount + 1; // Increment by 1
+        }
     }
+}
 
-    fetch(`/products/api/list/?${params.toString()}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            const productGrid = document.getElementById('product-grid');
-            if (productGrid) {
-                if (page === 1) { // Clear grid only for the first page of results
-                    productGrid.innerHTML = '';
-                }
+// Dummy addToCart function
+function addToCart(buttonElement) {
+    const productId = buttonElement.dataset.productId;
+    const productName = buttonElement.dataset.productName;
+    const productPrice = buttonElement.dataset.productPrice;
+    const productImage = buttonElement.dataset.productImageUrl;
 
-                if (data.products.length === 0 && page === 1) { // Only show "no products" if no products on first load
-                    productGrid.innerHTML = `
-                        <div class="col-span-full text-center py-10">
-                            <p class="text-xl text-gray-600">No products found matching your criteria. Try adjusting filters!</p>
-                        </div>
-                    `;
-                } else {
-                    data.products.forEach((product, index) => {
-                        // Dynamically create product card HTML
-                        const productCardHtml = `
-                            <a href="/products/${product.id}/" class="product-card-link bg-white rounded-xl shadow-lg transform transition-all duration-500 ease-in-out hover:scale-105 hover:shadow-2xl overflow-hidden product-item"
-                               data-category="${product.category_slug}"
-                               data-price="${product.price}"
-                               data-rating="${product.rating}"
-                               data-name="${product.name.toLowerCase()}"
-                               data-eco-friendly="${product.is_eco_friendly}"
-                               data-product-id="${product.id}">
-                                <div class="product-card" style="animation-delay: ${index * 0.08}s;">
-                                    <div class="block relative overflow-hidden w-full h-48 bg-gray-100 rounded-t-xl">
-                                        <img src="${product.image_url}"
-                                             onerror="this.onerror=null; this.src='https://placehold.co/400x300/e0ffe0/333333?text=EcoProduct';"
-                                             alt="${product.name}"
-                                             class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
-                                        ${product.is_eco_friendly ? `
-                                            <div class="absolute top-2 right-2 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md tooltip-container">
-                                                Eco-Friendly 🌿
-                                                ${product.eco_impact_statement ? `<span class="tooltip-text">${product.eco_impact_statement}</span>` : ''}
-                                            </div>
-                                        ` : ''}
-                                        <i class="far fa-heart absolute top-2 left-2 text-2xl text-gray-300 hover:text-red-400 transition-colors duration-200 cursor-pointer wishlist-icon" data-product-id="${product.id}" onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this);"></i>
-                                    </div>
-                                    <div class="p-6 flex-grow flex flex-col justify-between">
-                                        <div>
-                                            <h2 class="text-2xl font-semibold text-gray-900 mb-1 truncate" title="${product.name}">
-                                                ${product.name}
-                                            </h2>
-                                            ${product.brand ? `<p class="text-gray-500 text-sm mb-2">${product.brand}</p>` : ''}
-                                            <p class="text-gray-600 text-sm mb-4 line-clamp-3">${product.short_description}</p>
+    // In a real application, you'd send an AJAX request to your cart API to add the item
+    console.log(`Adding product "${productName}" (ID: ${productId}) to cart. Price: ${productPrice}`);
+    showNotification(`${productName} added to cart!`);
+    updateCartCount(); // Update client-side count
+}
 
-                                            ${product.plastic_saved_kg ? `
-                                            <div class="impact-bar">
-                                                <i class="fa-solid fa-seedling text-emerald-600"></i>
-                                                <span>Impact:</span> By buying this, you help save ${product.plastic_saved_kg}kg of plastic!
-                                            </div>
-                                            ` : ''}
-                                        </div>
-                                        <div class="mt-4">
-                                            <div class="flex items-center mb-2">
-                                                ${'<i class="fas fa-star text-yellow-400 star-icon"></i>'.repeat(product.stars_full)}
-                                                ${product.stars_half ? '<i class="fas fa-star-half-alt text-yellow-400 star-icon"></i>' : ''}
-                                                ${'<i class="far fa-star text-gray-300 star-icon"></i>'.repeat(product.stars_empty)}
-                                                <span class="ml-2 text-gray-600 text-sm">(${product.rating.toFixed(1)} / ${product.review_count} reviews)</span>
-                                            </div>
+// Dummy toggleWishlist function
+function toggleWishlist(element) {
+    element.classList.toggle('active'); // Toggles the red heart
+    const action = element.classList.contains('active') ? 'added to' : 'removed from';
+    console.log(`Product ID: ${element.dataset.productId} ${action} wishlist.`);
+    showNotification(`Product ${action} wishlist!`);
+}
 
-                                            <div class="flex items-baseline justify-between mb-4">
-                                               <span class="text-3xl font-bold text-emerald-700">₹${product.price.toFixed(2)}</span>
-                                                ${product.is_discounted ? `
-                                                   <span class="text-gray-400 line-through text-lg ml-2">₹${product.original_price.toFixed(2)}</span>
-                                                    <span class="ml-auto text-red-500 font-semibold text-sm">${product.discount_percentage}% OFF</span>
-                                                ` : ''}
-                                            </div>
-                                            <button class="add-to-cart-btn w-full bg-emerald-600 text-white font-bold py-3 rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
-                                                    data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image-url="${product.image_url}" onclick="event.preventDefault(); event.stopPropagation(); addToCart(this);"
-                                                    ${product.stock === 0 ? 'disabled' : ''}>
-                                                Add to Cart
-                                            </button>
+// --- Product Rendering Logic ---
 
-                                            ${product.stock > 0 ? `
-                                                <p class="text-emerald-600 text-sm mt-3">In Stock: ${product.stock}</p>
-                                                ${product.stock < 10 ? `<p class="text-orange-500 text-xs mt-1">Only ${product.stock} left!</p>` : ''}
-                                            ` : `
-                                                    <p class="text-red-600 text-sm mt-3">Out of Stock</p>
-                                            `}
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        `;
-                        productGrid.insertAdjacentHTML('beforeend', productCardHtml);
-                    });
+// Function to generate HTML string for a single product card
+function createProductCardHTML(product) {
+    // Determine image URL with fallback
+    const imageUrl = product.image_url || PLACEHOLDER_IMG;
 
-                    // IMPORTANT: Re-attach event listeners for newly added elements
-                    // This is crucial because innerHTML replaces content, removing old listeners.
-                    document.querySelectorAll('.wishlist-icon').forEach(icon => {
-                        // Remove existing listener to prevent duplicates if filterProducts is called multiple times
-                        icon.removeEventListener('click', (event) => { /* empty */ });
-                        icon.addEventListener('click', (event) => {
-                            event.preventDefault();
-                            event.stopPropagation(); // Stop propagation to prevent parent link click
-                            toggleWishlist(icon);
-                        });
-                    });
-                    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-                        // Remove existing listener to prevent duplicates
-                        btn.removeEventListener('click', (event) => { /* empty */ });
-                        btn.addEventListener('click', (event) => {
-                            event.preventDefault();
-                            event.stopPropagation(); // Stop propagation to prevent parent link click
-                            addToCart(btn); // Call the global addToCart function
-                        });
-                    });
-                }
+    // Generate HTML for original price and discount if applicable
+    const originalPriceHtml = product.is_discounted ?
+        `<span class="text-gray-400 line-through text-lg ml-2">₹${parseFloat(product.original_price).toFixed(2)}</span>
+         <span class="ml-auto text-red-500 font-semibold text-sm">${product.discount_percentage}% OFF</span>` : '';
 
-                // Update Load More button visibility and data attributes
-                const loadMoreBtn = document.getElementById('load-more-btn');
-                if (loadMoreBtn) {
-                    if (data.has_next) {
-                        loadMoreBtn.classList.remove('hidden');
-                        loadMoreBtn.dataset.nextPage = data.next_page_number;
-                        loadMoreBtn.dataset.currentCategory = currentCategory;
-                        loadMoreBtn.dataset.currentSearch = searchQuery;
-                        loadMoreBtn.dataset.ecoFriendlyChecked = ecoFriendlyChecked;
-                        loadMoreBtn.dataset.currentSortBy = sortBy;
-                    } else {
-                        loadMoreBtn.classList.add('hidden');
-                    }
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching products:', error);
-            const productGrid = document.getElementById('product-grid');
-            if (productGrid) {
-                productGrid.innerHTML = `
-                    <div class="col-span-full text-center py-10">
-                        <p class="text-xl text-red-500">Failed to load products. Please try again later.</p>
+    // Generate HTML for eco-friendly badge with tooltip if applicable
+    const ecoFriendlyBadge = product.is_eco_friendly ? `
+        <div class="absolute top-2 right-2 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md tooltip-container">
+            Eco-Friendly 🌿
+            ${product.eco_impact_statement ? `<span class="tooltip-text">${product.eco_impact_statement}</span>` : ''}
+        </div>` : '';
+
+    // Generate HTML for plastic impact bar if applicable
+    const impactBarHtml = (product.plastic_saved_kg !== null && typeof product.plastic_saved_kg === 'number' && !isNaN(product.plastic_saved_kg) && product.plastic_saved_kg > 0) ? `
+        <div class="impact-bar">
+            <i class="fa-solid fa-seedling text-emerald-600"></i>
+            <span>Impact:</span> By buying this, you help save ${parseFloat(product.plastic_saved_kg).toFixed(2)}kg of plastic!
+        </div>` : '';
+
+    // Generate HTML for stock info
+    const stockInfoHtml = product.stock > 0 ?
+        `<p class="text-emerald-600 text-sm mt-3">In Stock: ${product.stock}</p>
+         ${product.stock < 10 ? `<p class="text-orange-500 text-xs mt-1">Only ${product.stock} left!</p>` : ''}` :
+        `<p class="text-red-600 text-sm mt-3">Out of Stock</p>`;
+
+    // Generate HTML for star ratings
+    const starsFull = '<i class="fas fa-star text-yellow-400 star-icon"></i>'.repeat(product.stars_full || 0);
+    const starsHalf = product.stars_half ? '<i class="fas fa-star-half-alt text-yellow-400 star-icon"></i>' : '';
+    const starsEmpty = '<i class="far fa-star text-gray-300 star-icon"></i>'.repeat(product.stars_empty || 0);
+
+    return `
+        <a href="/products/${product.id}/" class="product-card-link bg-white rounded-xl shadow-lg transform transition-all duration-500 ease-in-out hover:scale-105 hover:shadow-2xl overflow-hidden product-item"
+            data-category="${product.category_slug || 'uncategorized'}"
+            data-price="${product.price}"
+            data-rating="${product.rating}"
+            data-name="${product.name.toLowerCase()}"
+            data-eco-friendly="${product.is_eco_friendly}"
+            data-product-id="${product.id}">
+            <div class="product-card">
+                <div class="block relative overflow-hidden w-full h-48 bg-gray-100 rounded-t-xl">
+                    <img src="${imageUrl}"
+                         onerror="this.onerror=null; this.src='${PLACEHOLDER_IMG}';"
+                         alt="${product.name}"
+                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    ${ecoFriendlyBadge}
+                    <i class="far fa-heart absolute top-2 left-2 text-2xl text-gray-300 hover:text-red-400 transition-colors duration-200 cursor-pointer wishlist-icon"
+                       data-product-id="${product.id}"></i>
+                </div>
+                <div class="p-6 flex-grow flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-1 truncate" title="${product.name}">
+                            ${product.name}
+                        </h2>
+                        ${product.brand ? `<p class="text-gray-500 text-sm mb-2">${product.brand}</p>` : ''}
+                        <p class="text-gray-600 text-sm mb-4 line-clamp-3">${product.short_description || ''}</p>
+                        ${impactBarHtml}
                     </div>
-                `;
-            }
-            showMessageBox('Failed to load products. Please try again.', 'error');
-        });
+                    <div class="mt-4">
+                        <div class="flex items-center mb-2">
+                            ${starsFull}
+                            ${starsHalf}
+                            ${starsEmpty}
+                            <span class="ml-2 text-gray-600 text-sm">(${parseFloat(product.rating).toFixed(1)} / ${product.review_count} reviews)</span>
+                        </div>
+                        <div class="flex items-baseline justify-between mb-4">
+                            <span class="text-3xl font-bold text-emerald-700">₹${parseFloat(product.price).toFixed(2)}</span>
+                            ${originalPriceHtml}
+                        </div>
+                        <button class="add-to-cart-btn w-full bg-emerald-600 text-white font-bold py-3 rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
+                                data-product-id="${product.id}"
+                                data-product-name="${product.name}"
+                                data-product-price="${product.price}"
+                                data-product-image-url="${imageUrl}"
+                                ${product.stock === 0 ? 'disabled' : ''}>
+                            Add to Cart
+                        </button>
+                        ${stockInfoHtml}
+                    </div>
+                </div>
+            </div>
+        </a>
+    `;
 }
 
-// Carousel logic for related products on product detail page.
-function scrollCarousel(direction) {
-    const track = document.getElementById('related-products-track');
-    if (!track) return;
-
-    const itemWidth = track.firstElementChild ? track.firstElementChild.offsetWidth : 0;
-    const scrollAmount = itemWidth * 1; // Scroll by one item at a time
-
-    track.scrollBy({
-        left: direction * scrollAmount,
-        behavior: 'smooth'
-    });
-}
-
-
-// Event Listeners for DOMContentLoaded to ensure elements are available
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize cart count on page load for the navbar icon
-    Cart.updateCartCount();
-
-    // Mobile Navigation Toggle
-    const navToggle = document.getElementById('nav-toggle');
-    const navContent = document.getElementById('nav-content');
-    if (navToggle && navContent) {
-        navToggle.addEventListener('click', function() {
-            navContent.classList.toggle('hidden');
-        });
+// Function to render products onto the grid
+function renderProducts(products, append = false) {
+    if (!append) {
+        productGrid.innerHTML = ''; // Clear existing products if not appending (new filter/search)
     }
 
-    // Apply staggered animation delay to product cards on initial load
-    const productCards = document.querySelectorAll('.product-card');
-    productCards.forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.08}s`;
+    if (products.length === 0 && !append) {
+        // Show message if no products match criteria and it's not an append call
+        productGrid.innerHTML = `
+            <div class="col-span-full text-center py-10">
+                <p class="text-xl text-gray-600">No products found matching your criteria. Try adjusting filters!</p>
+            </div>
+        `;
+        // Hide load more button if no products are found
+        if (loadMoreBtn) loadMoreBtn.classList.add('hidden', 'opacity-0');
+        return;
+    }
+
+    products.forEach((product, index) => {
+        const productCardHtml = createProductCardHTML(product);
+        productGrid.insertAdjacentHTML('beforeend', productCardHtml);
+        // Apply animation delay to newly inserted cards
+        const insertedCard = productGrid.lastElementChild.querySelector('.product-card');
+        if (insertedCard) {
+            // Calculate delay based on its position in the grid
+            const currentTotalCards = productGrid.querySelectorAll('.product-card').length;
+            insertedCard.style.animationDelay = `${(currentTotalCards - products.length + index) * 0.08}s`;
+            insertedCard.style.opacity = '1'; // Make it visible after delay
+        }
     });
 
-    // Attach event listeners for filter buttons
-    document.querySelectorAll('.filter-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            // Remove active class from all filter buttons
-            document.querySelectorAll('.filter-btn').forEach(btn => {
+    // Reattach event listeners to newly added buttons (important for dynamically added content)
+    productGrid.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        // Prevent default link behavior and event bubbling for the button inside the <a> tag
+        btn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); addToCart(btn); };
+    });
+    productGrid.querySelectorAll('.wishlist-icon').forEach(icon => {
+        // Prevent default link behavior and event bubbling for the <a> tag
+        icon.onclick = (e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(icon); };
+    });
+}
+
+// --- Main Data Fetching Logic ---
+
+// Fetches products from the API based on current filters and page
+async function fetchProducts(resetPage = false) {
+    if (resetPage) {
+        currentPage = 1; // Reset to first page for new filter/sort/search
+        if (loadMoreBtn) loadMoreBtn.classList.add('opacity-0', 'hidden'); // Temporarily hide while loading
+        productGrid.innerHTML = `
+            <div class="col-span-full text-center py-10">
+                <p class="text-xl text-gray-600">Loading products...</p>
+            </div>
+        `; // Show loading message
+    }
+
+    // Construct URL parameters from currentFilters and currentPage
+    const params = new URLSearchParams();
+    params.append('page', currentPage);
+    if (currentFilters.category && currentFilters.category !== 'all') {
+        params.append('category', currentFilters.category);
+    }
+    if (currentFilters.search) {
+        params.append('search', currentFilters.search);
+    }
+    if (currentFilters.eco_friendly) {
+        params.append('eco_friendly', 'true');
+    }
+    if (currentFilters.sort_by && currentFilters.sort_by !== 'default') {
+        params.append('sort_by', currentFilters.sort_by);
+    }
+
+    try {
+        const response = await fetch(`/products/api/products/?${params.toString()}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        renderProducts(data.products, !resetPage); // Pass resetPage inverse to control appending vs. clearing
+
+        // Update load more button visibility and next page number
+        if (loadMoreBtn) {
+            if (data.has_next) {
+                loadMoreBtn.dataset.nextPage = data.next_page_number;
+                loadMoreBtn.classList.remove('hidden', 'opacity-0');
+                loadMoreBtn.classList.add('opacity-100');
+            } else {
+                loadMoreBtn.classList.add('hidden', 'opacity-0'); // Hide if no more pages
+            }
+        }
+        // Update currentPage for the next 'Load More' click
+        currentPage = data.next_page_number || currentPage;
+
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        productGrid.innerHTML = `
+            <div class="col-span-full text-center py-10 text-red-600">
+                <p>Failed to load products. Please try again later.</p>
+            </div>
+        `;
+        if (loadMoreBtn) loadMoreBtn.classList.add('hidden'); // Hide button on error
+    }
+}
+
+// --- Event Listeners for Filters and Load More ---
+
+// Define a function to setup event listeners
+function setupEventListeners() {
+    // Event listener for Category Filters
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Update active class visually
+            categoryButtons.forEach(btn => {
                 btn.classList.remove('bg-emerald-600', 'text-white');
                 btn.classList.add('bg-emerald-100', 'text-emerald-800', 'hover:bg-emerald-200');
             });
-            // Add active class to the clicked button
-            this.classList.remove('bg-emerald-100', 'text-emerald-800', 'hover:bg-emerald-200');
-            this.classList.add('bg-emerald-600', 'text-white');
-            filterProducts(); // Re-filter products when category changes (resets to page 1)
+            button.classList.remove('bg-emerald-100', 'text-emerald-800', 'hover:bg-emerald-200');
+            button.classList.add('bg-emerald-600', 'text-white');
+
+            currentFilters.category = button.dataset.filter;
+            fetchProducts(true); // Reset page and fetch new products
         });
     });
 
-    // Attach event listener for search input
-    const searchInput = document.getElementById('product-search');
-    if (searchInput) {
-        searchInput.addEventListener('keyup', debounceFilter);
+    // Event listener for Search Input (with debounce)
+    if (productSearchInput) {
+        productSearchInput.addEventListener('keyup', () => {
+            debounce(() => {
+                currentFilters.search = productSearchInput.value.trim();
+                fetchProducts(true); // Reset page and fetch new products
+            }, 500); // 500ms debounce delay
+        });
     }
 
-    // Attach event listener for eco-friendly checkbox
-    const ecoFriendlyCheckbox = document.getElementById('eco_friendly_checkbox');
+    // Event listener for Eco-Friendly Checkbox
     if (ecoFriendlyCheckbox) {
-        ecoFriendlyCheckbox.addEventListener('change', filterProducts);
+        ecoFriendlyCheckbox.addEventListener('change', () => {
+            currentFilters.eco_friendly = ecoFriendlyCheckbox.checked;
+            fetchProducts(true); // Reset page and fetch new products
+        });
     }
 
-    // Attach event listener for sort-by dropdown
-    const sortByDropdown = document.getElementById('sort-by');
+    // Event listener for Sort Dropdown
     if (sortByDropdown) {
-        sortByDropdown.addEventListener('change', filterProducts);
+        sortByDropdown.addEventListener('change', () => {
+            currentFilters.sort_by = sortByDropdown.value;
+            fetchProducts(true); // Reset page and fetch new products
+        });
     }
 
-
-    // Attach event listener for Load More button
-    const loadMoreBtn = document.getElementById('load-more-btn');
+    // Event listener for Load More Button
     if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', function() {
-            const nextPage = parseInt(this.dataset.nextPage);
-            filterProducts(nextPage); // Load next page of products
+        loadMoreBtn.addEventListener('click', () => {
+            fetchProducts(false); // Do not reset page, append results
         });
     }
+}
 
-    // Attach event listeners for Add to Cart buttons that are present on initial page load
-    // This handles cases where product_list.html or product_detail.html has static buttons
-    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-        button.addEventListener('click', (event) => {
-            event.preventDefault(); // Prevent default link/form behavior
-            event.stopPropagation(); // Stop event from bubbling up to parent elements (like product card link)
-            addToCart(button); // Call the main addToCart function
-        });
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize global PLACEHOLDER_IMG if set by Django template
+    if (typeof PLACEHOLDER_IMG_URL !== 'undefined') {
+        PLACEHOLDER_IMG = PLACEHOLDER_IMG_URL;
+    }
+
+    // Initialize currentFilters with values passed from Django context
+    if (typeof INITIAL_FILTERS !== 'undefined') {
+        currentFilters.category = INITIAL_FILTERS.category;
+        currentFilters.search = INITIAL_FILTERS.search;
+        currentFilters.eco_friendly = INITIAL_FILTERS.eco_friendly === 'true'; // Ensure boolean
+        currentFilters.sort_by = INITIAL_FILTERS.sort_by;
+    }
+
+    // Set active class for initial category button
+    categoryButtons.forEach(button => {
+        if (button.dataset.filter === currentFilters.category) {
+            button.classList.remove('bg-emerald-100', 'text-emerald-800', 'hover:bg-emerald-200');
+            button.classList.add('bg-emerald-600', 'text-white');
+        } else {
+             button.classList.remove('bg-emerald-600', 'text-white');
+             button.classList.add('bg-emerald-100', 'text-emerald-800', 'hover:bg-emerald-200');
+        }
     });
 
-    // Attach event listeners for Wishlist icons that are present on initial page load
-    document.querySelectorAll('.wishlist-icon').forEach(icon => {
-        icon.addEventListener('click', (event) => {
-            event.preventDefault(); // Prevent default link behavior
-            event.stopPropagation(); // Stop event from bubbling up to parent elements (like product card link)
-            toggleWishlist(icon); // Call the main toggleWishlist function
-        });
-    });
+    // Set initial value for search input
+    if (productSearchInput) {
+        productSearchInput.value = currentFilters.search;
+    }
+
+    // Set initial state for eco-friendly checkbox
+    if (ecoFriendlyCheckbox) {
+        ecoFriendlyCheckbox.checked = currentFilters.eco_friendly;
+    }
+
+    // Set initial value for sort dropdown
+    if (sortByDropdown) {
+        sortByDropdown.value = currentFilters.sort_by;
+    }
+
+
+    // Call the function to setup all event listeners
+    setupEventListeners();
+
+    // Initial load of products when the page is ready
+    fetchProducts(true); // Load the first page of products based on initial filters
+    updateCartCount(0); // Initialize cart count, or fetch from persistent storage if implemented
 });

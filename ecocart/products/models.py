@@ -31,8 +31,10 @@ class Product(models.Model):
     rating = models.DecimalField(max_digits=2, decimal_places=1, default=0.0)
     review_count = models.PositiveIntegerField(default=0)
     is_eco_friendly = models.BooleanField(default=False)
-    eco_impact_statement = models.TextField(blank=True, null=True, help_text="e.g., 'Saves 3kg of plastic'")
-    stock = models.PositiveIntegerField(default=0) # This field will now be controlled manually
+    eco_impact_statement = models.TextField(blank=True, null=True, help_text="e.g., 'This product helps reduce carbon footprint.'")
+    # Added this field based on your template and API view usage
+    plastic_saved_kg = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="e.g., '3.50' kg of plastic saved per item.")
+    stock = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -65,10 +67,7 @@ class Product(models.Model):
         return 5 - self.get_stars_full - self.get_stars_half
 
     def save(self, *args, **kwargs):
-        # Only assign random rating/review count if they are default 0.0/0
         if self.rating == 0.0:
             self.rating = round(random.uniform(3.0, 5.0), 1)
             self.review_count = random.randint(10, 200)
-        # Removed the problematic 'if self.stock == 0:' block.
-        # Stock will now be exactly what you set it to.
         super().save(*args, **kwargs)

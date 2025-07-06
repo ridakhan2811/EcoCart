@@ -1,7 +1,5 @@
 {# products/templates/products/product_list.html #}
 {% load static %}
-{# Removed: {% load products.products_filters %} to fix SyntaxError #}
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -18,7 +16,7 @@
             --color-primary-lightest: #E8F5E9; /* Lightest green */
             --color-primary-medium: #A5D6A7;   /* Medium green */
             --color-primary-dark: #66BB6A; /* Darker green */
-            --color-emerald-800: #065F46; /* From your landing 
+            --color-emerald-800: #065F46; /* From your landing
             page header */
             --color-emerald-600: #059669; /* From your landing page buttons */
         }
@@ -26,7 +24,7 @@
         body {
             font-family: 'Poppins', sans-serif;
             @apply bg-gray-50 text-gray-800;
-            min-height: 100vh;
+            min-height: 10vh;
             display: flex;
             flex-direction: column;
         }
@@ -197,7 +195,7 @@
                 </div>
                 <div class="flex items-center">
                     {# Cart Icon and Count - NEW ADDITION #}
-                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0"> {# FIXED: Changed products:cart_detail to accounts:cart_detail #}
+                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0">
                         <i class="fas fa-shopping-cart"></i>
                         <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">0</span>
                     </a>
@@ -240,8 +238,7 @@
             {# Search Input #}
             <div class="relative w-full md:w-1/3">
                 <input type="text" id="product-search" placeholder="Search products..." value="{{ current_search }}"
-                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-300 ease-in-out text-lg"
-                        onkeyup="debounceFilter()"> {# Use debounce for better performance #}
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-300 ease-in-out text-lg">
                 <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
@@ -251,18 +248,18 @@
             <div class="w-full md:w-auto flex flex-wrap justify-center md:justify-end gap-3 order-3 md:order-2">
                 <button class="filter-btn px-6 py-3 font-semibold rounded-lg shadow-sm active:shadow-inner transition duration-300 ease-in-out {% if current_category == 'all' %}bg-emerald-600 text-white{% else %}bg-emerald-100 text-emerald-800 hover:bg-emerald-200{% endif %}" data-filter="all">All</button>
                 {% for category in categories %}
-                    <button class="filter-btn px-6 py-3 font-semibold rounded-lg shadow-sm active:shadow-inner transition duration-300 ease-in-out {% if current_category == category.slug %}bg-emerald-600 text-white{% else %}bg-emerald-100 text-emerald-800 hover:bg-emerald-200{% endif %}" data-filter="{{ category.slug }}">{{ category.name|title }}</button> {# Removed |replace:"_: " filter #}
+                    <button class="filter-btn px-6 py-3 font-semibold rounded-lg shadow-sm active:shadow-inner transition duration-300 ease-in-out {% if current_category == category.slug %}bg-emerald-600 text-white{% else %}bg-emerald-100 text-emerald-800 hover:bg-emerald-200{% endif %}" data-filter="{{ category.slug }}">{{ category.name|title }}</button>
                 {% endfor %}
                 {# Eco-Friendly Only Filter #}
                 <label for="eco_friendly_checkbox" class="flex items-center space-x-2 cursor-pointer px-4 py-2 bg-emerald-100 text-emerald-800 font-semibold rounded-lg hover:bg-emerald-200 transition duration-300 ease-in-out shadow-sm active:shadow-inner">
-                    <input type="checkbox" id="eco_friendly_checkbox" onchange="filterProducts()" class="form-checkbox h-5 w-5 text-emerald-600 rounded focus:ring-emerald-500" {% if eco_friendly_checked %}checked{% endif %}>
+                    <input type="checkbox" id="eco_friendly_checkbox" class="form-checkbox h-5 w-5 text-emerald-600 rounded focus:ring-emerald-500" {% if eco_friendly_checked %}checked{% endif %}>
                     <span>Eco-Friendly Only</span>
                 </label>
             </div>
 
             {# Sorting Dropdown #}
             <div class="relative w-full md:w-1/4 order-2 md:order-3">
-                <select id="sort-by" onchange="filterProducts()"
+                <select id="sort-by"
                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-300 ease-in-out text-lg appearance-none bg-white pr-8">
                     <option value="default" {% if current_sort_by == 'default' %}selected{% endif %}>Sort By: Default</option>
                     <option value="price_asc" {% if current_sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
@@ -278,281 +275,73 @@
 
         {# Product Grid Section #}
         <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {% for product in products %}
-                {# Wrapped the entire product card in an <a> tag for clickability #}
-                <a href="{% url 'products:detail' pk=product.id %}" class="product-card-link bg-white rounded-xl shadow-lg transform transition-all duration-500 ease-in-out hover:scale-105 hover:shadow-2xl overflow-hidden product-item"
-                   data-category="{{ product.category.slug|default:'uncategorized' }}"
-                   data-price="{{ product.price }}"
-                   data-rating="{{ product.rating }}"
-                   data-name="{{ product.name|lower }}"
-                   data-eco-friendly="{{ product.is_eco_friendly|lower }}"
-                   data-product-id="{{ product.id }}">
-                    <div class="product-card"> {# This div is now inside the link #}
-                        <div class="block relative overflow-hidden w-full h-48 bg-gray-100 rounded-t-xl">
-                            <img src="{% if product.image %}{{ product.image.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
-                                 onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
-                                 alt="{{ product.name }}"
-                                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
-                            {% if product.is_eco_friendly %}
-                                <div class="absolute top-2 right-2 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md tooltip-container">
-                                    Eco-Friendly 🌿
-                                    {% if product.eco_impact_statement %}
-                                        <span class="tooltip-text">{{ product.eco_impact_statement }}</span>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                            <i class="far fa-heart absolute top-2 left-2 text-2xl text-gray-300 hover:text-red-400 transition-colors duration-200 cursor-pointer wishlist-icon" data-product-id="{{ product.id }}" onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this);"></i> {# Added event stoppers #}
-                        </div>
-                        <div class="p-6 flex-grow flex flex-col justify-between">
-                            <div>
-                                <h2 class="text-2xl font-semibold text-gray-900 mb-1 truncate" title="{{ product.name }}">
-                                    {# Removed <a> tag here, as the parent is now the link #}
-                                    {{ product.name }}
-                                </h2>
-                                {% if product.brand %}<p class="text-gray-500 text-sm mb-2">{{ product.brand }}</p>{% endif %}
-                                <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ product.short_description }}</p>
-
-                                {% if product.plastic_saved_kg %}
-                                <div class="impact-bar">
-                                    <i class="fa-solid fa-seedling text-emerald-600"></i>
-                                    <span>Impact:</span> By buying this, you help save {{ product.plastic_saved_kg }}kg of plastic!
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="mt-4">
-                                <div class="flex items-center mb-2">
-                                    {# Removed Django filter from style attribute, will be handled by JS below #}
-                                    {% for _ in "x"|ljust:product.get_stars_full %}<i class="fas fa-star text-yellow-400 star-icon"></i>{% endfor %}
-                                    {% if product.get_stars_half %}<i class="fas fa-star-half-alt text-yellow-400 star-icon"></i>{% endif %}
-                                    {% for _ in "x"|ljust:product.get_stars_empty %}<i class="far fa-star text-gray-300 star-icon"></i>{% endfor %}
-                                    <span class="ml-2 text-gray-600 text-sm">({{ product.rating|floatformat:1 }} / {{ product.review_count }} reviews)</span>
-                                </div>
-
-                                <div class="flex items-baseline justify-between mb-4">
-                                   <span class="text-3xl font-bold text-emerald-700">₹{{ product.price|floatformat:2 }}</span>
-                                    {% if product.is_discounted %}
-                                       <span class="text-gray-400 line-through text-lg ml-2">₹{{ product.original_price|floatformat:2 }}</span>
-                                        <span class="ml-auto text-red-500 font-semibold text-sm">{{ product.discount_percentage }}% OFF</span>
-                                    {% endif %}
-                                </div>
-                                <button class="add-to-cart-btn w-full bg-emerald-600 text-white font-bold py-3 rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
-                                        data-product-id="{{ product.id }}"
-                                        data-product-name="{{ product.name }}"
-                                        data-product-price="{{ product.price }}" {# ADDED THIS #}
-                                        data-product-image-url="{% if product.image %}{{ product.image.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}" {# ADDED THIS #}
-                                        onclick="event.preventDefault(); event.stopPropagation(); addToCart(this);"> {# Added event stoppers #}
-                                    Add to Cart
-                                </button>
-                                
-                                {% if product.stock > 0 %} {# CHANGED from product.in_stock to product.stock #}
-                                    <p class="text-emerald-600 text-sm mt-3">In Stock: {{ product.stock }}</p> {# CHANGED from product.in_stock to product.stock #}
-                                    {% if product.stock < 10 %} {# CHANGED from product.in_stock to product.stock #}
-                                    <p class="text-orange-500 text-xs mt-1">Only {{ product.stock }} left!</p> {# CHANGED from product.in_stock to product.stock #}
-                                   {% endif %}
-                                {% else %}
-                                        <p class="text-red-600 text-sm mt-3">Out of Stock</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div> {# End product-card div #}
-                </a> {# End product-card-link a tag #}
-                {% empty %}
-                    <div class="col-span-full text-center py-10">
-                        <p class="text-xl text-gray-600">No products found matching your criteria. Try adjusting filters!</p>
-                    </div>
-                {% endfor %}
+            {# Products will be loaded here by JavaScript #}
+            <div class="col-span-full text-center py-10">
+                <p class="text-xl text-gray-600">Loading products...</p>
             </div>
+        </div>
 
-            {# Load More Button for Pagination #}
-            {% if products.has_next %}
-                <div class="text-center mt-12">
-                    <button id="load-more-btn"
-                            data-next-page="{{ products.next_page_number }}"
-                            data-current-category="{{ current_category }}"
-                            data-current-search="{{ current_search }}"
-                            data-eco-friendly-checked="{{ eco_friendly_checked }}"
-                            data-current-sort-by="{{ current_sort_by }}"
-                            class="px-8 py-4 bg-emerald-700 text-white font-bold rounded-full shadow-lg hover:bg-emerald-800 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95">
-                        Load More Products
-                    </button>
-                </div>
-            {% endif %}
+        {# Load More Button for Pagination #}
+        <div class="text-center mt-12">
+            <button id="load-more-btn"
+                    class="px-8 py-4 bg-emerald-700 text-white font-bold rounded-full shadow-lg hover:bg-emerald-800 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 hidden opacity-0">
+                Load More Products
+            </button>
+        </div>
 
-            {# Simple Message Box for Add to Cart confirmations #}
-            <div id="message-box" class="fixed bottom-8 right-8 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl hidden z-50 transition-opacity duration-300 ease-out opacity-0">
-                Product added to cart!
+        {# Simple Message Box for Add to Cart confirmations #}
+        <div id="message-box" class="fixed bottom-8 right-8 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl hidden z-50 transition-opacity duration-300 ease-out opacity-0">
+            Product added to cart!
+        </div>
+
+    </main>
+
+    {# START OF FOOTER CONTENT #}
+    <footer class="bg-emerald-800 text-green-100 py-8 text-center shadow-inner mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="text-sm">
+                &copy; {{ "now"|date:"Y" }} EcoCart <span class="ml-1">🌱</span> — Built with sustainability in mind.
             </div>
+        </div>
+    </footer>
+    {# END OF FOOTER CONTENT #}
 
-        </main>
+    <script>
+        // Pass Django context variables to JavaScript
+        const PLACEHOLDER_IMG_URL = "{% static 'products/images/placeholder.jpg' %}";
+        const INITIAL_FILTERS = {
+            category: "{{ current_category|default:'all' }}",
+            search: "{{ current_search|default:'' }}",
+            eco_friendly: "{{ eco_friendly_checked|lower }}",
+            sort_by: "{{ current_sort_by|default:'default' }}",
+        };
 
-        {# START OF FOOTER CONTENT #}
-        <footer class="bg-emerald-800 text-green-100 py-8 text-center shadow-inner mt-auto">
-            <div class="container mx-auto px-4">
-                <div class="text-sm">
-                    &copy; {{ "now"|date:"Y" }} EcoCart <span class="ml-1">🌱</span> — Built with sustainability in mind.
-                </div>
-            </div>
-        </footer>
-        {# END OF FOOTER CONTENT #}
-
-        <script src="{% static 'products/js/product.js' %}"></script>
-        <script>
-            const PLACEHOLDER_IMG = "{% static 'products/images/placeholder.jpg' %}";
-            // Prevent link click when clicking wishlist or add to cart buttons
-            // This is crucial because the entire card is now a link
-            function toggleWishlist(element) {
-                // Your existing wishlist logic here
-                element.classList.toggle('active');
-                console.log('Wishlist toggled for product ID:', element.dataset.productId);
-            }
-
-            // The addToCart function is now defined in product.js and called from here.
-            // No need to redefine it here.
-
-            // JavaScript to apply staggered animation delay to product cards
-            document.addEventListener('DOMContentLoaded', () => {
-                const productCards = document.querySelectorAll('.product-card');
-                productCards.forEach((card, index) => {
-                    // Apply animation delay using JavaScript
-                    card.style.animationDelay = `${index * 0.08}s`;
-                });
-            });
-
-            // Navbar Toggle for mobile (existing logic)
-            document.addEventListener('DOMContentLoaded', function() {
-                const navToggle = document.getElementById('nav-toggle');
-                const navContent = document.getElementById('nav-content');
-
-                if (navToggle && navContent) {
-                    navToggle.addEventListener('click', function() {
-                        navContent.classList.toggle('hidden');
-                    });
-                }
-            });
-
-            // --- Load More AJAX Logic ---
-    document.addEventListener('DOMContentLoaded', function() {
-        const loadMoreBtn = document.getElementById('load-more-btn');
-        const productGrid = document.getElementById('product-grid');
-
-        if (loadMoreBtn && productGrid) {
-            loadMoreBtn.addEventListener('click', function() {
-                const nextPage = loadMoreBtn.dataset.nextPage;
-                // Build query params from button data attributes
-                const params = new URLSearchParams();
-                params.append('page', nextPage);
-                if (loadMoreBtn.dataset.currentCategory)
-                    params.append('category', loadMoreBtn.dataset.currentCategory);
-                if (loadMoreBtn.dataset.currentSearch)
-                    params.append('search', loadMoreBtn.dataset.currentSearch);
-                if (loadMoreBtn.dataset.ecoFriendlyChecked === "True" || loadMoreBtn.dataset.ecoFriendlyChecked === "true")
-                    params.append('eco_friendly', 'true');
-                if (loadMoreBtn.dataset.currentSortBy)
-                    params.append('sort_by', loadMoreBtn.dataset.currentSortBy);
-
-                fetch(`/products/api/products/?${params.toString()}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // For each product, append its HTML to the grid
-                        data.products.forEach(product => {
-                            const productCard = document.createElement('a');
-                            productCard.href = `/products/${product.id}/`;
-                            productCard.className = "product-card-link bg-white rounded-xl shadow-lg transform transition-all duration-500 ease-in-out hover:scale-105 hover:shadow-2xl overflow-hidden product-item";
-                            productCard.setAttribute('data-category', product.category_slug || 'uncategorized');
-                            productCard.setAttribute('data-price', product.price);
-                            productCard.setAttribute('data-rating', product.rating);
-                            productCard.setAttribute('data-name', product.name.toLowerCase());
-                            productCard.setAttribute('data-eco-friendly', product.is_eco_friendly);
-                            productCard.setAttribute('data-product-id', product.id);
-
-                            productCard.innerHTML = `
-                                <div class="product-card">
-                                    <div class="block relative overflow-hidden w-full h-48 bg-gray-100 rounded-t-xl">
-                                        <img src="${product.image_url || PLACEHOLDER_IMG}"
-                                             onerror="this.onerror=null; this.src=PLACEHOLDER_IMG;"
-                                             alt="${product.name}"
-                                             class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
-                                        ${product.is_eco_friendly ? `
-                                            <div class="absolute top-2 right-2 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md tooltip-container">
-                                                Eco-Friendly 🌿
-                                                ${product.eco_impact_statement ? `<span class="tooltip-text">${product.eco_impact_statement}</span>` : ''}
-                                            </div>
-                                        ` : ''}
-                                        <i class="far fa-heart absolute top-2 left-2 text-2xl text-gray-300 hover:text-red-400 transition-colors duration-200 cursor-pointer wishlist-icon"
-                                           data-product-id="${product.id}"
-                                           onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this);"></i>
-                                    </div>
-                                    <div class="p-6 flex-grow flex flex-col justify-between">
-                                        <div>
-                                            <h2 class="text-2xl font-semibold text-gray-900 mb-1 truncate" title="${product.name}">
-                                                ${product.name}
-                                            </h2>
-                                            ${product.brand ? `<p class="text-gray-500 text-sm mb-2">${product.brand}</p>` : ''}
-                                            <p class="text-gray-600 text-sm mb-4 line-clamp-3">${product.short_description || ''}</p>
-                                            ${product.plastic_saved_kg ? `
-                                                <div class="impact-bar">
-                                                    <i class="fa-solid fa-seedling text-emerald-600"></i>
-                                                    <span>Impact:</span> By buying this, you help save ${product.plastic_saved_kg}kg of plastic!
-                                                </div>
-                                            ` : ''}
-                                        </div>
-                                        <div class="mt-4">
-                                            <div class="flex items-center mb-2">
-                                                ${'<i class="fas fa-star text-yellow-400 star-icon"></i>'.repeat(product.stars_full || 0)}
-                                                ${product.stars_half ? '<i class="fas fa-star-half-alt text-yellow-400 star-icon"></i>' : ''}
-                                                ${'<i class="far fa-star text-gray-300 star-icon"></i>'.repeat(product.stars_empty || 0)}
-                                                <span class="ml-2 text-gray-600 text-sm">(${parseFloat(product.rating).toFixed(1)} / ${product.review_count} reviews)</span>
-                                            </div>
-                                            <div class="flex items-baseline justify-between mb-4">
-                                                <span class="text-3xl font-bold text-emerald-700">₹${parseFloat(product.price).toFixed(2)}</span>
-                                                ${product.is_discounted ? `
-                                                    <span class="text-gray-400 line-through text-lg ml-2">₹${parseFloat(product.original_price).toFixed(2)}</span>
-                                                    <span class="ml-auto text-red-500 font-semibold text-sm">${product.discount_percentage}% OFF</span>
-                                                ` : ''}
-                                            </div>
-                                            <button class="add-to-cart-btn w-full bg-emerald-600 text-white font-bold py-3 rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
-                                                    data-product-id="${product.id}"
-                                                    data-product-name="${product.name}"
-                                                    data-product-price="${product.price}"
-                                                    data-product-image-url="${product.image_url}"
-                                                    onclick="event.preventDefault(); event.stopPropagation(); addToCart(this);"
-                                                    ${product.stock === 0 ? 'disabled' : ''}>
-                                                Add to Cart
-                                            </button>
-                                            ${product.stock > 0 ? `
-                                                <p class="text-emerald-600 text-sm mt-3">In Stock: ${product.stock}</p>
-                                                ${product.stock < 10 ? `<p class="text-orange-500 text-xs mt-1">Only ${product.stock} left!</p>` : ''}
-                                            ` : `
-                                                <p class="text-red-600 text-sm mt-3">Out of Stock</p>
-                                            `}
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                            productGrid.appendChild(productCard);
-                        });
-
-                        // Animate new cards
-                        const allCards = productGrid.querySelectorAll('.product-card');
-                        allCards.forEach((card, idx) => {
-                            card.style.animationDelay = `${idx * 0.08}s`;
-                        });
-
-                        // Update or hide Load More button
-                        if (data.has_next) {
-                            loadMoreBtn.dataset.nextPage = data.next_page_number;
-                        } else {
-                            loadMoreBtn.style.display = 'none';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error loading more products:', error);
-                        loadMoreBtn.textContent = "Error loading more!";
-                        loadMoreBtn.disabled = true;
-                    });
-            });
+        // These functions are called from the dynamically loaded product cards
+        function toggleWishlist(element) {
+            element.classList.toggle('active');
+            console.log('Wishlist toggled for product ID:', element.dataset.productId);
+            // showNotification(`Product ${element.classList.contains('active') ? 'added to' : 'removed from'} wishlist!`);
+            // The notification is now handled in product.js's toggleWishlist
         }
-    });
-        </script>
-    </body>
+
+        function addToCart(buttonElement) {
+            // The actual logic is in product.js's addToCart
+            // showNotification(`${buttonElement.dataset.productName} added to cart!`);
+            // The notification is now handled in product.js's addToCart
+        }
+
+        // Navbar Toggle for mobile (existing logic)
+        document.addEventListener('DOMContentLoaded', function() {
+            const navToggle = document.getElementById('nav-toggle');
+            const navContent = document.getElementById('nav-content');
+
+            if (navToggle && navContent) {
+                navToggle.addEventListener('click', function() {
+                    navContent.classList.toggle('hidden');
+                });
+            }
+        });
+    </script>
+    <script src="{% static 'products/js/product.js' %}"></script>
+</body>
 </html>
