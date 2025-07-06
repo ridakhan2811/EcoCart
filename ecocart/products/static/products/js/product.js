@@ -1,5 +1,108 @@
 // products/static/products/js/product.js
 
+// products/static/products/js/product.js
+
+document.addEventListener('DOMContentLoaded', function() {
+    // ... (other variable declarations like navToggle, searchInput, filterButtons, etc.) ...
+
+    const productGrid = document.getElementById('product-grid');
+    const loadMoreBtn = document.getElementById('load-more-btn'); // Get the load more button
+    // const messageBox = document.getElementById('message-box'); // (already there for wishlist/add to cart)
+
+    let currentPage = 1; // Tracks current page for pagination
+    let isLoading = false; // Prevents multiple simultaneous AJAX requests
+
+    // ... (getFilterParams function remains the same) ...
+
+    /**
+     * Fetches products from the backend API based on current filters and sorting.
+     * @param {boolean} append - If true, new products are appended; otherwise, the grid is cleared.
+     */
+    function filterProducts(append = false) {
+        if (isLoading) return; // Prevent multiple requests if one is already in progress
+        isLoading = true;
+
+        const params = getFilterParams(); // Gathers all filter/sort parameters
+        if (!append) { // If it's a new filter/search (not "Load More"), reset to page 1
+            currentPage = 1;
+            params.set('page', currentPage);
+        } else { // For "Load More", use the current page number
+            params.set('page', currentPage);
+        }
+
+        const apiUrl = `/products/api/products/?${params.toString()}`;
+        console.log("Fetching: " + apiUrl);
+
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!append) {
+                    productGrid.innerHTML = ''; // Clear existing products if not appending
+                }
+                renderProducts(data.products); // Render the fetched products
+
+                // Manage "Load More" button visibility based on API response
+                if (loadMoreBtn) {
+                    if (data.has_next) {
+                        loadMoreBtn.classList.remove('hidden'); // Show button if there's a next page
+                        loadMoreBtn.dataset.nextPage = data.next_page_number; // Update next page number (though currentPage is used in JS)
+                    } else {
+                        loadMoreBtn.classList.add('hidden'); // Hide if no more pages
+                    }
+                }
+                isLoading = false; // Request complete
+            })
+            .catch(error => {
+                console.error('Error fetching products:', error);
+                if (!append) {
+                    productGrid.innerHTML = '<p class="col-span-full text-center text-red-500 py-10">Error loading products. Please try again.</p>';
+                }
+                isLoading = false;
+            });
+    }
+
+    /**
+     * Renders product cards into the product grid.
+     * @param {Array} products - An array of product objects to render.
+     * (This function dynamically creates the HTML for each product card based on the JSON data)
+     */
+    function renderProducts(products) {
+        if (products.length === 0 && currentPage === 1) {
+            productGrid.innerHTML = '<div class="col-span-full text-center py-10"><p class="text-xl text-gray-600">No products found matching your criteria. Try adjusting filters!</p></div>';
+            return;
+        }
+
+        products.forEach((product, index) => {
+            // ... (Product card HTML creation using template literals and product data) ...
+            // This part takes the JSON data and builds a new product card HTML element.
+            // Example of how data is used: product.name, product.price, product.image_url, etc.
+            // You can find the full renderProducts function in the previous comprehensive code block.
+            // It dynamically builds the div.product-card and appends it to productGrid.
+        });
+    }
+
+
+    // ... (Event Listeners for Category, Search, Eco-Friendly, Sort By) ...
+
+    // "Load More" button event listener
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            currentPage++; // Increment page number
+            filterProducts(true); // Fetch and append more products
+        });
+    }
+
+    // ... (Add to Cart & Wishlist Interaction, Message Box Utility) ...
+
+    // Initial Load - crucial to fetch the first set of products
+    filterProducts();
+});
+
 // Cart object to manage items in local storage
 const Cart = {
     // Retrieves all items currently in the cart from local storage.

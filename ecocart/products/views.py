@@ -6,6 +6,9 @@ from django.db.models import Q  # For search functionality
 import random  # For pick-up line
 from django.core import serializers
 from .models import Product
+# from django.http import JsonResponse, Http404
+# from .models import Product, Category
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def load_more_products(request):
@@ -159,3 +162,51 @@ def product_detail(request, pk):
     }
 
     return render(request, 'products/product_detail.html', context)
+
+def api_product_list(request):
+    """
+    API endpoint for fetching products with filters, sorting, and pagination.
+    This is called via AJAX from product.js for "Load More" and dynamic filtering.
+    """
+    products_qs = get_product_queryset(request) # Uses the helper to apply filters/sorts
+
+    paginator = Paginator(products_qs, 8) # Show 8 products per page
+    page_number = request.GET.get('page') # Get the requested page number from URL
+
+    try:
+        page_obj = paginator.page(page_number)
+    except (PageNotAnInteger, EmptyPage):
+        # If page is not an integer or out of range, return empty list
+        return JsonResponse({'products': [], 'has_next': False}, status=200)
+
+    products_data = []
+    for product in page_obj:
+        products_data.append({
+            'id': product.id,
+            'name': product.name,
+            'brand': product.brand,
+            'category_slug': product.category.slug if product.category else '',
+            'category_name': product.category.name if product.category else '',
+            'image_url': product.image.url if product.image else '/static/products/images/placeholder.jpg',
+            'price': float(product.price),
+            'original_price': float(product.original_price) if product.original_price else None,
+            'short_description': product.short_description,
+            'long_description': product.long_description,
+            'rating': float(product.rating),
+            'review_count': product.review_count,
+            'is_eco_friendly': product.is_eco_friendly,
+            'eco_impact_statement': product.eco_impact_statement,
+            'stock': product.stock,
+            'is_discounted': product.is_discounted,
+            'discount_percentage': product.discount_percentage,
+            'stars_full': product.get_stars_full,
+            'stars_half': product.get_stars_half,
+            'stars_empty': product.get_stars_empty,
+            'plastic_saved_kg': float(product.plastic_saved_kg) if product.plastic_saved_kg else None,
+        })
+
+    return JsonResponse({
+        'products': products_data,
+        'has_next': page_obj.has_next(), # Tells the frontend if there are more pages
+        'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None, # The number of the next page
+    })
