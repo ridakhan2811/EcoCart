@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "ecocart/ecocart/wsgi.py",
+      "src": "api/index.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "ecocart/ecocart/wsgi.py"
+      "dest": "api/index.py"
     }
   ]
 }

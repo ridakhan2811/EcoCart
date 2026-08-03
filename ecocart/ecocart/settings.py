@@ -147,3 +147,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 LOGIN_URL = 'accounts:login' # URL for the login page
 LOGIN_REDIRECT_URL = 'products:list' # Where to redirect after successful login
 LOGOUT_REDIRECT_URL = 'accounts:login' # Where to redirect after logout
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
