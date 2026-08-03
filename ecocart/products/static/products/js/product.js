@@ -209,7 +209,8 @@ function createProductCardHTML(product) {
         </div>` : '';
 
     const stockInfoHtml = product.stock > 0 ?
-        `<p class="text-emerald-700 text-xs font-semibold flex items-center mt-2"><i class="fas fa-check-circle mr-1 text-emerald-500"></i> In Stock (${product.stock})</p>
+        `<p class="text-emerald-700 text-xs font-semibold flex items-center mt-2"><i class="fas fa-check-circle mr-1 text-emerald-500"></i> In Stock (${product.stock})</p>` :
+        `<p class="text-red-600 text-xs font-semibold mt-2"><i class="fas fa-times-circle mr-1 text-red-500"></i> Out of Stock</p>`;
 
     // Generate HTML for star ratings
     const starsFull = '<i class="fas fa-star text-yellow-400 star-icon"></i>'.repeat(product.stars_full || 0);
