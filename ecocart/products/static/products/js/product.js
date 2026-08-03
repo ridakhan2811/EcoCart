@@ -1,13 +1,21 @@
-// ecocart/products/static/products/js/product.js
-
 // Global references to DOM elements
-const productGrid = document.getElementById('product-grid');
-const loadMoreBtn = document.getElementById('load-more-btn');
-const messageBox = document.getElementById('message-box');
-const productSearchInput = document.getElementById('product-search');
-const categoryButtons = document.querySelectorAll('.filter-btn');
-const ecoFriendlyCheckbox = document.getElementById('eco_friendly_checkbox');
-const sortByDropdown = document.getElementById('sort-by');
+let productGrid = document.getElementById('product-grid');
+let loadMoreBtn = document.getElementById('load-more-btn');
+let messageBox = document.getElementById('message-box');
+let productSearchInput = document.getElementById('product-search');
+let categoryButtons = document.querySelectorAll('.filter-btn');
+let ecoFriendlyCheckbox = document.getElementById('eco_friendly_checkbox');
+let sortByDropdown = document.getElementById('sort-by');
+
+function refreshDOMElements() {
+    productGrid = document.getElementById('product-grid');
+    loadMoreBtn = document.getElementById('load-more-btn');
+    messageBox = document.getElementById('message-box');
+    productSearchInput = document.getElementById('product-search');
+    categoryButtons = document.querySelectorAll('.filter-btn');
+    ecoFriendlyCheckbox = document.getElementById('eco_friendly_checkbox');
+    sortByDropdown = document.getElementById('sort-by');
+}
 
 // Initial state for filters and pagination (defaults, will be overwritten by INITIAL_FILTERS from Django)
 let currentPage = 1;
@@ -424,51 +432,50 @@ function setupEventListeners() {
 }
 
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize global PLACEHOLDER_IMG if set by Django template
+function initProductList() {
+    refreshDOMElements();
     if (typeof PLACEHOLDER_IMG_URL !== 'undefined') {
         PLACEHOLDER_IMG = PLACEHOLDER_IMG_URL;
     }
 
-    // Initialize currentFilters with values passed from Django context
     if (typeof INITIAL_FILTERS !== 'undefined') {
         currentFilters.category = INITIAL_FILTERS.category;
         currentFilters.search = INITIAL_FILTERS.search;
-        currentFilters.eco_friendly = INITIAL_FILTERS.eco_friendly === 'true'; // Ensure boolean
+        currentFilters.eco_friendly = INITIAL_FILTERS.eco_friendly === 'true';
         currentFilters.sort_by = INITIAL_FILTERS.sort_by;
     }
 
-    // Set active class for initial category button
-    categoryButtons.forEach(button => {
-        if (button.dataset.filter === currentFilters.category) {
-            button.classList.remove('bg-emerald-100', 'text-emerald-800', 'hover:bg-emerald-200');
-            button.classList.add('bg-emerald-600', 'text-white');
-        } else {
-             button.classList.remove('bg-emerald-600', 'text-white');
-             button.classList.add('bg-emerald-100', 'text-emerald-800', 'hover:bg-emerald-200');
-        }
-    });
+    if (categoryButtons) {
+        categoryButtons.forEach(button => {
+            if (button.dataset.filter === currentFilters.category) {
+                button.classList.remove('bg-emerald-100', 'text-emerald-800', 'hover:bg-emerald-200');
+                button.classList.add('bg-emerald-600', 'text-white');
+            } else {
+                button.classList.remove('bg-emerald-600', 'text-white');
+                button.classList.add('bg-emerald-100', 'text-emerald-800', 'hover:bg-emerald-200');
+            }
+        });
+    }
 
-    // Set initial value for search input
     if (productSearchInput) {
         productSearchInput.value = currentFilters.search;
     }
 
-    // Set initial state for eco-friendly checkbox
     if (ecoFriendlyCheckbox) {
         ecoFriendlyCheckbox.checked = currentFilters.eco_friendly;
     }
 
-    // Set initial value for sort dropdown
     if (sortByDropdown) {
         sortByDropdown.value = currentFilters.sort_by;
     }
 
-
-    // Call the function to setup all event listeners
     setupEventListeners();
+    fetchProducts(true);
+    Cart.updateCartCount();
+}
 
-    // Initial load of products when the page is ready
-    fetchProducts(true); // Load the first page of products based on initial filters
-    updateCartCount(0); // Initialize cart count, or fetch from persistent storage if implemented
-});
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initProductList);
+} else {
+    initProductList();
+}

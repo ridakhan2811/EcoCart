@@ -8,9 +8,9 @@ class ProductSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     is_discounted = serializers.BooleanField(read_only=True)
     discount_percentage = serializers.IntegerField(read_only=True)
-    stars_full = serializers.IntegerField(read_only=True)
-    stars_half = serializers.IntegerField(read_only=True)
-    stars_empty = serializers.IntegerField(read_only=True)
+    stars_full = serializers.IntegerField(source='get_stars_full', read_only=True)
+    stars_half = serializers.IntegerField(source='get_stars_half', read_only=True)
+    stars_empty = serializers.IntegerField(source='get_stars_empty', read_only=True)
 
     class Meta:
         model = Product
