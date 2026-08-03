@@ -1,72 +1,101 @@
 {# ecocart/accounts/templates/accounts/wishlist.html #}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Wishlist</title>
+    <title>Your Eco Wishlist | EcoCart 🌿</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
     <style>
-        body { font-family: 'Poppins', sans-serif; @apply bg-gray-50 text-gray-800 min-h-screen flex flex-col; }
-        /* Add any shared styles if you have a base template */
+        body { font-family: 'Poppins', sans-serif; }
+        .leaf-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.25;
+            animation: floatLeaf 15s linear infinite;
+        }
+        @keyframes floatLeaf {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
-    <header class="bg-emerald-800 p-4 shadow-lg sticky top-0 z-40">
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50/60 via-green-50/40 to-teal-50/50 text-gray-800 relative overflow-x-hidden">
+
+    <!-- Floating Leaf Background Particles -->
+    <div class="leaf-particle text-3xl" style="left: 12%; animation-delay: 0s;">🍃</div>
+    <div class="leaf-particle text-2xl" style="left: 45%; animation-delay: 4s;">🌿</div>
+    <div class="leaf-particle text-4xl" style="left: 85%; animation-delay: 8s;">🌱</div>
+
+    <!-- Header / Navbar -->
+    <header class="bg-emerald-900/90 backdrop-blur-md border-b border-emerald-700/50 p-4 shadow-xl sticky top-0 z-40">
         <div class="container mx-auto flex items-center justify-between flex-wrap">
-            <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6">
+            <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6 group">
                 <span class="font-bold text-3xl tracking-tight text-white flex items-center">
-                    EcoCart <span class="ml-2 text-green-300">🌿</span>
+                    EcoCart <span class="ml-2 text-green-300 transform group-hover:rotate-12 transition-transform duration-300">🌿</span>
                 </span>
             </a>
+
             <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
-                <div class="text-lg lg:flex-grow">
+                <div class="text-base lg:flex-grow font-semibold">
                     <a href="{% url 'products:list' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6">Shop Eco</a>
                     <a href="{% url 'accounts:blog' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6">Blog</a>
                     <a href="{% url 'accounts:about_us' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6">About Us</a>
                     <a href="{% url 'accounts:contact' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200">Contact</a>
                 </div>
                 <div class="flex items-center">
-                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">0</span>
+                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 group">
+                        <i class="fas fa-shopping-cart transform group-hover:scale-110 transition duration-200"></i>
+                        <span id="cart-count" class="absolute -top-2.5 -right-2.5 bg-emerald-500 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-md">0</span>
                     </a>
                     {% if user.is_authenticated %}
-                        <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 mr-4">
+                        <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-base hover:text-green-200 mr-4 font-semibold">
                             <img src="{% if user.profile_picture and user.profile_picture.name != 'default.jpg' %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff{% endif %}"
                                  onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff';"
                                  alt="{{ user.username }} Profile Picture"
-                                 class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
+                                 class="w-8 h-8 rounded-full border-2 border-emerald-300 object-cover mr-2">
                             <span class="hidden sm:inline">{{ user.username }}</span>
                         </a>
-                        <a href="{% url 'accounts:logout' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800">Logout</a>
+                        <a href="{% url 'accounts:logout' %}" class="inline-block text-sm px-4 py-2 leading-none border border-emerald-300 rounded-full text-white hover:bg-white hover:text-emerald-900 font-semibold shadow">Logout</a>
                     {% else %}
-                        <a href="{% url 'accounts:login' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mr-2">Login</a>
-                        <a href="{% url 'accounts:register' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800">Register</a>
+                        <a href="{% url 'accounts:login' %}" class="inline-block text-sm px-4 py-2 leading-none border border-emerald-300 rounded-full text-white hover:bg-white hover:text-emerald-900 mr-2 font-semibold">Login</a>
+                        <a href="{% url 'accounts:register' %}" class="inline-block text-sm px-4 py-2 leading-none bg-emerald-600 rounded-full text-white hover:bg-emerald-500 font-semibold shadow">Register</a>
                     {% endif %}
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-8 text-center">
-        <h1 class="text-4xl font-bold text-gray-900 mb-6">Your Wishlist</h1>
-        <p class="text-xl text-gray-700">{{ message }}</p>
-        <p class="text-lg text-gray-600 mt-4">This page is under construction. Come back soon to manage your favorite eco-friendly products!</p>
-        <a href="{% url 'products:list' %}" class="mt-8 inline-block px-6 py-3 bg-emerald-600 text-white font-bold rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300">
-            Continue Shopping
-        </a>
-    </main>
+    <main class="flex-grow container mx-auto px-4 py-12 relative z-10 max-w-4xl">
+        <div class="bg-white/85 backdrop-blur-md rounded-3xl border border-emerald-100/80 shadow-2xl p-10 md:p-16 text-center space-y-6">
+            <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-4xl mx-auto shadow-inner border border-red-100 animate-pulse">
+                <i class="fas fa-heart"></i>
+            </div>
 
-    <footer class="bg-emerald-800 text-green-100 py-8 text-center shadow-inner mt-auto">
-        <div class="container mx-auto px-4">
-            <div class="text-sm">
-                &copy; {{ "now"|date:"Y" }} EcoCart <span class="ml-1">🌱</span> — Built with sustainability in mind.
+            <h1 class="text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight">Your Saved Eco Wishlist</h1>
+            <p class="text-gray-600 text-lg max-w-lg mx-auto leading-relaxed">{{ message|default:"You haven't saved any products to your wishlist yet." }}</p>
+
+            <div class="pt-4">
+                <a href="{% url 'products:list' %}" class="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-full shadow-xl hover:shadow-2xl transition duration-300 transform hover:scale-105 text-base">
+                    <i class="fas fa-leaf"></i> Explore Eco Products &rarr;
+                </a>
             </div>
         </div>
+    </main>
+
+    <footer class="bg-emerald-900 text-emerald-100 py-8 text-center border-t border-emerald-800 mt-auto">
+        <div class="container mx-auto px-4 text-sm font-medium">
+            &copy; {% now "Y" %} EcoCart 🌱 &mdash; Built with sustainability in mind.
+        </div>
     </footer>
+
     <script src="{% static 'products/js/product.js' %}"></script>
 </body>
 </html>

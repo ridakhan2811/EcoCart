@@ -182,33 +182,26 @@ window.toggleWishlist = toggleWishlist;
 
 // Function to generate HTML string for a single product card
 function createProductCardHTML(product) {
-    // Determine image URL with fallback
-    const imageUrl = product.image_url || PLACEHOLDER_IMG;
+    const imageUrl = product.image_url || (typeof PLACEHOLDER_IMG !== 'undefined' ? PLACEHOLDER_IMG : '/static/products/images/placeholder.jpg');
 
-    // Generate HTML for original price and discount if applicable
     const originalPriceHtml = product.is_discounted ?
-        `<span class="text-gray-400 line-through text-lg ml-2">₹${parseFloat(product.original_price).toFixed(2)}</span>
-         <span class="ml-auto text-red-500 font-semibold text-sm">${product.discount_percentage}% OFF</span>` : '';
+        `<span class="text-gray-400 line-through text-sm ml-2">₹${parseFloat(product.original_price).toFixed(2)}</span>
+         <span class="ml-auto bg-red-100 text-red-600 font-bold text-xs px-2 py-0.5 rounded-full">${product.discount_percentage}% OFF</span>` : '';
 
-    // Generate HTML for eco-friendly badge with tooltip if applicable
     const ecoFriendlyBadge = product.is_eco_friendly ? `
-        <div class="absolute top-2 right-2 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md tooltip-container">
-            Eco-Friendly 🌿
+        <div class="absolute top-3 right-3 bg-emerald-600/90 backdrop-blur-md text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg border border-emerald-400/30 flex items-center gap-1.5 transform group-hover:scale-105 transition-all">
+            <span class="animate-bounce">🌿</span> Eco-Friendly
             ${product.eco_impact_statement ? `<span class="tooltip-text">${product.eco_impact_statement}</span>` : ''}
         </div>` : '';
 
-    // Generate HTML for plastic impact bar if applicable
     const impactBarHtml = (product.plastic_saved_kg !== null && typeof product.plastic_saved_kg === 'number' && !isNaN(product.plastic_saved_kg) && product.plastic_saved_kg > 0) ? `
-        <div class="impact-bar">
-            <i class="fa-solid fa-seedling text-emerald-600"></i>
-            <span>Impact:</span> By buying this, you help save ${parseFloat(product.plastic_saved_kg).toFixed(2)}kg of plastic!
+        <div class="impact-bar bg-emerald-50/80 border border-emerald-200/60 rounded-full px-3 py-1.5 text-xs text-emerald-800 font-medium flex items-center gap-1.5 my-2">
+            <i class="fa-solid fa-seedling text-emerald-600 animate-pulse"></i>
+            <span>Saves:</span> <strong>${parseFloat(product.plastic_saved_kg).toFixed(2)}kg plastic</strong>
         </div>` : '';
 
-    // Generate HTML for stock info
     const stockInfoHtml = product.stock > 0 ?
-        `<p class="text-emerald-600 text-sm mt-3">In Stock: ${product.stock}</p>
-         ${product.stock < 10 ? `<p class="text-orange-500 text-xs mt-1">Only ${product.stock} left!</p>` : ''}` :
-        `<p class="text-red-600 text-sm mt-3">Out of Stock</p>`;
+        `<p class="text-emerald-700 text-xs font-semibold flex items-center mt-2"><i class="fas fa-check-circle mr-1 text-emerald-500"></i> In Stock (${product.stock})</p>
 
     // Generate HTML for star ratings
     const starsFull = '<i class="fas fa-star text-yellow-400 star-icon"></i>'.repeat(product.stars_full || 0);
@@ -216,50 +209,52 @@ function createProductCardHTML(product) {
     const starsEmpty = '<i class="far fa-star text-gray-300 star-icon"></i>'.repeat(product.stars_empty || 0);
 
     return `
-        <a href="/products/${product.id}/" class="product-card-link bg-white rounded-xl shadow-lg transform transition-all duration-500 ease-in-out hover:scale-105 hover:shadow-2xl overflow-hidden product-item"
+        <a href="/products/${product.id}/" class="product-card-link bg-white/90 backdrop-blur-md rounded-2xl border border-emerald-100/80 shadow-md hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden group product-item"
             data-category="${product.category_slug || 'uncategorized'}"
             data-price="${product.price}"
             data-rating="${product.rating}"
             data-name="${product.name.toLowerCase()}"
             data-eco-friendly="${product.is_eco_friendly}"
             data-product-id="${product.id}">
-            <div class="product-card">
-                <div class="block relative overflow-hidden w-full h-48 bg-gray-100 rounded-t-xl">
+            <div class="product-card flex flex-col h-full">
+                <div class="block relative overflow-hidden w-full h-52 bg-emerald-50/50">
                     <img src="${imageUrl}"
-                         onerror="this.onerror=null; this.src='${PLACEHOLDER_IMG}';"
+                         onerror="this.onerror=null; this.src='${typeof PLACEHOLDER_IMG !== 'undefined' ? PLACEHOLDER_IMG : '/static/products/images/placeholder.jpg'}';"
                          alt="${product.name}"
-                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                         class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110">
                     ${ecoFriendlyBadge}
-                    <i class="far fa-heart absolute top-2 left-2 text-2xl text-gray-300 hover:text-red-400 transition-colors duration-200 cursor-pointer wishlist-icon"
-                       data-product-id="${product.id}"></i>
+                    <button class="wishlist-icon absolute top-3 left-3 bg-white/80 backdrop-blur-md p-2 rounded-full shadow-md text-gray-400 hover:text-red-500 hover:scale-110 transition-all duration-200"
+                       data-product-id="${product.id}">
+                        <i class="far fa-heart text-lg"></i>
+                    </button>
                 </div>
-                <div class="p-6 flex-grow flex flex-col justify-between">
+                <div class="p-5 flex-grow flex flex-col justify-between">
                     <div>
-                        <h2 class="text-2xl font-semibold text-gray-900 mb-1 truncate" title="${product.name}">
+                        <h2 class="text-xl font-bold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 truncate" title="${product.name}">
                             ${product.name}
                         </h2>
-                        ${product.brand ? `<p class="text-gray-500 text-sm mb-2">${product.brand}</p>` : ''}
-                        <p class="text-gray-600 text-sm mb-4 line-clamp-3">${product.short_description || ''}</p>
+                        ${product.brand ? `<p class="text-emerald-700/70 text-xs font-semibold uppercase tracking-wider mb-1">${product.brand}</p>` : ''}
+                        <p class="text-gray-600 text-xs leading-relaxed line-clamp-2 mb-2">${product.short_description || ''}</p>
                         ${impactBarHtml}
                     </div>
-                    <div class="mt-4">
-                        <div class="flex items-center mb-2">
+                    <div class="mt-3">
+                        <div class="flex items-center text-xs mb-2">
                             ${starsFull}
                             ${starsHalf}
                             ${starsEmpty}
-                            <span class="ml-2 text-gray-600 text-sm">(${parseFloat(product.rating).toFixed(1)} / ${product.review_count} reviews)</span>
+                            <span class="ml-1.5 text-gray-500">(${parseFloat(product.rating).toFixed(1)} / ${product.review_count})</span>
                         </div>
-                        <div class="flex items-baseline justify-between mb-4">
-                            <span class="text-3xl font-bold text-emerald-700">₹${parseFloat(product.price).toFixed(2)}</span>
+                        <div class="flex items-baseline justify-between mb-3">
+                            <span class="text-2xl font-extrabold text-emerald-800">₹${parseFloat(product.price).toFixed(2)}</span>
                             ${originalPriceHtml}
                         </div>
-                        <button class="add-to-cart-btn w-full bg-emerald-600 text-white font-bold py-3 rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
+                        <button class="add-to-cart-btn w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group/btn"
                                 data-product-id="${product.id}"
                                 data-product-name="${product.name}"
                                 data-product-price="${product.price}"
                                 data-product-image-url="${imageUrl}"
                                 ${product.stock === 0 ? 'disabled' : ''}>
-                            Add to Cart
+                            <i class="fas fa-shopping-cart text-sm transition-transform group-hover/btn:scale-110"></i> Add to Cart 🌱
                         </button>
                         ${stockInfoHtml}
                     </div>

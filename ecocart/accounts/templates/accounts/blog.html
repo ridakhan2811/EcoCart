@@ -1,406 +1,166 @@
-{% load static %} {# IMPORTANT: Keep this load static tag #}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoCart | Our Eco-Blog</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Eco-Blog | EcoCart 🌿</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Outfit for Headings, Inter for Body -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
+    
     <style>
-        /* Base styles */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1A4A37; /* Lighter Dark Green for body background! */
-            color: #FFFFFF; /* Changed body text color to white for readability on dark background */
-            line-height: 1.6;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
         }
-
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Outfit', sans-serif;
-        }
-
-        /* Navbar styling - COPIED for this standalone page */
-        .navbar {
-            background-color: #0F3F2D; /* Deep Forest Green for navbar (kept darker) */
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        .leaf-particle {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000; /* High z-index to ensure it's always on top */
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.25;
+            animation: floatLeaf 15s linear infinite;
         }
-        .navbar .logo {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #A7F3D0; /* Lighter green for logo */
-            display: flex;
-            align-items: center;
-            letter-spacing: -0.025em;
-        }
-        .navbar .logo span {
-            margin-right: 0.75rem;
-            font-size: 1.5em;
-        }
-        .navbar .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-        .navbar .nav-links a {
-            color: #D1FAE5; /* Pale Mint Green for links */
-            font-weight: 500;
-            text-decoration: none;
-            transition: color 0.3s ease-in-out, transform 0.2s ease-in-out;
-            white-space: nowrap;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-        }
-        .navbar .nav-links a:hover {
-            color: #34D399; /* EcoCart Green on hover */
-            background-color: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-        }
-
-        /* Blog Page Specific Styles */
-        .blog-container {
-            background-color: #FFFFFF; /* White background for the content area */
-            padding: 3.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -3px rgba(0, 0, 0, 0.08);
-            width: 100%;
-            max-width: 1000px; /* Max width for blog content */
-            margin-top: 7rem; /* Space from fixed navbar */
-            margin-bottom: 3rem;
-            box-sizing: border-box;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .blog-heading {
-            font-size: 3rem;
-            font-weight: 700;
-            color: #34D399; /* EcoCart Green */
-            text-align: center;
-            margin-bottom: 2.5rem;
-            letter-spacing: -0.03em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-        }
-
-        .blog-intro {
-            font-size: 1.15rem;
-            text-align: center;
-            margin-bottom: 3rem;
-            color: #36454F; /* Keeping this as charcoal as it's within white container */
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .blog-post-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid for posts */
-            gap: 2.5rem; /* Space between blog posts */
-            justify-content: center;
-        }
-
-        .blog-post-card {
-            background: #F8FDF9; /* Very light green tint for cards */
-            border-radius: 0.75rem; /* Rounded corners */
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Subtle shadow */
-            padding: 1.5rem;
-            border: 1px solid #E0F2E5; /* Pale Mint Green border */
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-            overflow: hidden; /* Ensure content stays within card during animation */
-            cursor: pointer;
-
-            /* Initial hidden state for scroll animation */
-            opacity: 0;
-            transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 1.2s ease-out, box-shadow 0.3s ease, background-color 0.3s ease;
-            will-change: transform, opacity;
-        }
-
-        /* Specific animation directions */
-        .blog-post-card.from-bottom { transform: translateY(50px); }
-        .blog-post-card.from-left { transform: translateX(-50px); }
-        .blog-post-card.from-right { transform: translateX(50px); }
-
-        .blog-post-card.fade-in-visible {
-            opacity: 1;
-            transform: translate(0, 0); /* Move to original position */
-        }
-
-        .blog-post-card:hover {
-            background-color: #EBFEEA; /* Lighter, slightly greener tint on hover */
-            transform: translateY(-8px); /* Lift on hover */
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Stronger shadow on hover */
-        }
-
-        .blog-post-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .blog-post-card .category {
-            font-size: 0.9rem;
-            color: #34D399; /* EcoCart Green for category */
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-        }
-
-        .blog-post-card h3 {
-            font-size: 1.75rem;
-            color: #0F3F2D; /* Deep Forest Green */
-            margin-bottom: 0.75rem;
-            line-height: 1.3;
-            min-height: 4.5rem; /* Ensure consistent height for titles */
-        }
-
-        .blog-post-card p.summary {
-            font-size: 1rem;
-            color: #555; /* Keeping this as slightly darker gray for readability on light card */
-            margin-bottom: 1rem;
-            display: -webkit-box;
-            -webkit-line-clamp: 3; /* Limit summary to 3 lines */
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            min-height: 4.5rem; /* Consistent height for summaries */
-        }
-
-        .blog-post-card .read-more {
-            display: inline-block;
-            margin-top: auto; /* Push to bottom */
-            background-color: #34D399;
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 0.375rem;
-            text-decoration: none;
-            font-weight: 500;
-            transition: background-color 0.3s ease;
-        }
-        .blog-post-card .read-more:hover {
-            background-color: #059669;
-        }
-
-        /* Footer - COPIED for this standalone page */
-        footer {
-            background-color: #0F3F2D;
-            color: #A7F3D0;
-            text-align: center;
-            padding: 2rem;
-            margin-top: 4rem;
-            width: 100%;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 1rem;
-            }
-            .navbar .nav-links {
-                gap: 1rem;
-            }
-            .navbar .nav-links a {
-                font-size: 0.9rem;
-            }
-            .blog-container {
-                padding: 2rem;
-                margin-top: 6rem;
-            }
-            .blog-heading {
-                font-size: 2.25rem;
-            }
-            .blog-intro {
-                font-size: 1rem;
-            }
-            .blog-post-grid {
-                grid-template-columns: 1fr; /* Single column on tablets/mobiles */
-                gap: 1.5rem;
-            }
-            .blog-post-card h3 {
-                min-height: auto;
-            }
-            .blog-post-card p.summary {
-                min-height: auto;
-            }
-        }
-        @media (max-width: 640px) {
-            .navbar {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 0.75rem 1rem;
-            }
-            .navbar .logo {
-                margin-bottom: 0.5rem;
-            }
-            .navbar .nav-links {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-                width: 100%;
-            }
-            .navbar .nav-links a {
-                padding: 0.25rem 0;
-                width: 100%;
-                text-align: left;
-            }
-            .blog-container {
-                padding: 1.5rem;
-                margin-top: 5.5rem;
-                margin-left: 0.75rem;
-                margin-right: 0.75rem;
-            }
-            .blog-heading {
-                font-size: 1.75rem;
-            }
+        @keyframes floatLeaf {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center">
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50/60 via-green-50/40 to-teal-50/50 text-gray-800 relative overflow-x-hidden">
 
-    <!-- Navbar - Copied here for now -->
-    <nav class="navbar">
-        <div class="logo">
-            <span class="icon">🌱</span> EcoCart
+    <!-- Floating Leaf Background Particles -->
+    <div class="leaf-particle text-3xl" style="left: 10%; animation-delay: 0s;">🍃</div>
+    <div class="leaf-particle text-2xl" style="left: 40%; animation-delay: 5s;">🌿</div>
+    <div class="leaf-particle text-4xl" style="left: 80%; animation-delay: 9s;">🌱</div>
+
+    <!-- Header / Navbar -->
+    <header class="bg-emerald-900/90 backdrop-blur-md border-b border-emerald-700/50 p-4 shadow-xl sticky top-0 z-40">
+        <div class="container mx-auto flex items-center justify-between flex-wrap">
+            <a href="{% url 'accounts:home' %}" class="flex items-center text-white group">
+                <span class="font-bold text-3xl tracking-tight text-white flex items-center">
+                    EcoCart <span class="ml-2 text-green-300 transform group-hover:rotate-12 transition-transform duration-300">🌿</span>
+                </span>
+            </a>
+
+            <nav class="flex items-center space-x-6 text-base font-semibold">
+                <a href="{% url 'products:list' %}" class="text-white hover:text-emerald-200 transition duration-300">Shop Eco</a>
+                <a href="{% url 'accounts:blog' %}" class="text-emerald-200 hover:text-white transition duration-300 flex items-center gap-1">
+                    <i class="fas fa-newspaper text-sm"></i> Blog
+                </a>
+                <a href="{% url 'accounts:about_us' %}" class="text-white hover:text-emerald-200 transition duration-300">About Us</a>
+                <a href="{% url 'accounts:contact' %}" class="text-white hover:text-emerald-200 transition duration-300">Contact</a>
+                
+                {% if user.is_authenticated %}
+                    <a href="{% url 'accounts:profile' %}" class="flex items-center text-white hover:text-green-200 transition duration-300">
+                        <img src="{% if user.profile_picture and user.profile_picture.name != 'default.jpg' %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff{% endif %}"
+                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff';"
+                             alt="{{ user.username }}" class="w-8 h-8 rounded-full border-2 border-emerald-300 object-cover mr-2">
+                        <span>{{ user.username }}</span>
+                    </a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="px-4 py-1.5 border border-emerald-300 rounded-full text-white hover:bg-white hover:text-emerald-900 transition font-semibold text-sm">Login</a>
+                {% endif %}
+            </nav>
         </div>
-        <div class="nav-links">
-            {# CORRECTED: Link to products list page #}
-            <a href="{% url 'products:list' %}">Shop Eco</a>
-            {# This link points to this page, already correct with accounts:blog #}
-            <a href="{% url 'accounts:blog' %}">Blog</a>
-            {# CORRECTED: Added 'accounts:' namespace to all other accounts app URLs #}
-            <a href="{% url 'accounts:about_us' %}">About Us</a>
-            <a href="{% url 'accounts:contact' %}">Contact</a>
-            {% if user.is_authenticated %}
-                <a href="{% url 'accounts:profile' %}">Profile</a>
-                <a href="{% url 'accounts:logout' %}">Logout</a>
-            {% else %}
-                <a href="{% url 'accounts:login' %}">Login</a>
-                <a href="{% url 'accounts:register' %}">Register</a>
-            {% endif %}
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-12 relative z-10 max-w-6xl">
+        
+        <!-- Blog Title Header -->
+        <div class="text-center space-y-4 mb-12">
+            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full">
+                📚 Green Living & Sustainability Guides
+            </span>
+            <h1 class="text-4xl md:text-6xl font-black text-gray-900 tracking-tight">The EcoCart <span class="text-emerald-700">Journal</span></h1>
+            <p class="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+                Discover practical tips, eco-hacks, product guides, and environmental news to live more sustainably.
+            </p>
         </div>
-    </nav>
 
-    <div class="blog-container">
-        <h1 class="blog-heading"><span class="icon">📰</span> Our Eco-Blog: Insights & Inspiration</h1>
-        <p class="blog-intro">
-            Dive into our articles on sustainable living, eco-friendly tips, environmental news, and more.
-            Let's learn and grow together towards a greener future!
-        </p>
-
-        <div class="blog-post-grid">
-            {% for post in posts %}
-            <div class="blog-post-card {{ post.animation_class }}" data-delay="{{ forloop.counter0 }}">
-                {# IMPORTANT: Using {% static %} tag here now #}
-                <img src="{% static post.image_url %}" alt="{{ post.title }}" onerror="this.onerror=null; this.src='https://placehold.co/300x200/A7F3D0/0F3F2D?text=Image+Not+Found';" class="blog-post-img">
-                <div class="category">{{ post.category }}</div>
-                <h3>{{ post.title }}</h3>
-                <p class="summary">{{ post.summary }}</p>
-                {# This link needs to go to a detail page for the blog post. Assuming 'accounts:blog_detail' or similar #}
-                {# For now, I will use a placeholder '#' if you don't have a blog post detail URL #}
-                <a href="#" class="read-more">Read More &rarr;</a> 
+        <!-- Featured Article Card -->
+        <article class="bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden mb-12 flex flex-col md:flex-row items-center gap-8 relative">
+            <div class="md:w-1/2 space-y-4">
+                <span class="bg-emerald-500 text-emerald-950 font-bold text-xs px-3 py-1 rounded-full uppercase">Featured Article</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold leading-tight text-green-100">
+                    10 Simple Swaps for a Plastic-Free Kitchen in 2026
+                </h2>
+                <p class="text-emerald-200 text-sm leading-relaxed">
+                    Transforming your kitchen doesn't require a total overhaul. Start with these 10 eco-friendly substitutes that save money and reduce plastic footprint.
+                </p>
+                <div class="flex items-center gap-4 text-xs text-emerald-300 font-semibold pt-2">
+                    <span><i class="far fa-clock mr-1"></i> 5 min read</span>
+                    <span>•</span>
+                    <span><i class="far fa-calendar mr-1"></i> Aug 2026</span>
+                </div>
             </div>
-            {% endfor %}
+            <div class="md:w-1/2 w-full h-64 bg-white/10 rounded-2xl flex items-center justify-center text-7xl shadow-inner border border-white/10">
+                🍃
+            </div>
+        </article>
+
+        <!-- Articles Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            
+            <article class="bg-white/85 backdrop-blur-md rounded-3xl border border-emerald-100/80 shadow-xl overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition duration-300 flex flex-col justify-between p-6">
+                <div class="space-y-3">
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">Zero-Waste Guide</span>
+                    <h3 class="text-xl font-bold text-gray-900 hover:text-emerald-700 transition">How to Compost at Home Without Smells or Pests</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Learn the simple ratio of greens to browns for odor-free indoor and balcony composting.</p>
+                </div>
+                <div class="flex items-center justify-between text-xs text-gray-500 border-t border-gray-100 pt-4 mt-4">
+                    <span><i class="far fa-clock mr-1"></i> 4 min read</span>
+                    <a href="#" class="text-emerald-700 font-bold hover:underline">Read Article &rarr;</a>
+                </div>
+            </article>
+
+            <article class="bg-white/85 backdrop-blur-md rounded-3xl border border-emerald-100/80 shadow-xl overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition duration-300 flex flex-col justify-between p-6">
+                <div class="space-y-3">
+                    <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">Eco Fashion</span>
+                    <h3 class="text-xl font-bold text-gray-900 hover:text-emerald-700 transition">The Truth About Organic Cotton vs Conventional Fabrics</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Why switching to GOTS-certified organic cotton protects water supplies and soil biodiversity.</p>
+                </div>
+                <div class="flex items-center justify-between text-xs text-gray-500 border-t border-gray-100 pt-4 mt-4">
+                    <span><i class="far fa-clock mr-1"></i> 6 min read</span>
+                    <a href="#" class="text-emerald-700 font-bold hover:underline">Read Article &rarr;</a>
+                </div>
+            </article>
+
+            <article class="bg-white/85 backdrop-blur-md rounded-3xl border border-emerald-100/80 shadow-xl overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition duration-300 flex flex-col justify-between p-6">
+                <div class="space-y-3">
+                    <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">Sustainable Beauty</span>
+                    <h3 class="text-xl font-bold text-gray-900 hover:text-emerald-700 transition">Shampoo Bars 101: How to Transition Painlessly</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Ditch plastic shampoo bottles forever with our ultimate beginner guide to solid hair bars.</p>
+                </div>
+                <div class="flex items-center justify-between text-xs text-gray-500 border-t border-gray-100 pt-4 mt-4">
+                    <span><i class="far fa-clock mr-1"></i> 3 min read</span>
+                    <a href="#" class="text-emerald-700 font-bold hover:underline">Read Article &rarr;</a>
+                </div>
+            </article>
+
         </div>
 
-        <p class="closing-statement text-center mt-8">
-            Stay tuned for more updates and eco-friendly content! 💚
-        </p>
-    </div>
+        <!-- Newsletter Subscription Card -->
+        <div class="bg-gradient-to-r from-emerald-800 to-teal-800 text-white rounded-3xl p-8 md:p-12 shadow-2xl text-center space-y-4">
+            <span class="text-4xl">📩</span>
+            <h3 class="text-2xl md:text-3xl font-extrabold">Subscribe to Weekly Eco Tips</h3>
+            <p class="text-emerald-100 text-sm max-w-md mx-auto">Get zero-waste guides, exclusive eco deals, and green news delivered straight to your inbox.</p>
+            
+            <form onsubmit="event.preventDefault(); alert('Thank you for subscribing to EcoCart Journal! 🌱');" class="max-w-md mx-auto flex gap-2">
+                <input type="email" placeholder="Enter your email" required class="w-full px-4 py-3 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
+                <button type="submit" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold rounded-xl text-sm transition">Subscribe</button>
+            </form>
+        </div>
 
-    <!-- Firebase SDK Imports (for consistency, not directly used by this static page) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    </main>
 
-        // IMPORTANT: These global variables are provided by the Canvas environment.
-        // DO NOT remove or modify these lines.
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? initialAuthToken : null;
+    <!-- Footer -->
+    <footer class="bg-emerald-900 text-emerald-100 py-8 text-center border-t border-emerald-800 mt-auto">
+        <div class="container mx-auto px-4 text-sm font-medium">
+            &copy; {% now "Y" %} EcoCart 🌱 &mdash; Built with sustainability in mind.
+        </div>
+    </footer>
 
-        let app;
-        let auth;
-        let db;
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-
-            async function authenticateFirebase() {
-                try {
-                    if (auth && initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                        console.log("Signed in with custom token.");
-                    } else if (auth) {
-                        await signInAnonymously(auth);
-                        console.log("Signed in anonymously.");
-                    } else {
-                        console.error("Auth object not initialized.");
-                    }
-                } catch (error) {
-                    console.error("Firebase authentication failed:", error);
-                }
-            }
-            authenticateFirebase();
-
-        } catch (error) {
-            console.error("Firebase initialization failed:", error);
-        }
-
-        // --- Scroll Reveal Animation Logic ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const blogPostCards = document.querySelectorAll('.blog-post-card');
-
-            const observerOptions = {
-                root: null, // viewport as the root
-                rootMargin: '0px',
-                threshold: 0.1 // Trigger when 10% of the item is visible
-            };
-
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        // Apply animation and a slight delay based on card index
-                        const delay = parseInt(entry.target.dataset.delay) * 100; // 100ms delay per card
-                        setTimeout(() => {
-                            entry.target.classList.add('fade-in-visible');
-                        }, delay);
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, observerOptions);
-
-            // Observe each blog post card
-            blogPostCards.forEach(card => {
-                observer.observe(card);
-            });
-        });
-    </script>
 </body>
 </html>

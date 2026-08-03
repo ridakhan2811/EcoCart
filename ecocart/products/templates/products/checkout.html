@@ -143,15 +143,19 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50/60 via-green-50/40 to-teal-50/50 text-gray-800 relative overflow-x-hidden">
+
+    <!-- Floating Leaf Background Particles -->
+    <div class="leaf-particle text-2xl" style="left: 15%; animation-delay: 0s;">🍃</div>
+    <div class="leaf-particle text-xl" style="left: 45%; animation-delay: 5s;">🌿</div>
+    <div class="leaf-particle text-3xl" style="left: 80%; animation-delay: 8s;">🌱</div>
 
     {# START OF HEADER/NAV BAR CONTENT #}
-    <header id="main-navbar" class="bg-emerald-800 p-4 shadow-lg sticky top-0 z-40 transition-all duration-300 ease-in-out">
+    <header id="main-navbar" class="bg-emerald-900/90 backdrop-blur-md border-b border-emerald-700/50 p-4 shadow-xl sticky top-0 z-40 transition-all duration-300">
         <div class="container mx-auto flex items-center justify-between flex-wrap">
-            {# Left side of navbar: EcoCart Logo #}
-            <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6">
+            <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6 group">
                 <span class="font-bold text-3xl tracking-tight text-white flex items-center">
-                    EcoCart <span class="ml-2 text-green-300">🌿</span>
+                    EcoCart <span class="ml-2 text-green-300 transform group-hover:rotate-12 transition-transform duration-300">🌿</span>
                 </span>
             </a>
 
@@ -162,44 +166,42 @@
             </div>
 
             <div id="nav-content" class="w-full block flex-grow lg:flex lg:items-center lg:w-auto hidden">
-                <div class="text-lg lg:flex-grow">
-                    <a href="{% url 'products:list' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                <div class="text-lg lg:flex-grow font-medium">
+                    <a href="{% url 'products:list' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300">
                         Shop Eco
                     </a>
-                    <a href="{% url 'accounts:blog' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                    <a href="{% url 'accounts:blog' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300">
                         Blog
                     </a>
-                    <a href="{% url 'accounts:about_us' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                    <a href="{% url 'accounts:about_us' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300">
                         About Us
                     </a>
-                    <a href="{% url 'accounts:contact' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 transition duration-300 ease-in-out">
+                    <a href="{% url 'accounts:contact' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 transition duration-300">
                         Contact
                     </a>
                 </div>
                 <div class="flex items-center">
-                    {# Cart Icon and Count #}
-                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">0</span>
+                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0 group">
+                        <i class="fas fa-shopping-cart transform group-hover:scale-110 transition duration-200"></i>
+                        <span id="cart-count" class="absolute -top-2.5 -right-2.5 bg-emerald-500 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-md">0</span>
                     </a>
 
                     {% if user.is_authenticated %}
-                        {# Profile Picture and Name moved to the right #}
-                        <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 ease-in-out mr-4 mt-4 lg:mt-0">
+                        <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 mr-4 mt-4 lg:mt-0">
                             <img src="{% if user.profile_picture and user.profile_picture.name != 'default.jpg' %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff{% endif %}"
                                  onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff';"
                                  alt="{{ user.username }} Profile Picture"
-                                 class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
-                            <span class="hidden sm:inline">{{ user.username }}</span>
+                                 class="w-8 h-8 rounded-full border-2 border-emerald-300 object-cover mr-2 shadow">
+                            <span class="hidden sm:inline font-semibold">{{ user.username }}</span>
                         </a>
-                        <a href="{% url 'accounts:logout' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                        <a href="{% url 'accounts:logout' %}" class="inline-block text-sm px-4 py-2 leading-none border border-emerald-300 rounded-full text-white hover:bg-white hover:text-emerald-900 mt-4 lg:mt-0 transition duration-300 font-semibold shadow">
                             Logout
                         </a>
                     {% else %}
-                        <a href="{% url 'accounts:login' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out mr-2">
+                        <a href="{% url 'accounts:login' %}" class="inline-block text-sm px-4 py-2 leading-none border border-emerald-300 rounded-full text-white hover:bg-white hover:text-emerald-900 mt-4 lg:mt-0 transition duration-300 mr-2 font-semibold">
                             Login
                         </a>
-                        <a href="{% url 'accounts:register' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                        <a href="{% url 'accounts:register' %}" class="inline-block text-sm px-4 py-2 leading-none bg-emerald-600 rounded-full text-white hover:bg-emerald-500 mt-4 lg:mt-0 transition duration-300 font-semibold shadow">
                             Register
                         </a>
                     {% endif %}
@@ -207,12 +209,29 @@
             </div>
         </div>
     </header>
-    {# END OF HEADER/NAV BAR CONTENT #}
 
-    <main class="flex-grow container mx-auto px-4 py-8">
-        <h1 class="text-4xl font-bold text-center text-gray-900 mb-10 tracking-tight">Secure Checkout</h1>
+    <main class="flex-grow container mx-auto px-4 py-8 relative z-10">
+        <!-- Step Progress Indicator -->
+        <div class="max-w-xl mx-auto mb-10 flex items-center justify-between text-sm font-bold text-gray-500">
+            <div class="flex items-center text-emerald-700">
+                <span class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center mr-2 shadow">1</span>
+                <span>Cart</span>
+            </div>
+            <div class="h-1 flex-grow mx-4 bg-emerald-500 rounded"></div>
+            <div class="flex items-center text-emerald-800 font-extrabold">
+                <span class="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center mr-2 shadow ring-4 ring-emerald-200">2</span>
+                <span>Checkout</span>
+            </div>
+            <div class="h-1 flex-grow mx-4 bg-gray-200 rounded"></div>
+            <div class="flex items-center text-gray-400">
+                <span class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center mr-2">3</span>
+                <span>Invoice</span>
+            </div>
+        </div>
 
-        <div class="checkout-container bg-white p-8 rounded-lg shadow-xl">
+        <h1 class="text-3xl md:text-5xl font-extrabold text-center text-gray-900 mb-10 tracking-tight">Secure Eco Checkout 🔒</h1>
+
+        <div class="checkout-container bg-white/85 backdrop-blur-md p-8 md:p-10 rounded-3xl border border-emerald-100/80 shadow-2xl">
             {# Left Column: Billing & Shipping Address #}
             <section>
                 <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-4">Shipping Information</h2>

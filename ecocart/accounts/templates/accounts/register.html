@@ -2,346 +2,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>EcoCart | Register</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join EcoCart | Create Account 🌿</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
     <style>
-        /* Basic styling for form fields to match existing design */
-        .form-box label {
-            display: block;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #34D399; /* Changed label color to match "Join EcoCart Today!" */
+        body { font-family: 'Poppins', sans-serif; }
+        .leaf-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.25;
+            animation: floatLeaf 15s linear infinite;
         }
-        /* Ensure these styles apply to all relevant input types and selects/textareas */
-        .form-box input[type="text"],
-        .form-box input[type="email"],
-        .form-box input[type="password"],
-        .form-box input[type="file"],
-        .form-box select,
-        .form-box textarea,
-        /* Explicitly target inputs with the 'form-control' class */
-        .form-box .form-control { /* Added this rule */
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box; /* Include padding in width */
-            font-size: 1rem;
-        }
-        .password-wrap {
-            position: relative;
-        }
-        .password-wrap input {
-            padding-right: 40px; /* Space for the eye icon */
-        }
-        .password-wrap .fas {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #888;
-        }
-        .form-box textarea {
-            resize: vertical; /* Allow vertical resizing */
-            min-height: 80px;
-        }
-
-        /* Styling for Password Requirements section */
-        .password-requirements {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f0fdf4; /* Very light green background */
-            border: 1px solid #d1fae5; /* Light green border */
-            border-radius: 8px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .password-requirements p {
-            font-weight: 600;
-            color: #065f46; /* Darker green for heading */
-            margin-bottom: 10px;
-        }
-        .password-requirements ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .password-requirements li {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            color: #333; /* Default text color */
-        }
-        .password-requirements li i {
-            font-size: 1.1em;
-            width: 20px; /* Fixed width for icon */
-            text-align: center;
-            margin-right: 8px; /* Space between icon and text */
-        }
-        .password-requirements li.text-red-500 {
-            color: #ef4444; /* Tailwind red-500 */
-        }
-        .password-requirements li.text-green-500 {
-            color: #22c55e; /* Tailwind green-500 */
-        }
-        .error-messages {
-            color: #ef4444;
-            font-size: 0.875rem;
-            margin-top: 5px;
-            margin-bottom: 10px;
+        @keyframes floatLeaf {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50/60 via-green-50/40 to-teal-50/50 text-gray-800 relative overflow-x-hidden">
 
-    <nav class="navbar">
-        <div class="brand">EcoCart 🌿</div>
-        <div class="nav-links">
-            <a href="{% url 'products:list' %}">Shop Eco</a>
-            <a href="{% url 'accounts:blog' %}">Blog</a> 
-            <a href="{% url 'accounts:about_us' %}">About Us</a> 
-            <a href="{% url 'accounts:contact' %}">Contact</a> 
-            <a href="{% url 'accounts:login' %}">Log In</a>
+    <!-- Floating Leaf Background Particles -->
+    <div class="leaf-particle text-3xl" style="left: 10%; animation-delay: 0s;">🍃</div>
+    <div class="leaf-particle text-2xl" style="left: 40%; animation-delay: 4s;">🌿</div>
+    <div class="leaf-particle text-4xl" style="left: 80%; animation-delay: 8s;">🌱</div>
+
+    <!-- Header / Navbar -->
+    <header class="bg-emerald-900/90 backdrop-blur-md border-b border-emerald-700/50 p-4 shadow-xl sticky top-0 z-40">
+        <div class="container mx-auto flex items-center justify-between">
+            <a href="{% url 'accounts:home' %}" class="flex items-center text-white group">
+                <span class="font-bold text-3xl tracking-tight text-white flex items-center">
+                    EcoCart <span class="ml-2 text-green-300 transform group-hover:rotate-12 transition-transform duration-300">🌿</span>
+                </span>
+            </a>
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'products:list' %}" class="text-white hover:text-emerald-200 font-semibold text-sm">Shop Eco</a>
+                <a href="{% url 'accounts:login' %}" class="px-4 py-1.5 border border-emerald-300 rounded-full text-white hover:bg-white hover:text-emerald-900 transition font-semibold text-sm">Log In</a>
+            </div>
         </div>
-    </nav>
+    </header>
 
-    <div class="outer-box">
-        <div class="form-box">
-            <h1>Join EcoCart Today!</h1>
-            <p class="tagline">Create your account and start your sustainable shopping 🌱</p>
+    <main class="flex-grow container mx-auto px-4 py-12 flex items-center justify-center relative z-10 max-w-xl">
+        <div class="w-full bg-white/85 backdrop-blur-md p-8 md:p-10 rounded-3xl border border-emerald-100/80 shadow-2xl space-y-6">
+            
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-inner">
+                    🌱
+                </div>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Join EcoCart Today</h1>
+                <p class="text-gray-600 text-sm">Create your account and start your sustainable journey 🌱</p>
+            </div>
 
-            <form method="POST" enctype="multipart/form-data"> {# IMPORTANT: Add enctype for file uploads #}
+            <form method="POST" enctype="multipart/form-data" class="space-y-4">
                 {% csrf_token %}
 
-                {# Display non-field errors if any #}
                 {% if form.non_field_errors %}
-                    <div class="error-messages">
-                        {% for error in form.non_field_errors %}
-                            <p>{{ error }}</p>
-                        {% endfor %}
+                    <div class="p-3 bg-red-100 border border-red-200 text-red-700 text-xs font-semibold rounded-xl text-center">
+                        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
                     </div>
                 {% endif %}
 
-                {# Username Field #}
-                <label for="{{ form.username.id_for_label }}">Choose a Username</label>
-                {{ form.username }}
-                {% if form.username.errors %}
-                    <div class="error-messages">
-                        {% for error in form.username.errors %}<p>{{ error }}</p>{% endfor %}
-                    </div>
-                {% endif %}
-
-                {# Email Field #}
-                <label for="{{ form.email.id_for_label }}">Your Email Address</label>
-                {{ form.email }}
-                {% if form.email.errors %}
-                    <div class="error-messages">
-                        {% for error in form.email.errors %}<p>{{ error }}</p>{% endfor %}
-                    </div>
-                {% endif %}
-
-                {# First Name Field - MANUAL RENDERING WITH CLASS #}
-                <label for="{{ form.first_name.id_for_label }}">First Name</label>
-                <input type="text" name="{{ form.first_name.name }}" id="{{ form.first_name.id_for_label }}"
-                       value="{{ form.first_name.value|default:'' }}"
-                       class="form-control rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-200"
-                       {% if form.first_name.field.required %}required{% endif %} />
-                {% if form.first_name.errors %}
-                    <div class="error-messages">
-                        {% for error in form.first_name.errors %}<p>{{ error }}</p>{% endfor %}
-                    </div>
-                {% endif %}
-
-                {# Last Name Field - MANUAL RENDERING WITH CLASS #}
-                <label for="{{ form.last_name.id_for_label }}">Last Name</label>
-                <input type="text" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}"
-                       value="{{ form.last_name.value|default:'' }}"
-                       class="form-control rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-200"
-                       {% if form.last_name.field.required %}required{% endif %} />
-                {% if form.last_name.errors %}
-                    <div class="error-messages">
-                        {% for error in form.last_name.errors %}<p>{{ error }}</p>{% endfor %}
-                    </div>
-                {% endif %}
-
-                {# Phone Field #}
-                <label for="{{ form.phone.id_for_label }}">Phone Number</label>
-                {{ form.phone }}
-                {% if form.phone.errors %}
-                    <div class="error-messages">
-                        {% for error in form.phone.errors %}<p>{{ error }}</p>{% endfor %}
-                    </div>
-                {% endif %}
-
-                {# Gender Field #}
-                <label for="{{ form.gender.id_for_label }}">Gender</label>
-                {{ form.gender }}
-                {% if form.gender.errors %}
-                    <div class="error-messages">
-                        {% for error in form.gender.errors %}<p>{{ error }}</p>{% endfor %}
-                    </div>
-                {% endif %}
-
-                {# Profile Picture Field #}
-                <label for="{{ form.profile_picture.id_for_label }}">Profile Picture</label>
-                {{ form.profile_picture }}
-                {% if form.profile_picture.errors %}
-                    <div class="error-messages">
-                        {% for error in form.profile_picture.errors %}<p>{{ error }}</p>{% endfor %}
-                    </div>
-                {% endif %}
-
-                {# Bio Field #}
-                <label for="{{ form.bio.id_for_label }}">Biography</label>
-                {{ form.bio }}
-                {% if form.bio.errors %}
-                    <div class="error-messages">
-                        {% for error in form.bio.errors %}<p>{{ error }}</p>{% endfor %}
-                    </div>
-                {% endif %}
-
-                {# Address Field #}
-                <label for="{{ form.address.id_for_label }}">Shipping Address</label>
-                {{ form.address }}
-                {% if form.address.errors %}
-                    <div class="error-messages">
-                        {% for error in form.address.errors %}<p>{{ error }}</p>{% endfor %}
-                    </div>
-                {% endif %}
-
-                {# Password Fields (using manual inputs for eye toggles) #}
-                <label for="password">Create Password</label>
-                <div class="password-wrap">
-                    {# FIX: Changed name="password" to name="password1" #}
-                    <input type="password" name="password1" id="password" placeholder="Your secret password" required />
-                    <i class="fas fa-eye" id="togglePassword1"></i>
-                </div>
-                {# Django form errors for password1 field #}
-                {% if form.password.errors %} {# Note: form.password refers to password1 in UserCreationForm #}
-                    <div class="error-messages">
-                        {% for error in form.password.errors %}<p>{{ error }}</p>{% endfor %}
-                    </div>
-                {% endif %}
-
-                {# Password Requirements Section #}
-                <div class="password-requirements">
-                    <p>For a strong password, dear EcoCartist, ensure it has:</p>
-                    <ul>
-                        <li id="length" class="requirement-item">
-                            <i class="fas fa-times-circle"></i>
-                            At least 8 characters
-                        </li>
-                        <li id="uppercase" class="requirement-item">
-                            <i class="fas fa-times-circle"></i>
-                            An uppercase letter (A-Z)
-                        </li>
-                        <li id="lowercase" class="requirement-item">
-                            <i class="fas fa-times-circle"></i>
-                            A lowercase letter (a-z)
-                        </li>
-                        <li id="number" class="requirement-item">
-                            <i class="fas fa-times-circle"></i>
-                            A number (0-9)
-                        </li>
-                        <li id="special" class="requirement-item">
-                            <i class="fas fa-times-circle"></i>
-                            A special character (!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)
-                        </li>
-                    </ul>
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Choose Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}<p class="text-red-500 text-xs mt-1">{% for e in form.username.errors %}{{ e }}{% endfor %}</p>{% endif %}
                 </div>
 
-
-                <label for="confirm_password">Confirm Password</label>
-                <div class="password-wrap">
-                    <input type="password" name="password2" id="confirm_password" placeholder="Repeat your password" required />
-                    <i class="fas fa-eye" id="togglePassword2"></i>
+                <div>
+                    <label for="{{ form.email.id_for_label }}" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Email Address</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<p class="text-red-500 text-xs mt-1">{% for e in form.email.errors %}{{ e }}{% endfor %}</p>{% endif %}
                 </div>
-                {# Django form errors for password2 field #}
-                {% if form.password2.errors %}
-                    <div class="error-messages">
-                        {% for error in form.password2.errors %}<p>{{ error }}</p>{% endfor %}
-                    </div>
-                {% endif %}
 
-                <button type="submit" class="login-btn">Register Account</button>
-                <a href="{% url 'accounts:login' %}" class="forgot-btn">Already have an account? Log In</a>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.first_name.id_for_label }}" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">First Name</label>
+                        <input type="text" name="{{ form.first_name.name }}" id="{{ form.first_name.id_for_label }}" value="{{ form.first_name.value|default:'' }}"
+                               class="w-full px-4 py-2.5 bg-white border border-emerald-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label for="{{ form.last_name.id_for_label }}" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Last Name</label>
+                        <input type="text" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}" value="{{ form.last_name.value|default:'' }}"
+                               class="w-full px-4 py-2.5 bg-white border border-emerald-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.phone.id_for_label }}" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Phone Number</label>
+                    {{ form.phone }}
+                </div>
+
+                <div>
+                    <label for="{{ form.profile_picture.id_for_label }}" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Profile Picture (Optional)</label>
+                    {{ form.profile_picture }}
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-[1.02] text-base">
+                    Register Account 🌱
+                </button>
             </form>
 
+            <div class="text-center pt-2 border-t border-gray-100">
+                <p class="text-xs text-gray-600">Already registered on EcoCart?</p>
+                <a href="{% url 'accounts:login' %}" class="text-emerald-700 font-bold text-sm hover:underline inline-block mt-1">Log in here &rarr;</a>
+            </div>
+
         </div>
-    </div>
+    </main>
 
-    <script>
-        // JavaScript for password toggles
-        const toggle1 = document.getElementById('togglePassword1');
-        const passwordField1 = document.getElementById('password');
-
-        if (toggle1 && passwordField1) {
-            toggle1.addEventListener('click', function () {
-                const type = passwordField1.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordField1.setAttribute('type', type);
-                this.classList.toggle('fa-eye-slash');
-            });
-        }
-
-        const toggle2 = document.getElementById('togglePassword2');
-        const passwordField2 = document.getElementById('confirm_password');
-
-        if (toggle2 && passwordField2) {
-            toggle2.addEventListener('click', function () {
-                const type = passwordField2.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordField2.setAttribute('type', type);
-                this.classList.toggle('fa-eye-slash');
-            });
-        }
-
-        // JavaScript for Password Strength Feedback
-        const passwordInput = document.getElementById('password');
-        const lengthRequirement = document.getElementById('length');
-        const uppercaseRequirement = document.getElementById('uppercase');
-        const lowercaseRequirement = document.getElementById('lowercase');
-        const numberRequirement = document.getElementById('number');
-        const specialRequirement = document.getElementById('special');
-
-        const requirements = [
-            { element: lengthRequirement, regex: /.{8,}/ },
-            { element: uppercaseRequirement, regex: /[A-Z]/ },
-            { element: lowercaseRequirement, regex: /[a-z]/ },
-            { element: numberRequirement, regex: /[0-9]/ },
-            { element: specialRequirement, regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/ }
-        ];
-
-        function checkPasswordRequirements() {
-            const password = passwordInput.value;
-
-            requirements.forEach(req => {
-                const icon = req.element.querySelector('i');
-                req.element.classList.remove('text-red-500', 'text-green-500');
-                icon.classList.remove('fa-times-circle', 'fa-check-circle');
-
-                if (req.regex.test(password)) {
-                    req.element.classList.add('text-green-500');
-                    icon.classList.add('fa-check-circle');
-                    icon.classList.remove('fa-times-circle');
-                } else {
-                    req.element.classList.add('text-red-500');
-                    icon.classList.add('fa-times-circle');
-                    icon.classList.remove('fa-check-circle');
-                }
-            });
-        }
-
-        if (passwordInput) {
-            passwordInput.addEventListener('input', checkPasswordRequirements);
-            // Also check on page load if there's any pre-filled value (e.g., from browser autofill)
-            checkPasswordRequirements();
-        }
-    </script>
+    <footer class="bg-emerald-900 text-emerald-100 py-6 text-center border-t border-emerald-800 mt-auto text-xs font-medium">
+        &copy; {% now "Y" %} EcoCart 🌱 &mdash; Built with sustainability in mind.
+    </footer>
 
 </body>
 </html>

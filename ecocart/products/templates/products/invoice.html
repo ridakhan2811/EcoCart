@@ -31,14 +31,14 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50/60 via-green-50/40 to-teal-50/50 text-gray-800 relative overflow-x-hidden">
 
     <!-- Header / Navbar (hidden in print) -->
-    <header class="bg-emerald-800 p-4 shadow-lg sticky top-0 z-40 no-print">
+    <header class="bg-emerald-900/90 backdrop-blur-md border-b border-emerald-700/50 p-4 shadow-xl sticky top-0 z-40 no-print">
         <div class="container mx-auto flex items-center justify-between">
-            <a href="{% url 'accounts:home' %}" class="flex items-center text-white">
+            <a href="{% url 'accounts:home' %}" class="flex items-center text-white group">
                 <span class="font-bold text-3xl tracking-tight flex items-center">
-                    EcoCart <span class="ml-2 text-green-300">🌿</span>
+                    EcoCart <span class="ml-2 text-green-300 transform group-hover:rotate-12 transition-transform duration-300">🌿</span>
                 </span>
             </a>
             <div class="flex items-center space-x-4">

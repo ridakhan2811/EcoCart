@@ -156,18 +156,38 @@
             color: var(--color-emerald-600);
         }
 
+        /* Nature Floating Leaf Particles */
+        .leaf-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.25;
+            animation: floatLeaf 15s linear infinite;
+        }
+        @keyframes floatLeaf {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+        }
     </style>
     <link rel="stylesheet" href="{% static 'products/css/product.css' %}">
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50/60 via-green-50/40 to-teal-50/50 text-gray-800 relative overflow-x-hidden">
+
+    <!-- Floating Leaf Background Particles -->
+    <div class="leaf-particle text-2xl" style="left: 10%; animation-delay: 0s;">🍃</div>
+    <div class="leaf-particle text-xl" style="left: 25%; animation-delay: 3s;">🌿</div>
+    <div class="leaf-particle text-3xl" style="left: 60%; animation-delay: 6s;">🍃</div>
+    <div class="leaf-particle text-2xl" style="left: 85%; animation-delay: 9s;">🌱</div>
 
     {# START OF HEADER/NAV BAR CONTENT #}
-    <header id="main-navbar" class="bg-emerald-800 p-4 shadow-lg sticky top-0 z-40 transition-all duration-300 ease-in-out">
+    <header id="main-navbar" class="bg-emerald-900/90 backdrop-blur-md border-b border-emerald-700/50 p-4 shadow-xl sticky top-0 z-40 transition-all duration-300">
         <div class="container mx-auto flex items-center justify-between flex-wrap">
             {# Left side of navbar: EcoCart Logo #}
-            <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6">
+            <a href="{% url 'accounts:home' %}" class="flex items-center flex-shrink-0 text-white mr-6 group">
                 <span class="font-bold text-3xl tracking-tight text-white flex items-center">
-                    EcoCart <span class="ml-2 text-green-300">🌿</span>
+                    EcoCart <span class="ml-2 text-green-300 transform group-hover:rotate-12 transition-transform duration-300">🌿</span>
                 </span>
             </a>
 
@@ -178,45 +198,43 @@
             </div>
 
             <div id="nav-content" class="w-full block flex-grow lg:flex lg:items-center lg:w-auto hidden">
-                <div class="text-lg lg:flex-grow">
-                    <a href="{% url 'products:list' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
-                        Shop Eco
+                <div class="text-lg lg:flex-grow font-medium">
+                    <a href="{% url 'products:list' %}" class="block mt-4 lg:inline-block lg:mt-0 text-emerald-200 hover:text-white mr-6 transition duration-300">
+                        <i class="fas fa-leaf mr-1 text-sm"></i> Shop Eco
                     </a>
-                    {# Assuming these URLs exist in your 'accounts' app #}
-                    <a href="{% url 'accounts:blog' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                    <a href="{% url 'accounts:blog' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300">
                         Blog
                     </a>
-                    <a href="{% url 'accounts:about_us' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300 ease-in-out">
+                    <a href="{% url 'accounts:about_us' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 mr-6 transition duration-300">
                         About Us
                     </a>
-                    <a href="{% url 'accounts:contact' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 transition duration-300 ease-in-out">
+                    <a href="{% url 'accounts:contact' %}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-green-200 transition duration-300">
                         Contact
                     </a>
                 </div>
                 <div class="flex items-center">
-                    {# Cart Icon and Count - NEW ADDITION #}
-                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">0</span>
+                    {# Cart Icon and Count #}
+                    <a href="{% url 'accounts:cart_detail' %}" class="text-white text-xl relative mr-6 mt-4 lg:mt-0 group">
+                        <i class="fas fa-shopping-cart transform group-hover:scale-110 transition duration-200"></i>
+                        <span id="cart-count" class="absolute -top-2.5 -right-2.5 bg-emerald-500 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-md">0</span>
                     </a>
 
                     {% if user.is_authenticated %}
-                        {# Profile Picture and Name moved to the right #}
-                        <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 ease-in-out mr-4 mt-4 lg:mt-0">
+                        <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 mr-4 mt-4 lg:mt-0">
                             <img src="{% if user.profile_picture and user.profile_picture.name != 'default.jpg' %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff{% endif %}"
                                  onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff';"
                                  alt="{{ user.username }} Profile Picture"
-                                 class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
-                            <span class="hidden sm:inline">{{ user.username }}</span>
+                                 class="w-8 h-8 rounded-full border-2 border-emerald-300 object-cover mr-2 shadow">
+                            <span class="hidden sm:inline font-semibold">{{ user.username }}</span>
                         </a>
-                        <a href="{% url 'accounts:logout' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                        <a href="{% url 'accounts:logout' %}" class="inline-block text-sm px-4 py-2 leading-none border border-emerald-300 rounded-full text-white hover:bg-white hover:text-emerald-900 mt-4 lg:mt-0 transition duration-300 font-semibold shadow">
                             Logout
                         </a>
                     {% else %}
-                        <a href="{% url 'accounts:login' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out mr-2">
+                        <a href="{% url 'accounts:login' %}" class="inline-block text-sm px-4 py-2 leading-none border border-emerald-300 rounded-full text-white hover:bg-white hover:text-emerald-900 mt-4 lg:mt-0 transition duration-300 mr-2 font-semibold">
                             Login
                         </a>
-                        <a href="{% url 'accounts:register' %}" class="inline-block text-lg px-4 py-2 leading-none border border-white rounded-full text-white hover:bg-white hover:text-emerald-800 mt-4 lg:mt-0 transition duration-300 ease-in-out">
+                        <a href="{% url 'accounts:register' %}" class="inline-block text-sm px-4 py-2 leading-none bg-emerald-600 rounded-full text-white hover:bg-emerald-500 mt-4 lg:mt-0 transition duration-300 font-semibold shadow">
                             Register
                         </a>
                     {% endif %}
@@ -226,48 +244,51 @@
     </header>
     {# END OF HEADER/NAV BAR CONTENT #}
 
-    <main class="flex-grow container mx-auto px-4 py-8">
-        <p class="text-3xl md:text-4xl font-bold text-center text-emerald-700 mb-8 mt-4 tracking-tight leading-snug animate-fade-in">
-            {{ pick_up_line }}
-        </p>
-
-        <h1 class="text-4xl font-bold text-center text-gray-900 mb-10 tracking-tight">Discover Our Eco-Friendly Products</h1>
+    <main class="flex-grow container mx-auto px-4 py-8 relative z-10">
+        <div class="bg-gradient-to-r from-emerald-800 to-teal-800 text-white rounded-3xl p-8 mb-10 shadow-2xl relative overflow-hidden text-center">
+            <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl pointer-events-none">🌿</div>
+            <p class="text-2xl md:text-3xl font-bold text-green-200 mb-2 tracking-tight leading-snug">
+                {{ pick_up_line }}
+            </p>
+            <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight">Discover Sustainable Eco-Friendly Products</h1>
+            <p class="text-green-100 text-sm md:text-base mt-2 max-w-2xl mx-auto">Every purchase helps save plastic and reduces environmental impact 🌱</p>
+        </div>
 
         {# Filters & Sorting Section #}
-        <div class="mb-10 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-4 p-6 bg-white rounded-lg shadow-md animate-slide-up">
+        <div class="mb-10 flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-emerald-100/80 shadow-xl">
             {# Search Input #}
             <div class="relative w-full md:w-1/3">
-                <input type="text" id="product-search" placeholder="Search products..." value="{{ current_search }}"
-                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-300 ease-in-out text-lg">
-                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <input type="text" id="product-search" placeholder="Search eco products..." value="{{ current_search }}"
+                        class="w-full pl-10 pr-4 py-3 bg-white/90 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-300 text-base shadow-sm">
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
             </div>
 
             {# Category Filters #}
-            <div class="w-full md:w-auto flex flex-wrap justify-center md:justify-end gap-3 order-3 md:order-2">
-                <button class="filter-btn px-6 py-3 font-semibold rounded-lg shadow-sm active:shadow-inner transition duration-300 ease-in-out {% if current_category == 'all' %}bg-emerald-600 text-white{% else %}bg-emerald-100 text-emerald-800 hover:bg-emerald-200{% endif %}" data-filter="all">All</button>
+            <div class="w-full md:w-auto flex flex-wrap justify-center md:justify-end gap-2.5">
+                <button class="filter-btn px-5 py-2.5 font-semibold rounded-full shadow-sm transition duration-300 text-sm {% if current_category == 'all' %}bg-emerald-600 text-white shadow-md{% else %}bg-emerald-100/70 text-emerald-800 hover:bg-emerald-200{% endif %}" data-filter="all">All 🌱</button>
                 {% for category in categories %}
-                    <button class="filter-btn px-6 py-3 font-semibold rounded-lg shadow-sm active:shadow-inner transition duration-300 ease-in-out {% if current_category == category.slug %}bg-emerald-600 text-white{% else %}bg-emerald-100 text-emerald-800 hover:bg-emerald-200{% endif %}" data-filter="{{ category.slug }}">{{ category.name|title }}</button>
+                    <button class="filter-btn px-5 py-2.5 font-semibold rounded-full shadow-sm transition duration-300 text-sm {% if current_category == category.slug %}bg-emerald-600 text-white shadow-md{% else %}bg-emerald-100/70 text-emerald-800 hover:bg-emerald-200{% endif %}" data-filter="{{ category.slug }}">{{ category.name|title }}</button>
                 {% endfor %}
                 {# Eco-Friendly Only Filter #}
-                <label for="eco_friendly_checkbox" class="flex items-center space-x-2 cursor-pointer px-4 py-2 bg-emerald-100 text-emerald-800 font-semibold rounded-lg hover:bg-emerald-200 transition duration-300 ease-in-out shadow-sm active:shadow-inner">
-                    <input type="checkbox" id="eco_friendly_checkbox" class="form-checkbox h-5 w-5 text-emerald-600 rounded focus:ring-emerald-500" {% if eco_friendly_checked %}checked{% endif %}>
-                    <span>Eco-Friendly Only</span>
+                <label for="eco_friendly_checkbox" class="flex items-center space-x-2 cursor-pointer px-4 py-2 bg-emerald-100/70 text-emerald-800 font-semibold rounded-full hover:bg-emerald-200 transition duration-300 text-sm shadow-sm">
+                    <input type="checkbox" id="eco_friendly_checkbox" class="form-checkbox h-4 w-4 text-emerald-600 rounded focus:ring-emerald-500" {% if eco_friendly_checked %}checked{% endif %}>
+                    <span>Eco-Friendly Only 🌿</span>
                 </label>
             </div>
 
             {# Sorting Dropdown #}
-            <div class="relative w-full md:w-1/4 order-2 md:order-3">
+            <div class="relative w-full md:w-1/4">
                 <select id="sort-by"
-                             class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-300 ease-in-out text-lg appearance-none bg-white pr-8">
+                             class="block w-full px-4 py-3 bg-white/90 border border-emerald-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-300 text-base appearance-none pr-8">
                     <option value="default" {% if current_sort_by == 'default' %}selected{% endif %}>Sort By: Default</option>
                     <option value="price_asc" {% if current_sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
                     <option value="price_desc" {% if current_sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
                     <option value="rating_desc" {% if current_sort_by == 'rating_desc' %}selected{% endif %}>Rating: High to Low</option>
                     <option value="name_asc" {% if current_sort_by == 'name_asc' %}selected{% endif %}>Name: A-Z</option>
                 </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-emerald-700">
                     <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                 </div>
             </div>
@@ -275,9 +296,12 @@
 
         {# Product Grid Section #}
         <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {# Products will be loaded here by JavaScript #}
-            <div class="col-span-full text-center py-10">
-                <p class="text-xl text-gray-600">Loading products...</p>
+            {# Products loaded dynamically by product.js #}
+            <div class="col-span-full text-center py-16">
+                <i class="fas fa-spinner fa-spin text-4xl text-emerald-600 mb-3"></i>
+                <p class="text-xl text-emerald-800 font-medium">Loading eco-friendly items...</p>
+            </div>
+        </div>
             </div>
         </div>
 

@@ -431,23 +431,6 @@
             <span class="icon">🌿</span> EcoCart
         </a>
         {# Placeholder for right-aligned items if any, currently empty #}
-        <div></div>
-    </div>
-
-    {# SLIDING NAVIGATION LINKS CONTAINER #}
-    <div id="nav-links-container" class="nav-links-container">
-        <a href="{% url 'accounts:home' %}">Home</a>
-        <a href="{% url 'products:list' %}">Shop Eco</a>
-        <a href="{% url 'accounts:blog' %}">Blog</a>
-        <a href="{% url 'accounts:about_us' %}">About Us</a>
-        <a href="{% url 'accounts:contact' %}">Contact</a>
-        {% if user.is_authenticated %}
-            <a href="{% url 'accounts:profile' %}">Profile</a>
-            <a href="{% url 'accounts:logout' %}">Logout</a>
-        {% else %}
-            <a href="{% url 'accounts:login' %}">Login</a>
-            <a href="{% url 'accounts:register' %}">Register</a>
-        {% endif %}
     </div>
 
     {# OVERLAY FOR WHEN MENU IS OPEN #}

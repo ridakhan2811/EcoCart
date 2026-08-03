@@ -3,58 +3,127 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>EcoCart | Login</title>
+    <title>EcoCart | Secure Login 🌿</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .leaf-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.25;
+            animation: floatLeaf 15s linear infinite;
+        }
+        @keyframes floatLeaf {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50/60 via-green-50/40 to-teal-50/50 text-gray-800 relative overflow-x-hidden">
 
-    <nav class="navbar">
-        <div class="brand">EcoCart 🌿</div>
-        <div class="nav-links">
-            <a href="{% url 'products:list' %}">Shop Eco</a>
-            <a href="{% url 'accounts:register' %}">Join EcoCart</a>
+    <!-- Floating Leaf Background Particles -->
+    <div class="leaf-particle text-3xl" style="left: 15%; animation-delay: 0s;">🍃</div>
+    <div class="leaf-particle text-2xl" style="left: 45%; animation-delay: 5s;">🌿</div>
+    <div class="leaf-particle text-4xl" style="left: 80%; animation-delay: 9s;">🌱</div>
+
+    <!-- Header / Navbar -->
+    <header class="bg-emerald-900/90 backdrop-blur-md border-b border-emerald-700/50 p-4 shadow-xl sticky top-0 z-40">
+        <div class="container mx-auto flex items-center justify-between">
+            <a href="{% url 'accounts:home' %}" class="flex items-center text-white group">
+                <span class="font-bold text-3xl tracking-tight text-white flex items-center">
+                    EcoCart <span class="ml-2 text-green-300 transform group-hover:rotate-12 transition-transform duration-300">🌿</span>
+                </span>
+            </a>
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'products:list' %}" class="text-white hover:text-emerald-200 font-semibold text-sm">Shop Eco</a>
+                <a href="{% url 'accounts:register' %}" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-full text-white font-semibold text-sm shadow">Join EcoCart</a>
+            </div>
         </div>
-    </nav>
+    </header>
 
-    <div class="outer-box">
-        <div class="form-box">
-            <h1>Welcome Back to EcoCart</h1>
-            <p class="tagline">Log in to continue your sustainable journey 🌱</p>
+    <main class="flex-grow container mx-auto px-4 py-12 flex items-center justify-center relative z-10">
+        <div class="w-full max-w-md bg-white/85 backdrop-blur-md p-8 md:p-10 rounded-3xl border border-emerald-100/80 shadow-2xl space-y-6">
+            
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-inner">
+                    🌿
+                </div>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Welcome Back</h1>
+                <p class="text-gray-600 text-sm">Log in to continue your sustainable journey 🌱</p>
+            </div>
 
-            <form method="POST">
+            {% if messages %}
+                <div class="space-y-2">
+                    {% for message in messages %}
+                        <div class="p-3 bg-red-100 border border-red-200 text-red-700 text-xs font-semibold rounded-xl text-center">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="POST" class="space-y-4">
                 {% csrf_token %}
 
-                <label for="username">Your EcoCart Username</label>
-                <input type="text" name="username" placeholder="Enter your EcoCart username" required />
-
-                <label for="password">Your Password</label>
-                <div class="password-wrap">
-                    <input type="password" name="password" id="password" placeholder="Enter your secret password" required />
-                    <i class="fas fa-eye" id="togglePassword"></i>
+                <div>
+                    <label for="username" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Username</label>
+                    <input type="text" name="username" placeholder="Enter your username" required 
+                           class="w-full px-4 py-3 bg-white border border-emerald-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
 
-                <button type="submit" class="login-btn">Secure Login</button>
-                <a href="{% url 'accounts:forgot_password' %}" class="forgot-btn">Forgot Password?</a>
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="password" class="block text-xs font-bold uppercase tracking-wider text-gray-700">Password</label>
+                        <a href="{% url 'accounts:forgot_password' %}" class="text-xs text-emerald-700 hover:underline font-semibold">Forgot?</a>
+                    </div>
+                    <div class="relative">
+                        <input type="password" name="password" id="password" placeholder="Enter your password" required 
+                               class="w-full px-4 py-3 bg-white border border-emerald-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-10">
+                        <button type="button" id="togglePassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-[1.02] text-base">
+                    Secure Login 🌱
+                </button>
             </form>
 
+            <div class="text-center pt-2 border-t border-gray-100">
+                <p class="text-xs text-gray-600">Don't have an EcoCart account yet?</p>
+                <a href="{% url 'accounts:register' %}" class="text-emerald-700 font-bold text-sm hover:underline inline-block mt-1">Create an Account &rarr;</a>
+            </div>
+
         </div>
-    </div>
+    </main>
+
+    <footer class="bg-emerald-900 text-emerald-100 py-6 text-center border-t border-emerald-800 mt-auto text-xs font-medium">
+        &copy; {% now "Y" %} EcoCart 🌱 &mdash; Built with sustainability in mind.
+    </footer>
 
     <script>
         const toggle = document.getElementById('togglePassword');
         const password = document.getElementById('password');
 
-        if (toggle && password) { // Added a check to ensure elements exist before adding listener
+        if (toggle && password) {
             toggle.addEventListener('click', function () {
                 const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
                 password.setAttribute('type', type);
-                this.classList.toggle('fa-eye-slash'); // Toggles the eye icon
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-eye');
+                    icon.classList.toggle('fa-eye-slash');
+                }
             });
         }
     </script>
-
 </body>
 </html>
