@@ -31,54 +31,152 @@ function debounce(func, delay) {
     debounceTimer = setTimeout(func, delay);
 }
 
-// Function to show a temporary notification (e.g., "Product added to cart!")
-function showNotification(message) {
-    messageBox.textContent = message;
-    messageBox.classList.remove('hidden', 'opacity-0');
-    messageBox.classList.add('opacity-100');
-    setTimeout(() => {
-        messageBox.classList.remove('opacity-100');
-        messageBox.classList.add('opacity-0');
-        setTimeout(() => {
-            messageBox.classList.add('hidden');
-        }, 300); // Wait for fade-out transition
-    }, 3000); // Show for 3 seconds
-}
+// --- Cart Manager ---
+const Cart = {
+    STORAGE_KEY: 'ecocart_items',
 
-// Placeholder for updating cart count (client-side for now)
-function updateCartCount(newCount) {
-    const cartCountSpan = document.getElementById('cart-count');
-    if (cartCountSpan) {
-        // In a real application, you'd likely fetch this from a cart API or local storage
-        let currentCount = parseInt(cartCountSpan.textContent) || 0;
-        if (newCount !== undefined) {
-             cartCountSpan.textContent = newCount;
-        } else {
-             cartCountSpan.textContent = currentCount + 1; // Increment by 1
+    getItems() {
+        try {
+            const data = localStorage.getItem(this.STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.error('Error reading cart from localStorage', e);
+            return [];
         }
-    }
-}
+    },
 
-// Dummy addToCart function
+    saveItems(items) {
+        try {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+            this.updateCartCount();
+        } catch (e) {
+            console.error('Error saving cart to localStorage', e);
+        }
+    },
+
+    addItem(product) {
+        const items = this.getItems();
+        const existingIndex = items.findIndex(item => String(item.id) === String(product.id));
+
+        if (existingIndex > -1) {
+            items[existingIndex].quantity += (product.quantity || 1);
+        } else {
+            items.push({
+                id: String(product.id),
+                name: product.name,
+                price: parseFloat(product.price) || 0,
+                image_url: product.image_url || (typeof PLACEHOLDER_IMG !== 'undefined' ? PLACEHOLDER_IMG : '/static/products/images/placeholder.jpg'),
+                quantity: product.quantity || 1
+            });
+        }
+        this.saveItems(items);
+        showMessageBox(`"${product.name}" added to cart!`, 'success');
+    },
+
+    updateQuantity(productId, quantity) {
+        let items = this.getItems();
+        const index = items.findIndex(item => String(item.id) === String(productId));
+        if (index > -1) {
+            if (quantity <= 0) {
+                items.splice(index, 1);
+            } else {
+                items[index].quantity = quantity;
+            }
+            this.saveItems(items);
+        }
+    },
+
+    removeItem(productId) {
+        let items = this.getItems();
+        items = items.filter(item => String(item.id) !== String(productId));
+        this.saveItems(items);
+    },
+
+    clearCart() {
+        try {
+            localStorage.removeItem(this.STORAGE_KEY);
+            this.updateCartCount();
+        } catch (e) {
+            console.error('Error clearing cart', e);
+        }
+    },
+
+    updateCartCount() {
+        const items = this.getItems();
+        const totalCount = items.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
+        const cartCountSpans = document.querySelectorAll('#cart-count');
+        cartCountSpans.forEach(span => {
+            span.textContent = totalCount;
+        });
+    }
+};
+
+window.Cart = Cart;
+
+// Function to show a temporary message box toast
+function showMessageBox(message, type = 'success') {
+    const box = document.getElementById('message-box');
+    if (!box) {
+        console.log(`[Toast] ${type}: ${message}`);
+        return;
+    }
+    box.textContent = message;
+
+    box.classList.remove('bg-green-600', 'bg-red-600', 'bg-blue-600', 'bg-gray-700', 'hidden', 'opacity-0');
+    if (type === 'error') {
+        box.classList.add('bg-red-600');
+    } else if (type === 'info') {
+        box.classList.add('bg-blue-600');
+    } else {
+        box.classList.add('bg-green-600');
+    }
+
+    box.classList.add('show', 'opacity-100');
+
+    setTimeout(() => {
+        box.classList.remove('opacity-100', 'show');
+        box.classList.add('opacity-0');
+        setTimeout(() => {
+            box.classList.add('hidden');
+        }, 300);
+    }, 3000);
+}
+window.showMessageBox = showMessageBox;
+
+function showNotification(message) {
+    showMessageBox(message, 'info');
+}
+window.showNotification = showNotification;
+
+// Functional addToCart function
 function addToCart(buttonElement) {
     const productId = buttonElement.dataset.productId;
     const productName = buttonElement.dataset.productName;
     const productPrice = buttonElement.dataset.productPrice;
     const productImage = buttonElement.dataset.productImageUrl;
 
-    // In a real application, you'd send an AJAX request to your cart API to add the item
-    console.log(`Adding product "${productName}" (ID: ${productId}) to cart. Price: ${productPrice}`);
-    showNotification(`${productName} added to cart!`);
-    updateCartCount(); // Update client-side count
+    if (!productId) {
+        console.error('addToCart missing productId');
+        return;
+    }
+
+    Cart.addItem({
+        id: productId,
+        name: productName || 'Product',
+        price: productPrice || 0,
+        image_url: productImage || (typeof PLACEHOLDER_IMG !== 'undefined' ? PLACEHOLDER_IMG : '/static/products/images/placeholder.jpg'),
+        quantity: 1
+    });
 }
+window.addToCart = addToCart;
 
 // Dummy toggleWishlist function
 function toggleWishlist(element) {
-    element.classList.toggle('active'); // Toggles the red heart
+    element.classList.toggle('active');
     const action = element.classList.contains('active') ? 'added to' : 'removed from';
-    console.log(`Product ID: ${element.dataset.productId} ${action} wishlist.`);
-    showNotification(`Product ${action} wishlist!`);
+    showMessageBox(`Product ${action} wishlist!`, 'info');
 }
+window.toggleWishlist = toggleWishlist;
 
 // --- Product Rendering Logic ---
 

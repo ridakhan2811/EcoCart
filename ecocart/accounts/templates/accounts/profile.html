@@ -455,40 +455,40 @@
 
     <main>
         <div class="profile-card">
-            {# Profile Picture & Name (Now Centered) #}
-            <div class="profile-picture-container">
-                <img id="profile-pic-preview" src="{% if user_object.profile_picture %}{{ user_object.profile_picture.url }}{% else %}{% static 'accounts/images/default_profile.png' %}{% endif %}" alt="Profile Picture">
-            </div>
-            <label for="{{ form.profile_picture.id_for_label }}" class="action-button secondary text-base !max-w-xs cursor-pointer">
-                Update Profile Picture
-            </label>
-            <input type="file" name="{{ form.profile_picture.name }}" id="{{ form.profile_picture.id_for_label }}" style="display: none;" onchange="previewProfilePicture(event)">
-            {% if form.profile_picture.errors %}
-                <div class="error-messages text-center">
-                    {% for error in form.profile_picture.errors %}<p>{{ error }}</p>{% endfor %}
-                </div>
-            {% endif %}
-            <h2 class="profile-name mt-4">{{ user_object.username|capfirst }}</h2>
-
-            {# Greeting Section #}
-            <div class="greeting-section">
-                <h1>WELCOME ECOCARTIST!</h1>
-                <p>Your journey to a greener lifestyle starts here. Manage your profile and make a positive impact!</p>
-            </div>
-
-            {# Django Messages #}
-            {% if messages %}
-                <div id="message-display" class="message-box show">
-                    {% for message in messages %}
-                        <div class="{% if message.tags == 'success' %}message-success{% elif message.tags == 'error' %}message-error{% elif message.tags == 'info' %}message-info{% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            <form method="POST" enctype="multipart/form-data" class="space-y-4 w-full"> {# Added w-full to form #}
+            <form method="POST" enctype="multipart/form-data" class="space-y-4 w-full flex flex-col items-center">
                 {% csrf_token %}
+
+                {# Profile Picture & Name (Now Centered) #}
+                <div class="profile-picture-container">
+                    <img id="profile-pic-preview" src="{% if user_object.profile_picture and user_object.profile_picture.name != 'default.jpg' %}{{ user_object.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user_object.username }}&background=059669&color=fff{% endif %}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ user_object.username }}&background=059669&color=fff';" alt="Profile Picture">
+                </div>
+                <label for="{{ form.profile_picture.id_for_label }}" class="action-button secondary text-base !max-w-xs cursor-pointer">
+                    Update Profile Picture
+                </label>
+                <input type="file" name="{{ form.profile_picture.name }}" id="{{ form.profile_picture.id_for_label }}" style="display: none;" onchange="previewProfilePicture(event)">
+                {% if form.profile_picture.errors %}
+                    <div class="error-messages text-center">
+                        {% for error in form.profile_picture.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+                <h2 class="profile-name mt-4">{{ user_object.username|capfirst }}</h2>
+
+                {# Greeting Section #}
+                <div class="greeting-section">
+                    <h1>WELCOME ECOCARTIST!</h1>
+                    <p>Your journey to a greener lifestyle starts here. Manage your profile and make a positive impact!</p>
+                </div>
+
+                {# Django Messages #}
+                {% if messages %}
+                    <div id="message-display" class="message-box show">
+                        {% for message in messages %}
+                            <div class="{% if message.tags == 'success' %}message-success{% elif message.tags == 'error' %}message-error{% elif message.tags == 'info' %}message-info{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
                 <div class="form-grid">
                     {# Username Field (read-only) #}

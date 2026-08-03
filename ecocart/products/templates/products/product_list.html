@@ -203,8 +203,8 @@
                     {% if user.is_authenticated %}
                         {# Profile Picture and Name moved to the right #}
                         <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 ease-in-out mr-4 mt-4 lg:mt-0">
-                            <img src="{% if user.profile.profile_picture %}{{ user.profile.profile_picture.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
-                                 onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
+                            <img src="{% if user.profile_picture and user.profile_picture.name != 'default.jpg' %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff{% endif %}"
+                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff';"
                                  alt="{{ user.username }} Profile Picture"
                                  class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
                             <span class="hidden sm:inline">{{ user.username }}</span>

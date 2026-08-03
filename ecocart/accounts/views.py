@@ -181,12 +181,19 @@ def checkout_view(request):
     In a real application, this view would handle creating a Stripe PaymentIntent
     and passing its client_secret to the frontend.
     """
-    # Simulate a client secret. In a real app, this would come from your backend
-    # after creating a PaymentIntent with Stripe.
-    # For testing, you can use a dummy client secret or leave it empty for basic Stripe Elements demo.
-    # Example: client_secret = "pi_YOUR_PAYMENT_INTENT_CLIENT_SECRET_HERE"
     context = {
         'stripe_publishable_key': 'pk_test_TYooMQauvdEDq542VcVE8qPO', # Use Stripe's test publishable key
         'simulated_client_secret': 'seti_12345_secret_abc123', # Dummy client secret for frontend demo
     }
     return render(request, 'products/checkout.html', context)
+
+def invoice_view(request):
+    """
+    Renders the invoice page for completed orders.
+    Order details are populated client-side from sessionStorage.
+    """
+    context = {
+        'page_title': 'EcoCart - Order Invoice',
+    }
+    return render(request, 'products/invoice.html', context)
+

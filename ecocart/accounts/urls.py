@@ -18,5 +18,5 @@ urlpatterns = [
     path('forgot_password/', views.forgot_password_view, name='forgot_password'),
     path('cart/', views.cart_detail, name='cart_detail'),
     path('checkout/', views.checkout_view, name='checkout_view'), # NEW: Checkout page
-
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('invoice/', views.invoice_view, name='invoice_view'), # NEW: Invoice page
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

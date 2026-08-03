@@ -186,8 +186,8 @@
                     {% if user.is_authenticated %}
                         {# Profile Picture and Name moved to the right #}
                         <a href="{% url 'accounts:profile' %}" class="flex items-center text-white text-lg hover:text-green-200 transition duration-300 ease-in-out mr-4 mt-4 lg:mt-0">
-                            <img src="{% if user.profile.profile_picture %}{{ user.profile.profile_picture.url }}{% else %}{% static 'products/images/placeholder.jpg' %}{% endif %}"
-                                 onerror="this.onerror=null; this.src='{% static 'products/images/placeholder.jpg' %}';"
+                            <img src="{% if user.profile_picture and user.profile_picture.name != 'default.jpg' %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff{% endif %}"
+                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ user.username }}&background=059669&color=fff';"
                                  alt="{{ user.username }} Profile Picture"
                                  class="w-8 h-8 rounded-full border-2 border-white object-cover mr-2">
                             <span class="hidden sm:inline">{{ user.username }}</span>
@@ -571,39 +571,80 @@
             // --- END OF REAL BACKEND INTEGRATION EXAMPLE ---
 
 
-            // --- SIMULATED PAYMENT FOR DEMONSTRATION (NO REAL TRANSACTION) ---
-            // For demonstration, we'll simulate success/failure based on test card numbers
-            // without actually calling a backend or Stripe's API.
-            // This is purely client-side for visual and functional demo.
-            const { paymentMethod, error } = await stripe.createPaymentMethod({
-                type: 'card',
-                card: cardElement,
-                billing_details: {
-                    name: cardNameInput.value,
-                },
-            });
-
-            if (error) {
-                const errorDisplay = document.getElementById('card-errors');
-                errorDisplay.textContent = error.message;
-                showMessageBox(error.message, 'error');
-            } else {
-                const last4 = paymentMethod.card.last4;
-                if (last4 === '4242' || last4 === '5555') { // Simulate success for common test cards
-                    showMessageBox('Payment Successful! Your order has been placed. (SIMULATED)', 'success');
-                    Cart.clearCart(); // Clear cart on successful order
-                    setTimeout(() => {
-                        window.location.href = '{% url "accounts:home" %}'; // Redirect to home for now
-                    }, 2000);
-                } else { // Simulate failure for other test cards or invalid ones
-                    const errorMessage = 'Payment failed. Please try a different card. (SIMULATED)';
-                    document.getElementById('card-errors').textContent = errorMessage;
-                    showMessageBox(errorMessage, 'error');
-                }
+            // --- SIMULATED PAYMENT & INVOICE GENERATION ---
+            const shippingForm = document.getElementById('shipping-form');
+            if (shippingForm && !shippingForm.checkValidity()) {
+                shippingForm.reportValidity();
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Place Order <i class="fas fa-lock ml-2"></i>';
+                return;
             }
 
-            submitButton.disabled = false;
-            submitButton.innerHTML = 'Place Order <i class="fas fa-lock ml-2"></i>';
+            const cartItems = Cart.getItems();
+            if (!cartItems || cartItems.length === 0) {
+                showMessageBox('Your cart is empty. Add products before placing an order.', 'error');
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Place Order <i class="fas fa-lock ml-2"></i>';
+                return;
+            }
+
+            let last4 = '4242';
+            try {
+                const { paymentMethod, error } = await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                    billing_details: {
+                        name: cardNameInput.value || document.getElementById('full-name').value || 'Customer',
+                    },
+                });
+
+                if (!error && paymentMethod && paymentMethod.card) {
+                    last4 = paymentMethod.card.last4 || '4242';
+                }
+            } catch (stripeErr) {
+                console.warn('Stripe simulation fallback:', stripeErr);
+            }
+
+            const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shippingCost = (appliedPromoCode && validPromoCodes[appliedPromoCode.toUpperCase()]?.type === 'shipping') ? 0 : 50.00;
+            let discountAmount = 0;
+            if (appliedPromoCode) {
+                const codeInfo = validPromoCodes[appliedPromoCode.toUpperCase()];
+                if (codeInfo?.type === 'percentage') discountAmount = subtotal * codeInfo.value;
+                else if (codeInfo?.type === 'flat') discountAmount = codeInfo.value;
+            }
+            const grandTotal = Math.max(0, subtotal + shippingCost - discountAmount);
+
+            const orderData = {
+                orderId: 'ECO-' + Math.floor(100000 + Math.random() * 900000),
+                date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                customer: {
+                    name: document.getElementById('full-name').value || 'Customer',
+                    address1: document.getElementById('address-line1').value || '',
+                    address2: document.getElementById('address-line2').value || '',
+                    city: document.getElementById('city').value || '',
+                    state: document.getElementById('state').value || '',
+                    zip: document.getElementById('zip-code').value || '',
+                    country: document.getElementById('country').value || 'India',
+                    phone: document.getElementById('phone-number').value || ''
+                },
+                items: cartItems,
+                subtotal: subtotal,
+                shipping: shippingCost,
+                discount: discountAmount,
+                promoCode: appliedPromoCode,
+                total: grandTotal,
+                cardLast4: last4,
+                status: 'Paid'
+            };
+
+            sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
+            Cart.clearCart();
+
+            showMessageBox('Payment Successful! Generating your invoice...', 'success');
+            setTimeout(() => {
+                window.location.href = '{% url "accounts:invoice_view" %}';
+            }, 1000);
         });
 
         // Function to get CSRF token for Django AJAX calls (if you implement real backend)
