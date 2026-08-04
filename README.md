@@ -1,5 +1,7 @@
 # EcoCart 🌿🛒 — Sustainable E-Commerce & Plastic Offset Platform
 
+[![Live Website](https://img.shields.io/badge/Live_Demo-Visit_EcoCart-059669?style=for-the-badge&logo=vercel&logoColor=white)](https://ecocart-ecom-website.vercel.app/)
+
 **EcoCart** is a modern, nature-infused e-commerce application built to promote eco-friendly consumer habits, track environmental impact, and provide a seamless zero-waste shopping experience. 
 
 Featuring **glassmorphic UI aesthetics**, **floating leaf particle micro-animations**, **real-time plastic offset counters**, **resilient checkout flows**, and **printable order certificates**, EcoCart turns everyday shopping into a positive force for the planet.
