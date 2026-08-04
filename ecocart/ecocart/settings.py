@@ -31,7 +31,12 @@ ALLOWED_HOSTS = ['*', '.vercel.app', '127.0.0.1', 'localhost']
 # Ensure MEDIA_URL and MEDIA_ROOT are defined correctly for local & Vercel serverless
 MEDIA_URL = '/media/'
 if os.environ.get('VERCEL'):
-    MEDIA_ROOT = os.path.join('/tmp', 'media')
+    tmp_media = '/tmp/media'
+    orig_media = os.path.join(BASE_DIR, 'media')
+    if not os.path.exists(tmp_media) and os.path.exists(orig_media):
+        import shutil
+        shutil.copytree(orig_media, tmp_media, dirs_exist_ok=True)
+    MEDIA_ROOT = tmp_media
 else:
     MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -98,10 +103,20 @@ WSGI_APPLICATION = 'ecocart.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+if os.environ.get('VERCEL'):
+    tmp_db = '/tmp/db.sqlite3'
+    orig_db = os.path.join(BASE_DIR, 'db.sqlite3')
+    if not os.path.exists(tmp_db) and os.path.exists(orig_db):
+        import shutil
+        shutil.copyfile(orig_db, tmp_db)
+    db_path = tmp_db if os.path.exists(tmp_db) else orig_db
+else:
+    db_path = BASE_DIR / 'db.sqlite3'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': db_path,
     }
 }
 
