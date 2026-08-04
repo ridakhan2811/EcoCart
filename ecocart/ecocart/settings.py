@@ -28,9 +28,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*', '.vercel.app', '127.0.0.1', 'localhost']
 
-# Ensure MEDIA_URL and MEDIA_ROOT are defined once and correctly
+# Ensure MEDIA_URL and MEDIA_ROOT are defined correctly for local & Vercel serverless
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+if os.environ.get('VERCEL'):
+    MEDIA_ROOT = os.path.join('/tmp', 'media')
+else:
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 # Application definition
 
@@ -55,6 +58,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -66,10 +70,8 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'ecocart.urls'
 
 STATIC_URL = '/static/'
-# STATIC_ROOT is used for `collectstatic` in production, not typically for development serving
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-# STATICFILES_DIRS is for additional static files not within app's static folders
-# STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 
 TEMPLATES = [

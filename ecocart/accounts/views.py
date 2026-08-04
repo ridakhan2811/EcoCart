@@ -34,11 +34,15 @@ def register_view(request):
         print("request.FILES:", request.FILES)
         # --- END ENHANCED DEBUG PRINTS ---
 
-        # Pass request.FILES to handle profile_picture upload
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save()
-            # No automatic login after registration, redirect to login page instead
+            try:
+                user = form.save()
+            except (OSError, Exception) as e:
+                print(f"--- REGISTER VIEW: Storage write warning ({e}). Saving user without local file write. ---")
+                user = form.save(commit=False)
+                user.profile_picture = None
+                user.save()
             messages.success(request, f"Account created for {user.username}! Please log in.")
             print(f"--- REGISTER VIEW: Form is VALID. Redirecting to accounts:login for user {user.username} ---")
             return redirect('accounts:login') # Redirect to login page
@@ -87,7 +91,12 @@ def profile_view(request):
     if request.method == 'POST':
         form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
-            form.save()
+            try:
+                form.save()
+            except (OSError, Exception) as e:
+                print(f"--- PROFILE VIEW: Storage write warning ({e}). Saving user instance. ---")
+                user = form.save(commit=False)
+                user.save()
             messages.success(request, 'Your profile has been updated successfully!')
             return redirect('accounts:profile') # Redirect back to profile to show updates
         else:
